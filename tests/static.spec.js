@@ -161,12 +161,12 @@ test.describe('xsltproc-generated pages', () => {
     await page.goto('/static-html/marker_free.html');
     const toggle = page.locator('#marker-free-toggle');
     await expect(toggle).toBeVisible();
-    // Toggle sits top-right so it doesn't cover A-Frame's own UI
+    // Toggle sits top-left (websocket status dot holds the top-right)
     const box = await toggle.boundingBox();
     const viewport = page.viewportSize();
     if (!box || !viewport) throw new Error('no toggle bounding box');
     expect(box.y).toBeLessThan(80);
-    expect(box.x).toBeGreaterThan(viewport.width / 2);
+    expect(box.x + box.width).toBeLessThan(viewport.width / 2);
 
     await expect.poll(() => page.evaluate(() => {
       const m = /** @type {any} */ (document.querySelector('a-marker'));

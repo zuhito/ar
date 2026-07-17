@@ -24,7 +24,7 @@
         <xsl:if test="//VALUESERVER/WEBSOCKET">
           <style><xsl:text disable-output-escaping="yes">
       #ws-status-overlay {
-        position: fixed; top: 12px; left: 16px; z-index: 9999;
+        position: fixed; top: 12px; right: 16px; z-index: 9999;
         display: flex; align-items: center; gap: 8px;
         background: rgba(0,0,0,0.55); padding: 6px 14px 6px 10px;
         border-radius: 20px; pointer-events: none; user-select: none;
@@ -43,7 +43,7 @@
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
           <style><xsl:text disable-output-escaping="yes">
       #marker-free-toggle {
-        position: fixed; top: 12px; right: 16px; z-index: 9999;
+        position: fixed; top: 12px; left: 16px; z-index: 9999;
         display: flex; align-items: center; gap: 8px;
         background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 22px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

@@ -33,8 +33,51 @@
     </div>
     <div class="od-sep"><span>or load from URL</span></div>
     <div class="od-section od-url-row">
-      <input type="url" id="od-url-input" placeholder="https://example.net/ar/scene.xml" spellcheck="false">
+      <input type="url" id="od-url-input" list="od-url-samples" placeholder="https://example.net/ar/scene.xml (type or pick a sample)" spellcheck="false">
       <button class="od-main-btn" id="od-url-load">Load</button>
+      <!-- Published Azure sample scenes; the input still accepts any URL -->
+      <datalist id="od-url-samples">
+        <option value="https://festodidacticsw.azurewebsites.net/ar/MPS400/MPS400.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/MPS400/Sorting_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20[EN]/index.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/index.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-DRILL_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-iDRILL_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-iPICK_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL-V3_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MAG_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MEASURE-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MEASURE_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MPRESS-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MPRESS_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-OUT_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-OVEN_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-PRESS_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-TURNOVER_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-CAM-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-CAM_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-DRILL_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-iDRILL_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-iPICK_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL-V3_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MAG_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MEASURE-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MEASURE_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MPRESS-V2_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MPRESS_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-OUT_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-OVEN_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-PRESS_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-TURNOVER_01.xml"></option>
+        <option value="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-DISPENSE_01.xml"></option>
+        <option value="https://fdcamixedreality.blob.core.windows.net/mixedreality/index.xml"></option>
+      </datalist>
     </div>
     <div class="od-sep"><span>or scan a QR code</span></div>
     <div class="od-section">

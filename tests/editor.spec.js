@@ -171,6 +171,15 @@ test.describe('open dialog', () => {
     await expect(page.locator('#od-drop-zone')).toBeVisible();
     await expect(page.locator('#od-url-input')).toBeVisible();
     await expect(page.locator('#od-qr-btn')).toBeVisible();
+    // URL field doubles as a pulldown of Azure sample scenes (datalist),
+    // while still accepting free-form input
+    await expect(page.locator('#od-url-input')).toHaveAttribute('list', 'od-url-samples');
+    const optionCount = await page.locator('#od-url-samples option').count();
+    expect(optionCount).toBeGreaterThanOrEqual(40);
+    const values = await page.locator('#od-url-samples option').evaluateAll(
+      (opts) => opts.map((o) => /** @type {HTMLOptionElement} */ (o).value));
+    expect(values).toContain('https://festodidacticsw.azurewebsites.net/ar/MPS400/Sorting_01.xml');
+    expect(values.every((v) => /^https:\/\//.test(v))).toBe(true);
     // Escape closes it
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();

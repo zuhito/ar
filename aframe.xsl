@@ -11,7 +11,7 @@
         <title>AR App</title>
         <script src="https://aframe.io/releases/1.7.1/aframe.min.js"><xsl:text> </xsl:text></script>
         
-        <xsl:if test="TARGETBASE or IMGTARGET">
+        <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
           <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
         </xsl:if>
 
@@ -163,11 +163,11 @@
       };</xsl:text>
           </xsl:if>
 
-          <xsl:if test="//NODE[@view != ''] or @viewlist or //*[starts-with(@show, '@anim:')] or //*[starts-with(@collapse, '@anim:')]">
+          <xsl:if test="//NODE[@view != ''] or @viewlist or @views or //*[starts-with(@show, '@anim:')] or //*[starts-with(@collapse, '@anim:')]">
             <xsl:text disable-output-escaping="yes">&#10;      // View system: fdar-visibility nodes toggle with the current view and
       // @anim: bound show/collapse variables; @view: links call fdarSetView
       window.fdarVars = {};
-      window.fdarCurrentView = '</xsl:text><xsl:value-of select="substring-before(concat(@viewlist, ','), ',')"/><xsl:text disable-output-escaping="yes">';
+      window.fdarCurrentView = '</xsl:text><xsl:value-of select="substring-before(concat(@viewlist, @views, ','), ',')"/><xsl:text disable-output-escaping="yes">';
       window.fdarSetView = function (name) {
         window.fdarCurrentView = name;
         window.dispatchEvent(new CustomEvent('fdar-view-change', { detail: { view: name } }));
@@ -230,7 +230,7 @@
       });</xsl:text>
           </xsl:if>
 
-          <xsl:if test="//SWITCH or //LINK or //STREAMER">
+          <xsl:if test="//SWITCH or //LINK or //STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('hover-outline', {
         schema: { 
           type: { type: 'string', default: 'circle' },
@@ -464,7 +464,7 @@
       });</xsl:text>
           </xsl:if>
 
-          <xsl:if test="//STREAMER">
+          <xsl:if test="//STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('video-controller', {
         init: function () {
           const el = this.el;
@@ -529,7 +529,7 @@
         
         <a-scene vr-mode-ui="enabled: false">
           <xsl:choose>
-            <xsl:when test="TARGETBASE or IMGTARGET">
+            <xsl:when test="TARGETBASE or IMGTARGET or TARGET">
               <xsl:attribute name="embedded">embedded</xsl:attribute>
               <xsl:attribute name="arjs">sourceType: webcam; debugUIEnabled: false;</xsl:attribute>
             </xsl:when>
@@ -538,26 +538,31 @@
             </xsl:otherwise>
           </xsl:choose>
 
-          <xsl:if test="//LINK or //SWITCH or //STREAMER">
+          <xsl:if test="//LINK or //SWITCH or //STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
             <xsl:attribute name="cursor">rayOrigin: mouse</xsl:attribute>
             <xsl:attribute name="raycaster">objects: .clickable</xsl:attribute>
             <xsl:attribute name="keyboard-nav"> </xsl:attribute>
             <xsl:attribute name="ar-cursor-fix"> </xsl:attribute>
           </xsl:if>
 
-          <xsl:if test="//STREAMER">
+          <xsl:if test="//STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
             <a-assets timeout="10000">
-              <xsl:for-each select="//STREAMER">
+              <xsl:for-each select="//STREAMER | //DISPLAY[starts-with(@text, '@video:')]">
                 <xsl:variable name="vUrl">
-                  <xsl:call-template name="localized-value">
-                    <xsl:with-param name="direct" select="@url"/>
-                    <xsl:with-param name="container" select="METADATA/url"/>
-                    <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
-                  </xsl:call-template>
+                  <xsl:choose>
+                    <xsl:when test="self::DISPLAY"><xsl:value-of select="substring-after(@text, '@video:')"/></xsl:when>
+                    <xsl:otherwise>
+                      <xsl:call-template name="localized-value">
+                        <xsl:with-param name="direct" select="@url"/>
+                        <xsl:with-param name="container" select="METADATA/url"/>
+                        <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
+                      </xsl:call-template>
+                    </xsl:otherwise>
+                  </xsl:choose>
                 </xsl:variable>
                 <xsl:if test="$vUrl != ''">
                   <video id="vid-{generate-id()}" src="{$vUrl}" preload="auto" crossorigin="anonymous" playsinline="" webkit-playsinline="" muted="true">
-                    <xsl:if test="@loop = 'true'"><xsl:attribute name="loop">true</xsl:attribute></xsl:if>
+                    <xsl:if test="@loop = 'true' or self::DISPLAY"><xsl:attribute name="loop">true</xsl:attribute></xsl:if>
                     <xsl:text> </xsl:text>
                   </video>
                 </xsl:if>
@@ -569,6 +574,7 @@
                across XSLT engines when a scene mixes markers and camera content -->
           <xsl:apply-templates select="TARGETBASE" />
           <xsl:apply-templates select="IMGTARGET" />
+          <xsl:apply-templates select="TARGET" />
           <xsl:apply-templates select="CAMERA" />
 
           <xsl:if test="not(CAMERA)">
@@ -718,6 +724,35 @@
 
   <xsl:template match="TRANSMIT" />
 
+  <!-- Unknown elements (e.g. xNODE / LINKxxx used to disable content in
+       authored scenes) are dropped along with their subtree -->
+  <xsl:template match="*" />
+
+  <xsl:template match="DISPLAY">
+    <xsl:choose>
+      <xsl:when test="starts-with(@text, '@video:')">
+        <a-video src="#vid-{generate-id()}" width="16" height="9" class="clickable" crossorigin="anonymous" video-controller="">
+          <xsl:call-template name="hover-outline-rect">
+            <xsl:with-param name="w" select="16"/>
+            <xsl:with-param name="h" select="9"/>
+          </xsl:call-template>
+          <xsl:text> </xsl:text>
+        </a-video>
+      </xsl:when>
+      <xsl:otherwise>
+        <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" value="{@text}">
+          <xsl:attribute name="scale">
+            <xsl:choose>
+              <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
+              <xsl:otherwise>50 50 50</xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
+          <xsl:text> </xsl:text>
+        </a-text>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template match="SWITCH">
     <xsl:variable name="w"><xsl:choose><xsl:when test="@w"><xsl:value-of select="@w"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="h"><xsl:choose><xsl:when test="@h"><xsl:value-of select="@h"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
@@ -815,9 +850,17 @@
             <xsl:text>obj: url(</xsl:text><xsl:value-of select="@file"/><xsl:text>)</xsl:text>
           </xsl:attribute>
 
-          <xsl:if test="@texture">
-            <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>)</xsl:attribute>
-          </xsl:if>
+          <xsl:choose>
+            <xsl:when test="@texture and @alpha">
+              <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>); opacity: <xsl:value-of select="number(@alpha) div 100"/>; transparent: true</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="@texture">
+              <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>)</xsl:attribute>
+            </xsl:when>
+            <xsl:when test="@alpha">
+              <xsl:attribute name="material">opacity: <xsl:value-of select="number(@alpha) div 100"/>; transparent: true</xsl:attribute>
+            </xsl:when>
+          </xsl:choose>
           
           <xsl:attribute name="scale">1 1 1</xsl:attribute>
         </xsl:otherwise>
@@ -991,6 +1034,117 @@
   </xsl:template>
 
   <!-- ============================================================ -->
+  <!-- COMPILATION: a catalog of AUGMENTATION scenes                -->
+  <!-- Renders a menu page. Entry links point at the pre-generated  -->
+  <!-- <entry>.html (xsltproc workflow); when that file is missing  -->
+  <!-- the entry XML is transformed in the browser with the native  -->
+  <!-- XSLTProcessor as a fallback.                                 -->
+  <!-- ============================================================ -->
+  <xsl:template match="/COMPILATION">
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><xsl:value-of select="@name"/></title>
+        <style><xsl:text disable-output-escaping="yes">
+      body { margin: 0; min-height: 100vh; background: #1e1e1e; color: #ccc;
+             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+             display: flex; justify-content: center; }
+      main { max-width: 640px; width: 100%; padding: 48px 24px; }
+      h1 { color: #e0e0e0; font-size: 22px; margin: 0 0 12px; }
+      .desc { color: #999; font-size: 14px; line-height: 1.6; white-space: pre-line;
+              margin: 0 0 28px; }
+      ul.entries { list-style: none; margin: 0; padding: 0; }
+      ul.entries li { margin: 0 0 10px; }
+      a.entry { display: block; background: #2d2d2d; border: 1px solid #3c3c3c;
+                border-radius: 8px; padding: 14px 18px; color: #4fb3ff;
+                text-decoration: none; font-size: 15px; transition: background .15s; }
+      a.entry:hover { background: #37373d; }
+      a.entry small { color: #777; display: block; font-size: 11px; margin-top: 3px; }
+    </xsl:text></style>
+      </head>
+      <body>
+        <main>
+          <h1><xsl:value-of select="@name"/></h1>
+          <xsl:variable name="desc">
+            <xsl:call-template name="localized-value">
+              <xsl:with-param name="direct" select="''"/>
+              <xsl:with-param name="container" select="METADATA/desc"/>
+              <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
+            </xsl:call-template>
+          </xsl:variable>
+          <xsl:if test="$desc != ''"><p class="desc"><xsl:value-of select="$desc"/></p></xsl:if>
+          <ul class="entries">
+            <xsl:for-each select="ENTRY">
+              <xsl:variable name="base">
+                <xsl:choose>
+                  <xsl:when test="contains(@url, '.xml')"><xsl:value-of select="substring-before(@url, '.xml')"/></xsl:when>
+                  <xsl:otherwise><xsl:value-of select="@url"/></xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <li><a class="entry" href="{$base}.html" data-xml="{@url}">
+                <xsl:value-of select="$base"/>
+                <small><xsl:value-of select="@url"/></small>
+              </a></li>
+            </xsl:for-each>
+          </ul>
+        </main>
+        <script><xsl:text disable-output-escaping="yes">
+      // Prefer the pre-generated .html; fall back to transforming the .xml
+      // in the browser (native XSLTProcessor ignores d-o-e, so script/style
+      // bodies are unescaped and self-closing tags expanded afterwards).
+      document.addEventListener('click', function (e) {
+        var a = e.target.closest ? e.target.closest('a.entry') : null;
+        if (!a) return;
+        e.preventDefault();
+        var href = a.getAttribute('href');
+        fetch(href, { method: 'HEAD' }).then(function (r) {
+          if (r.ok) { window.location.href = href; return; }
+          transformAndOpen(a.getAttribute('data-xml'));
+        }).catch(function () { transformAndOpen(a.getAttribute('data-xml')); });
+      });
+      function fetchText(url) {
+        return fetch(url).then(function (r) {
+          if (!r.ok) throw new Error(url + ': HTTP ' + r.status);
+          return r.text();
+        });
+      }
+      function fixMarkup(html) {
+        var VOID = /^(area|base|br|col|embed|hr|img|input|link|meta|param|source|track|wbr)$/i;
+        html = html.replace(/\s+xmlns(:[a-zA-Z0-9]+)?="[^"]*"/g, '');
+        html = html.replace(/&lt;([a-zA-Z][a-zA-Z0-9-]*)(\s[^&gt;]*)?\s*\/&gt;/g, function (m, tag, attrs) {
+          if (VOID.test(tag)) return m;
+          return '&lt;' + tag + (attrs || '') + '&gt;&lt;/' + tag + '&gt;';
+        });
+        html = html.replace(/&lt;(script|style)([^&gt;]*)&gt;([\s\S]*?)&lt;\/\1&gt;/gi, function (m, tag, attrs, body) {
+          var AMP = String.fromCharCode(38);
+          body = body.replace(new RegExp(AMP + 'lt;', 'g'), '&lt;').replace(new RegExp(AMP + 'gt;', 'g'), '&gt;').replace(new RegExp(AMP + 'amp;', 'g'), AMP);
+          return '&lt;' + tag + attrs + '&gt;' + body + '&lt;/' + tag + '&gt;';
+        });
+        return html;
+      }
+      function transformAndOpen(xmlUrl) {
+        Promise.all([fetchText(xmlUrl), fetchText('aframe.xsl')]).then(function (parts) {
+          var p = new DOMParser();
+          var proc = new XSLTProcessor();
+          proc.importStylesheet(p.parseFromString(parts[1], 'text/xml'));
+          var doc = proc.transformToDocument(p.parseFromString(parts[0], 'text/xml'));
+          var html = new XMLSerializer().serializeToString(doc.documentElement);
+          html = fixMarkup(html);
+          var baseHref = window.location.href.replace(/[^\/]*$/, '');
+          html = html.replace(/&lt;head&gt;/i, '&lt;head&gt;&lt;base href="' + baseHref + '"&gt;');
+          html = '&lt;!DOCTYPE html&gt;\n' + html;
+          var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+          window.location.href = URL.createObjectURL(blob);
+        }).catch(function (err) { alert('Failed to open entry: ' + err.message); });
+      }
+    </xsl:text></script>
+      </body>
+    </html>
+  </xsl:template>
+
+  <!-- ============================================================ -->
   <!-- Shared helpers                                               -->
   <!-- ============================================================ -->
 
@@ -1007,10 +1161,15 @@
         <xsl:otherwise>en</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
+    <!-- Values are materialized through value-of before comparing: some engines
+         (xslt-processor) return an empty string-value for CDATA-backed elements
+         in comparisons while value-of still yields the content -->
+    <xsl:variable name="localized"><xsl:value-of select="$container/*[local-name()=$lang]"/></xsl:variable>
+    <xsl:variable name="first"><xsl:value-of select="$container/*[1]"/></xsl:variable>
     <xsl:choose>
       <xsl:when test="$direct != ''"><xsl:value-of select="$direct"/></xsl:when>
-      <xsl:when test="$container/*[local-name()=$lang] != ''"><xsl:value-of select="$container/*[local-name()=$lang]"/></xsl:when>
-      <xsl:when test="$container/*[1] != ''"><xsl:value-of select="$container/*[1]"/></xsl:when>
+      <xsl:when test="$localized != ''"><xsl:value-of select="$localized"/></xsl:when>
+      <xsl:when test="$first != ''"><xsl:value-of select="$first"/></xsl:when>
     </xsl:choose>
   </xsl:template>
 

@@ -87,6 +87,21 @@ test.describe('xsltproc-generated pages', () => {
     await expect(page.locator('[fdar-switch]')).toHaveAttribute('fdar-switch', /onvalue: GO; offvalue: STOP;/);
   });
 
+  test('compilation renders a menu and entries open their scenes', async ({ page }) => {
+    await page.goto('/static-html/compilation.html');
+    await expect(page).toHaveTitle('Test Compilation');
+    await expect(page.locator('h1')).toHaveText('Test Compilation');
+    // METADATA/desc resolves through the fallback language (CDATA content)
+    await expect(page.locator('.desc')).toHaveText('Pick a scene.');
+    await expect(page.locator('a.entry')).toHaveCount(2);
+    await expect(page.locator('a.entry').first()).toHaveAttribute('href', 'text.html');
+    // Clicking an entry navigates to the pre-generated scene page
+    await page.locator('a.entry').first().click();
+    await page.waitForURL(/text\.html$/);
+    await expect(page.locator('a-scene')).toBeAttached();
+    await expect(page.locator('a-text')).toHaveAttribute('value', 'Hello World');
+  });
+
   test('AR marker scene has marker and model markup', async ({ page }) => {
     // DOM-structure assertions only: the AR.js webcam pipeline needs real
     // camera input, which the fake media stream stands in for

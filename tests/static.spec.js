@@ -4,6 +4,20 @@
 const { test, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const path = require('node:path');
+const { PNG } = require('pngjs');
+
+/** Fraction of pixels that differ noticeably between two same-size PNGs. */
+function diffRatio(a, b) {
+  if (a.width !== b.width || a.height !== b.height) return 1;
+  let diff = 0;
+  const total = a.width * a.height;
+  for (let i = 0; i < total * 4; i += 4) {
+    if (Math.abs(a.data[i] - b.data[i]) > 24 ||
+        Math.abs(a.data[i + 1] - b.data[i + 1]) > 24 ||
+        Math.abs(a.data[i + 2] - b.data[i + 2]) > 24) diff++;
+  }
+  return diff / total;
+}
 
 test.describe('xsltproc-generated pages', () => {
   test('text scene boots A-Frame and shows the text', async ({ page }) => {
@@ -45,6 +59,29 @@ test.describe('xsltproc-generated pages', () => {
     await expect(sphere).toHaveAttribute('color', '#f00');
     await expect(sphere).toHaveAttribute('radius', '0.5');
     await expect(sphere).toHaveAttribute('ws-signal', /on: true/);
+  });
+
+  test('viewer displays its picture immediately, not after the first refresh', async ({ page }) => {
+    // refresh="50": without the immediate load the texture would take 50s
+    await page.goto('/static-html/viewer_local.html');
+    const start = Date.now();
+    await expect.poll(() => page.evaluate(() => {
+      const img = /** @type {any} */ (document.querySelector('a-image'));
+      if (!img || !img.getObject3D) return false;
+      const mesh = img.getObject3D('mesh');
+      return !!(mesh && mesh.material && mesh.material.map);
+    }), { timeout: 15_000 }).toBe(true);
+    expect(Date.now() - start).toBeLessThan(10_000);
+
+    // Pixel proof: the red test image is actually on screen
+    await page.evaluate(() => { document.body.style.background = '#000'; });
+    await page.waitForTimeout(300);
+    const shot = PNG.sync.read(await page.screenshot());
+    let reddish = 0;
+    for (let i = 0; i < shot.width * shot.height * 4; i += 4) {
+      if (shot.data[i] > 180 && shot.data[i + 1] < 100 && shot.data[i + 2] < 100) reddish++;
+    }
+    expect(reddish).toBeGreaterThan(500);
   });
 
   test('viewer scene renders an image with auto-refresh', async ({ page }) => {
@@ -119,26 +156,51 @@ test.describe('xsltproc-generated pages', () => {
     await expect(page.locator('a-text')).toHaveAttribute('value', 'Hello World');
   });
 
-  test('marker-free toggle shows marker content without tracking', async ({ page }) => {
+  test('marker-free toggle actually renders marker content on screen', async ({ page }) => {
     test.slow(); // waits on the AR.js CDN, which is slow under parallel load
-    await page.goto('/static-html/model_ar.html');
-    await expect(page.locator('#marker-free-toggle')).toBeVisible();
-    // Wait for A-Frame to attach the marker's object3D
+    await page.goto('/static-html/marker_free.html');
+    const toggle = page.locator('#marker-free-toggle');
+    await expect(toggle).toBeVisible();
+    // Toggle sits top-right so it doesn't cover A-Frame's own UI
+    const box = await toggle.boundingBox();
+    const viewport = page.viewportSize();
+    if (!box || !viewport) throw new Error('no toggle bounding box');
+    expect(box.y).toBeLessThan(80);
+    expect(box.x).toBeGreaterThan(viewport.width / 2);
+
     await expect.poll(() => page.evaluate(() => {
       const m = /** @type {any} */ (document.querySelector('a-marker'));
       return !!(m && m.object3D);
     }), { timeout: 30_000 }).toBe(true);
 
-    await page.locator('.mf-slider').click();
-    await expect.poll(() => page.evaluate(() => {
-      const m = /** @type {any} */ (document.querySelector('a-marker'));
-      return m.object3D.visible && m.object3D.position.z === -3;
-    })).toBe(true);
+    // Blank out the camera video so screenshots only show rendered 3D content
+    await page.evaluate(() => {
+      document.querySelectorAll('video').forEach((v) => { v.style.display = 'none'; });
+      document.body.style.background = '#000';
+    });
+    await page.waitForTimeout(300);
+    const before = PNG.sync.read(await page.screenshot());
 
     await page.locator('.mf-slider').click();
-    await expect.poll(() => page.evaluate(() =>
-      /** @type {any} */ (document.querySelector('a-marker')).object3D.visible
-    )).toBe(false);
+    // Marker children are reparented onto the stage and normalised
+    await expect.poll(() => page.evaluate(() => {
+      const stage = /** @type {any} */ (document.getElementById('mf-stage'));
+      return stage && stage.object3D ? stage.object3D.children.length : 0;
+    })).toBeGreaterThan(0);
+    await page.waitForTimeout(500);
+    const after = PNG.sync.read(await page.screenshot());
+
+    // Pixel proof: turning the toggle on must change what is on screen
+    const changed = diffRatio(before, after);
+    expect(changed).toBeGreaterThan(0.002);
+
+    // Toggling off puts the content back under the marker
+    await page.locator('.mf-slider').click();
+    await expect.poll(() => page.evaluate(() => {
+      const stage = /** @type {any} */ (document.getElementById('mf-stage'));
+      const marker = /** @type {any} */ (document.querySelector('a-marker'));
+      return stage.object3D.children.length === 0 && marker.object3D.children.length > 0;
+    })).toBe(true);
 
     // Non-marker scenes must not show the toggle
     await page.goto('/static-html/text.html');

@@ -18,7 +18,7 @@
         <xsl:if test="//VALUESERVER/WEBSOCKET">
           <style><xsl:text disable-output-escaping="yes">
       #ws-status-overlay {
-        position: fixed; top: 12px; right: 16px; z-index: 9999;
+        position: fixed; top: 12px; left: 16px; z-index: 9999;
         display: flex; align-items: center; gap: 8px;
         background: rgba(0,0,0,0.55); padding: 6px 14px 6px 10px;
         border-radius: 20px; pointer-events: none; user-select: none;
@@ -37,7 +37,7 @@
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
           <style><xsl:text disable-output-escaping="yes">
       #marker-free-toggle {
-        position: fixed; bottom: 14px; right: 16px; z-index: 9999;
+        position: fixed; top: 12px; right: 16px; z-index: 9999;
         display: flex; align-items: center; gap: 8px;
         background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 22px;
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -1045,17 +1045,24 @@
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('image-refresher', {
         schema: { src: {type: 'string'}, interval: {type: 'number', default: 5} },
         init: function () {
+          const self = this;
+          const load = () =&gt; {
+            const originalSrc = this.data.src;
+            if (!originalSrc) return;
+            // Cache-busting also dodges CDN responses cached without CORS headers
+            const separator = originalSrc.includes('?') ? '&amp;' : '?';
+            const newSrc = originalSrc + separator + 't=' + Date.now();
+            const loader = new THREE.TextureLoader(); loader.setCrossOrigin('anonymous');
+            loader.load(newSrc, (texture) =&gt; {
+              const mesh = this.el.getObject3D('mesh');
+              if (mesh &amp;&amp; mesh.material) { if (mesh.material.map) mesh.material.map.dispose(); mesh.material.map = texture; mesh.material.needsUpdate = true; }
+            });
+          };
+          // Show the picture immediately on load, then refresh on the interval
+          if (this.el.hasLoaded) load();
+          else this.el.addEventListener('loaded', load, { once: true });
           if (this.data.interval &gt; 0) {
-            this.timer = setInterval(() =&gt; {
-              const originalSrc = this.data.src; 
-              const separator = originalSrc.includes('?') ? '&amp;' : '?';
-              const newSrc = originalSrc + separator + 't=' + Date.now();
-              const loader = new THREE.TextureLoader(); loader.setCrossOrigin('anonymous');
-              loader.load(newSrc, (texture) =&gt; {
-                const mesh = this.el.getObject3D('mesh');
-                if (mesh &amp;&amp; mesh.material) { if (mesh.material.map) mesh.material.map.dispose(); mesh.material.map = texture; mesh.material.needsUpdate = true; }
-              });
-            }, this.data.interval * 1000);
+            this.timer = setInterval(load, this.data.interval * 1000);
           }
         },
         remove: function () { if (this.timer) clearInterval(this.timer); }
@@ -1078,44 +1085,61 @@
       });</xsl:text>
           </xsl:if>
           <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
-            <xsl:text disable-output-escaping="yes">&#10;      // Marker-free preview: show every a-marker's content in front of the
-      // camera without tracking. AR.js hides markers on markerLost, so the
-      // forced pose is reasserted while the toggle is on.
-      window._mfOn = false;
-      window._mfSaved = null;
-      window._mfTimer = null;
+            <xsl:text disable-output-escaping="yes">&#10;      // Marker-free preview: AR.js rewrites marker matrices and visibility
+      // every frame, so the marker contents are reparented (THREE-level, the
+      // DOM stays put) onto a stage entity in front of the camera, normalised
+      // to a uniform size. Turning the toggle off moves them back.
       window.fdarMarkerFree = function (on) {
-        window._mfOn = on;
+        var scene = document.querySelector('a-scene');
+        if (!scene) return;
+        if (!scene.hasLoaded) {
+          scene.addEventListener('loaded', function () { window.fdarMarkerFree(on); }, { once: true });
+          return;
+        }
         var markers = Array.prototype.slice.call(document.querySelectorAll('a-marker'))
           .filter(function (m) { return m.object3D; });
         if (!markers.length) return;
         if (on) {
-          if (!window._mfSaved) {
-            window._mfSaved = markers.map(function (m) {
-              var o = m.object3D;
-              return { position: o.position.clone(), rotation: o.rotation.clone(), scale: o.scale.clone() };
-            });
+          if (!window._mfStage) {
+            var stage = document.createElement('a-entity');
+            stage.setAttribute('id', 'mf-stage');
+            scene.appendChild(stage);
+            window._mfStage = stage;
           }
-          var apply = function () {
-            if (!window._mfOn) return;
+          var stageEl = window._mfStage;
+          var mount = function () {
             markers.forEach(function (m, i) {
-              var o = m.object3D;
-              o.visible = true;
-              o.position.set((i - (markers.length - 1) / 2) * 3, 0, -3);
-              o.rotation.set(Math.PI / 2, 0, 0);
-              o.scale.set(1, 1, 1);
-              o.matrixAutoUpdate = true;
+              if (m._mfGroup) return;
+              var pivot = new THREE.Group();
+              var inner = new THREE.Group();
+              pivot.add(inner);
+              m.object3D.children.slice().forEach(function (child) { inner.add(child); });
+              // Normalise: centre the content and scale it to ~1.2 units radius
+              inner.updateMatrixWorld(true);
+              var box = new THREE.Box3().setFromObject(inner);
+              if (!box.isEmpty()) {
+                var sphere = box.getBoundingSphere(new THREE.Sphere());
+                if (sphere.radius &gt; 0) {
+                  var s = 1.2 / sphere.radius;
+                  inner.scale.setScalar(s);
+                  inner.position.copy(sphere.center).multiplyScalar(-s);
+                }
+              }
+              pivot.position.set((i - (markers.length - 1) / 2) * 3, 0, -3);
+              pivot.rotation.x = Math.PI / 2;   // marker content faces +Y; turn it to the camera
+              m._mfGroup = pivot;
+              stageEl.object3D.add(pivot);
             });
           };
-          apply();
-          window._mfTimer = setInterval(apply, 500);
+          if (stageEl.object3D) mount();
+          else stageEl.addEventListener('loaded', mount, { once: true });
         } else {
-          if (window._mfTimer) { clearInterval(window._mfTimer); window._mfTimer = null; }
-          markers.forEach(function (m, i) {
-            var o = m.object3D;
-            var s = window._mfSaved &amp;&amp; window._mfSaved[i];
-            if (s) { o.position.copy(s.position); o.rotation.copy(s.rotation); o.scale.copy(s.scale); }
-            o.visible = false;
+          markers.forEach(function (m) {
+            if (!m._mfGroup) return;
+            var inner = m._mfGroup.children[0];
+            inner.children.slice().forEach(function (child) { m.object3D.add(child); });
+            if (m._mfGroup.parent) m._mfGroup.parent.remove(m._mfGroup);
+            delete m._mfGroup;
           });
         }
       };</xsl:text>

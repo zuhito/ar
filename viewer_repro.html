@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <title>AR App</title>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"> </script>
+    <script>
+      console.log('A-Frame Custom Components Initialized');
+      // Strict FDAR bool conversion
+      window.fdarTruthy = function (v) {
+        var s = String(v).toLowerCase();
+        return s === 'true' || s === 'wahr' || s === 'on' || s === 'enable' || s === 'show';
+      };
+      // hex colour (3/4/6/8 digits, optional #) -> { color, opacity }
+      window.fdarParseHex = function (hex) {
+        if (!hex) return null;
+        if (hex.charAt(0) === '#') hex = hex.substring(1);
+        var r = hex.length >= 6 ? hex.substring(0, 6) : hex.substring(0, 3);
+        var a = 'ff';
+        if (hex.length === 8) a = hex.substring(6, 8);
+        else if (hex.length === 4) a = hex.substring(3, 4) + hex.substring(3, 4);
+        return { color: '#' + r, opacity: parseInt(a, 16) / 255 };
+      };
+      window.fdarHiddenChain = function (el) {
+        var o = el.object3D;
+        while (o) { if (o.visible === false) return true; o = o.parent; }
+        return false;
+      };
+      AFRAME.registerComponent('image-refresher', {
+        schema: { src: {type: 'string'}, interval: {type: 'number', default: 5} },
+        init: function () {
+          if (this.data.interval > 0) {
+            this.timer = setInterval(() => {
+              const originalSrc = this.data.src; 
+              const separator = originalSrc.includes('?') ? '&' : '?';
+              const newSrc = originalSrc + separator + 't=' + Date.now();
+              const loader = new THREE.TextureLoader(); loader.setCrossOrigin('anonymous');
+              loader.load(newSrc, (texture) => {
+                const mesh = this.el.getObject3D('mesh');
+                if (mesh && mesh.material) { if (mesh.material.map) mesh.material.map.dispose(); mesh.material.map = texture; mesh.material.needsUpdate = true; }
+              });
+            }, this.data.interval * 1000);
+          }
+        },
+        remove: function () { if (this.timer) clearInterval(this.timer); }
+      });
+    </script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <a-scene vr-mode-ui="enabled: false" background="color: #333333">
+      <a-camera near="0.001">
+        <a-entity class="fdar-node" position="0 0 -1" rotation="0 0 0" scale="1 1 1">
+          <a-image src="https://picsum.photos/200" side="double" crossorigin="anonymous" scale="1 1 1" image-refresher="src: https://picsum.photos/200; interval: 50"/>
+        </a-entity>
+      </a-camera>
+    </a-scene>
+  </body>
+</html>

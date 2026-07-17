@@ -1,0 +1,9 @@
+<DIRECTORY name="Test Directory" desc="Various scenes">
+  <ENTRY url="text.xml" name="Text sample" desc="A hello world scene."/>
+  <ENTRY url="views.xml">
+    <METADATA fallback="en">
+      <name><en><![CDATA[View system]]></en><de><![CDATA[Ansichten]]></de></name>
+      <desc><en><![CDATA[Views and variables.]]></en></desc>
+    </METADATA>
+  </ENTRY>
+</DIRECTORY>

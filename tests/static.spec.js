@@ -27,10 +27,11 @@ test.describe('xsltproc-generated pages', () => {
 
   test('link scene renders a clickable hitbox around the text', async ({ page }) => {
     await page.goto('/static-html/link.html');
-    const hitbox = page.locator('a-plane.clickable');
+    const hitbox = page.locator('a-entity.clickable[fdar-fit-parent]');
     await expect(hitbox).toBeAttached();
     await expect(hitbox).toHaveAttribute('navigate-on-click', 'url: https://nodered.jp');
-    await expect(hitbox).toHaveAttribute('hover-outline', /type: rect/);
+    // Interaction area is the spec's semi-transparent pulsing surface
+    await expect(hitbox).toHaveAttribute('fdar-area', /color:/);
     // Clickable scenes get mouse cursor + raycaster wiring on the scene
     const scene = page.locator('a-scene');
     await expect(scene).toHaveAttribute('cursor', 'rayOrigin: mouse');
@@ -58,14 +59,15 @@ test.describe('xsltproc-generated pages', () => {
     await page.goto('/static-html/views.html');
     await expect(page.locator('a-scene canvas')).toBeAttached({ timeout: 30_000 });
 
-    // Object3D visibility of the entity wrapping the a-text with the given value
+    // Effective visibility of the a-text (visible flag anywhere up the chain
+    // hides it — per spec, view/show act on directly contained elements)
     const isVisible = (label) => page.evaluate((value) => {
       const texts = Array.from(document.querySelectorAll('a-text'));
-      const el = texts.find((t) => t.getAttribute('value') === value);
+      const el = /** @type {any} */ (texts.find((t) => t.getAttribute('value') === value));
       if (!el) return 'missing';
-      let node = el.closest('[fdar-visibility]');
-      if (!node) return 'no-visibility-node';
-      return /** @type {any} */ (node).object3D.visible;
+      let o = el.object3D;
+      while (o) { if (o.visible === false) return false; o = o.parent; }
+      return true;
     }, label);
 
     // Initial view is the first viewlist entry
@@ -141,6 +143,61 @@ test.describe('xsltproc-generated pages', () => {
     // Non-marker scenes must not show the toggle
     await page.goto('/static-html/text.html');
     await expect(page.locator('#marker-free-toggle')).toHaveCount(0);
+  });
+
+  test('FDAR spec features render (HUD, visibility, instruments, bindings)', async ({ page }) => {
+    test.slow();
+    await page.goto('/static-html/spec_features.html');
+    await expect(page).toHaveTitle('Spec Features');
+
+    // viewdisplay/viewswitch HUD with the initial view name
+    await expect(page.locator('#view-hud')).toBeVisible();
+    await expect(page.locator('#view-name')).toHaveText('main');
+
+    await expect(page.locator('a-scene')).toBeAttached();
+    await expect.poll(() => page.evaluate(() => {
+      const n = /** @type {any} */ (document.querySelector('[fdar-visibility]'));
+      return !!(n && n.object3D);
+    }), { timeout: 30_000 }).toBe(true);
+
+    const effectiveVisible = (label) => page.evaluate((value) => {
+      const el = /** @type {any} */ (Array.from(document.querySelectorAll('a-text'))
+        .find((t) => t.getAttribute('value') === value));
+      if (!el) return 'missing';
+      let o = el.object3D;
+      while (o) { if (o.visible === false) return false; o = o.parent; }
+      return true;
+    }, label);
+
+    // Literal show="false" and collapse="true" (strict spec semantics)
+    await expect.poll(() => effectiveVisible('statically hidden')).toBe(false);
+    await expect.poll(() => effectiveVisible('collapsed subtree')).toBe(false);
+
+    // Transform bindings: @anim: shorthand and single-keyframe ANIMATION
+    await expect(page.locator('[fdar-bind]')).toHaveCount(2);
+    await expect(page.locator('[fdar-bind]').first()).toHaveAttribute('fdar-bind', /tx: bound_tx:2/);
+    await expect(page.locator('[fdar-bind]').last()).toHaveAttribute('fdar-bind', /ty: bound_ty/);
+
+    // Instruments and effect markup
+    await expect(page.locator('[fdar-counter]')).toBeAttached();
+    await expect.poll(() => page.evaluate(() => {
+      const c = document.querySelector('[fdar-counter]');
+      const texts = c ? Array.from(c.querySelectorAll('a-text')).map((t) => t.getAttribute('value')) : [];
+      return texts.join('|');
+    })).toContain('012');
+    await expect(page.locator('[fdar-vumeter]')).toBeAttached();
+    await expect(page.locator('a-cone')).toHaveCount(2);
+    await expect(page.locator('[fdar-touch]')).toHaveAttribute('fdar-touch', /rotate: true/);
+    await expect(page.locator('#fdar-virtual-vt1')).toBeAttached();
+
+    // TEXT backrgba builds a sized background plane once the font loads
+    await expect.poll(() => page.evaluate(() =>
+      document.querySelectorAll('a-plane.fdar-text-bg').length
+    ), { timeout: 30_000 }).toBeGreaterThan(0);
+
+    // viewswitch: stepping views updates the HUD
+    await page.locator('#view-next').click();
+    await expect(page.locator('#view-name')).toHaveText('alt');
   });
 
   test('every Festo sample scene transforms into a scene or catalog page', () => {

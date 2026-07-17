@@ -8,7 +8,7 @@
     <html>
       <head>
         <meta charset="utf-8" />
-        <title>AR App</title>
+        <title><xsl:choose><xsl:when test="@name != ''"><xsl:value-of select="@name"/></xsl:when><xsl:otherwise>AR App</xsl:otherwise></xsl:choose></title>
         <script src="https://aframe.io/releases/1.7.1/aframe.min.js"><xsl:text> </xsl:text></script>
         
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
@@ -54,9 +54,40 @@
       #mf-label { color: #fff; font-size: 12px; letter-spacing: 0.3px; }
           </xsl:text></style>
         </xsl:if>
+        <xsl:if test="@viewdisplay = 'true' or @viewswitch = 'true'">
+          <style><xsl:text disable-output-escaping="yes">
+      #view-hud { position: fixed; bottom: 14px; left: 50%; transform: translateX(-50%);
+        z-index: 9999; display: flex; align-items: center; gap: 10px;
+        background: rgba(0,0,0,0.55); padding: 6px 14px; border-radius: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; }
+      #view-hud button { background: none; border: none; color: #ccc; font-size: 14px; cursor: pointer; }
+      #view-hud button:hover { color: #fff; }
+      #view-name { color: #fff; font-size: 13px; min-width: 60px; text-align: center; }
+          </xsl:text></style>
+        </xsl:if>
 
         <script>
-          <xsl:text disable-output-escaping="yes">&#10;      console.log('A-Frame Custom Components Initialized');</xsl:text>
+          <xsl:text disable-output-escaping="yes">&#10;      console.log('A-Frame Custom Components Initialized');
+      // Strict FDAR bool conversion
+      window.fdarTruthy = function (v) {
+        var s = String(v).toLowerCase();
+        return s === 'true' || s === 'wahr' || s === 'on' || s === 'enable' || s === 'show';
+      };
+      // hex colour (3/4/6/8 digits, optional #) -> { color, opacity }
+      window.fdarParseHex = function (hex) {
+        if (!hex) return null;
+        if (hex.charAt(0) === '#') hex = hex.substring(1);
+        var r = hex.length &gt;= 6 ? hex.substring(0, 6) : hex.substring(0, 3);
+        var a = 'ff';
+        if (hex.length === 8) a = hex.substring(6, 8);
+        else if (hex.length === 4) a = hex.substring(3, 4) + hex.substring(3, 4);
+        return { color: '#' + r, opacity: parseInt(a, 16) / 255 };
+      };
+      window.fdarHiddenChain = function (el) {
+        var o = el.object3D;
+        while (o) { if (o.visible === false) return true; o = o.parent; }
+        return false;
+      };</xsl:text>
 
           <xsl:if test="//LINK or //SWITCH or //STREAMER">
             <xsl:text disable-output-escaping="yes">&#10;      // Keyboard navigation for clickable entities (Tab to move, Enter/Space to activate)
@@ -184,27 +215,36 @@
       };</xsl:text>
           </xsl:if>
 
-          <xsl:if test="//NODE[@view != ''] or @viewlist or @views or //*[starts-with(@show, '@anim:')] or //*[starts-with(@collapse, '@anim:')]">
+          <xsl:if test="//NODE[@view != '' or @show != '' or @collapse != ''] or @viewlist or @views">
             <xsl:text disable-output-escaping="yes">&#10;      // View system: fdar-visibility nodes toggle with the current view and
       // @anim: bound show/collapse variables; @view: links call fdarSetView
       window.fdarVars = {};
       window.fdarCurrentView = '</xsl:text><xsl:value-of select="substring-before(concat(@viewlist, @views, ','), ',')"/><xsl:text disable-output-escaping="yes">';
+      window.fdarViewList = '</xsl:text><xsl:value-of select="concat(@viewlist, @views)"/><xsl:text disable-output-escaping="yes">'.split(',').filter(function (s) { return s !== ''; });
       window.fdarSetView = function (name) {
         window.fdarCurrentView = name;
+        var label = document.getElementById('view-name');
+        if (label) label.textContent = name;
         window.dispatchEvent(new CustomEvent('fdar-view-change', { detail: { view: name } }));
       };
+      window.fdarViewStep = function (dir) {
+        var l = window.fdarViewList;
+        if (!l.length) return;
+        var i = l.indexOf(window.fdarCurrentView);
+        window.fdarSetView(l[(i + dir + l.length) % l.length]);
+      };
+      document.addEventListener('DOMContentLoaded', function () {
+        var label = document.getElementById('view-name');
+        if (label) label.textContent = window.fdarCurrentView;
+      });
       window.addEventListener('fdar-variable-update', function (e) {
         window.fdarVars[e.detail.key] = e.detail.value;
+        // Reserved variable: switching views remotely
+        if (e.detail.key === 'fdarcurrentview') {
+          var v = String(e.detail.value);
+          if (window.fdarViewList.indexOf(v) !== -1) window.fdarSetView(v);
+        }
       });
-      window.fdarTruthy = function (v) {
-        var s = String(v).toLowerCase();
-        return s === 'true' || s === 'wahr' || s === 'on' || s === 'enable' || s === 'show' || s === '1';
-      };
-      window.fdarHiddenChain = function (el) {
-        var o = el.object3D;
-        while (o) { if (o.visible === false) return true; o = o.parent; }
-        return false;
-      };
       AFRAME.registerComponent('fdar-visibility', {
         schema: {
           views: {type: 'string', default: ''},
@@ -213,45 +253,222 @@
         },
         init: function () {
           var self = this;
+          var parse = function (raw) {
+            if (raw.indexOf('@anim:') === 0) return { key: raw.substring(6).split(':')[0] };
+            return { lit: raw };
+          };
+          this.showBind = parse(this.data.show);
+          this.collapseBind = parse(this.data.collapse);
           this.viewList = this.data.views ? this.data.views.split(',') : null;
           window.addEventListener('fdar-view-change', function () { self.apply(); });
           window.addEventListener('fdar-variable-update', function (e) {
-            if (e.detail.key === self.data.show || e.detail.key === self.data.collapse) self.apply();
+            if (e.detail.key === self.showBind.key || e.detail.key === self.collapseBind.key) self.apply();
           });
+          this.el.addEventListener('loaded', function () { self.apply(); });
           this.apply();
         },
+        resolve: function (bind, def) {
+          if (bind.key) {
+            var v = window.fdarVars[bind.key];
+            return v === undefined ? def : window.fdarTruthy(v);
+          }
+          if (bind.lit === '' || bind.lit === undefined) return def;
+          return window.fdarTruthy(bind.lit);
+        },
         apply: function () {
-          var visible = true;
-          if (this.viewList &amp;&amp; this.viewList.indexOf(window.fdarCurrentView) === -1) visible = false;
-          if (visible &amp;&amp; this.data.show) {
-            var v = window.fdarVars[this.data.show];
-            if (v !== undefined &amp;&amp; !window.fdarTruthy(v)) visible = false;
+          // Per spec: view and show affect only the elements directly contained
+          // in the node (child NODEs are unaffected); collapse hides the subtree
+          var viewOk = !this.viewList || this.viewList.indexOf(window.fdarCurrentView) !== -1;
+          var showOk = this.resolve(this.showBind, true);
+          var collapsed = this.resolve(this.collapseBind, false);
+          this.el.object3D.visible = !collapsed;
+          var contentVisible = viewOk &amp;&amp; showOk;
+          for (var i = 0; i &lt; this.el.children.length; i++) {
+            var c = this.el.children[i];
+            if (!c.object3D) continue;
+            if (c.classList &amp;&amp; c.classList.contains('fdar-node')) continue;
+            c.object3D.visible = contentVisible;
           }
-          if (visible &amp;&amp; this.data.collapse) {
-            var c = window.fdarVars[this.data.collapse];
-            if (c !== undefined &amp;&amp; window.fdarTruthy(c)) visible = false;
-          }
-          this.el.setAttribute('visible', visible);
         }
       });</xsl:text>
           </xsl:if>
 
-          <xsl:if test="//VALUESERVER/@predefined">
-            <xsl:text disable-output-escaping="yes">&#10;      // Initial variable values from VALUESERVER/@predefined (JSON)
-      document.addEventListener('DOMContentLoaded', function () {
+          <xsl:if test="//VALUESERVER">
+            <xsl:text disable-output-escaping="yes">&#10;      // Central value-server runtime: connections dispatch fdar-variable-update
+      // events; transmitters are registered for TRANSMIT sends
+      window.fdarTransmitters = {};
+      window.fdarDispatchVars = function (obj, prefix) {
+        Object.keys(obj).forEach(function (k) {
+          window.dispatchEvent(new CustomEvent('fdar-variable-update', { detail: { key: (prefix || '') + k, value: obj[k] } }));
+        });
+      };</xsl:text>
+            <xsl:for-each select="//VALUESERVER/WEBSOCKET">
+              <xsl:text disable-output-escaping="yes">&#10;      (function () {
+        var url = '</xsl:text><xsl:value-of select="@url"/><xsl:text disable-output-escaping="yes">';
+        var prefix = '</xsl:text><xsl:value-of select="@prefix"/><xsl:text disable-output-escaping="yes">';
+        var transmitterId = '</xsl:text><xsl:value-of select="@transmitter"/><xsl:text disable-output-escaping="yes">';
+        var connect = function () {
+          var s = new WebSocket(url);
+          if (transmitterId) window.fdarTransmitters[transmitterId] = s;
+          s.onopen = function () { if (window.updateWsStatus) window.updateWsStatus(true); };
+          s.onmessage = function (ev) {
+            try { window.fdarDispatchVars(JSON.parse(ev.data), prefix); } catch (e) {}
+          };
+          s.onclose = function () { if (window.updateWsStatus) window.updateWsStatus(false); setTimeout(connect, 3000); };
+          s.onerror = function () { s.close(); };
+        };
+        connect();
+      })();</xsl:text>
+            </xsl:for-each>
+            <xsl:for-each select="//VALUESERVER/RESTJSON">
+              <xsl:text disable-output-escaping="yes">&#10;      setInterval(function () {
+        fetch('</xsl:text><xsl:value-of select="@url"/><xsl:text disable-output-escaping="yes">').then(function (r) { return r.json(); })
+          .then(function (data) { window.fdarDispatchVars(data, '</xsl:text><xsl:value-of select="@prefix"/><xsl:text disable-output-escaping="yes">'); })
+          .catch(function () {});
+      }, 2000);</xsl:text>
+            </xsl:for-each>
+            <xsl:for-each select="//VALUESERVER/MQTT">
+              <xsl:text disable-output-escaping="yes">&#10;      console.warn('FDAR: MQTT value servers are not supported in this web preview');</xsl:text>
+            </xsl:for-each>
+            <xsl:text disable-output-escaping="yes">&#10;      document.addEventListener('DOMContentLoaded', function () {
         setTimeout(function () {
           var data = {};</xsl:text>
             <xsl:for-each select="//VALUESERVER/@predefined">
               <xsl:text disable-output-escaping="yes">&#10;          try { Object.assign(data, </xsl:text><xsl:value-of select="."/><xsl:text disable-output-escaping="yes">); } catch (e) { console.warn('predefined parse failed', e); }</xsl:text>
             </xsl:for-each>
-            <xsl:text disable-output-escaping="yes">&#10;          Object.keys(data).forEach(function (k) {
-            window.dispatchEvent(new CustomEvent('fdar-variable-update', { detail: { key: k, value: data[k] } }));
-          });
+            <xsl:for-each select="//VALUESERVER/JSON">
+              <xsl:variable name="jsonBody">
+                <xsl:choose>
+                  <xsl:when test="@text != ''"><xsl:value-of select="@text"/></xsl:when>
+                  <xsl:when test="METADATA/text">
+                    <xsl:call-template name="localized-value">
+                      <xsl:with-param name="direct" select="''"/>
+                      <xsl:with-param name="container" select="METADATA/text"/>
+                      <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
+                    </xsl:call-template>
+                  </xsl:when>
+                  <!-- Concatenate child nodes individually: some engines lose
+                       CDATA content when stringifying the element directly -->
+                  <xsl:otherwise><xsl:for-each select="node()"><xsl:value-of select="."/></xsl:for-each></xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>
+              <!-- Structural test (not string-based): CDATA string-values are
+                   unreliable in some engines -->
+              <xsl:if test="@text != '' or METADATA/text or node()">
+                <xsl:text disable-output-escaping="yes">&#10;          try { var j = (</xsl:text><xsl:value-of select="$jsonBody" disable-output-escaping="yes"/><xsl:text disable-output-escaping="yes">); Object.keys(j).forEach(function (k) { data['</xsl:text><xsl:value-of select="@prefix"/><xsl:text disable-output-escaping="yes">' + k] = j[k]; }); } catch (e) { console.warn('JSON element parse failed', e); }</xsl:text>
+              </xsl:if>
+            </xsl:for-each>
+            <xsl:text disable-output-escaping="yes">&#10;          window.fdarDispatchVars(data, '');
         }, 800);
       });</xsl:text>
           </xsl:if>
 
-          <xsl:if test="//SWITCH or //LINK or //STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
+          <xsl:if test="//SWITCH or //LINK or //TOUCH">
+            <xsl:text disable-output-escaping="yes">&#10;      // Interaction area per spec: semi-transparent (alpha default 0.1),
+      // faintly pulsing (pulse default 0.2), transparent blue when no colour set
+      AFRAME.registerComponent('fdar-area', {
+        schema: {
+          color: {type: 'string', default: ''},
+          alpha: {type: 'string', default: ''},
+          pulse: {type: 'string', default: ''}
+        },
+        init: function () {
+          var raw = this.data.color.replace('#', '');
+          var parsed = window.fdarParseHex(this.data.color) || { color: '#0088ff', opacity: 1 };
+          var hasAlphaDigits = raw.length === 4 || raw.length === 8;
+          var alpha = this.data.alpha !== '' ? parseFloat(this.data.alpha)
+            : (hasAlphaDigits ? parsed.opacity : 0.1);
+          this.baseOpacity = Math.max(0, Math.min(1, isNaN(alpha) ? 0.1 : alpha));
+          this.pulseAmount = this.data.pulse !== '' ? parseFloat(this.data.pulse) : 0.2;
+          if (isNaN(this.pulseAmount)) this.pulseAmount = 0.2;
+          this.el.setAttribute('material', 'color: ' + parsed.color + '; opacity: ' + this.baseOpacity + '; transparent: true; depthWrite: false; shader: flat; side: double');
+        },
+        tick: function (t) {
+          if (!this.pulseAmount) return;
+          var mesh = this.el.getObject3D('mesh');
+          if (mesh &amp;&amp; mesh.material) {
+            mesh.material.opacity = this.baseOpacity * (1 + this.pulseAmount * Math.sin(t / 400));
+          }
+        }
+      });
+      // LINK inside TEXT/MODEL: hitbox sized from the parent's geometry,
+      // with w/h/d added to the measured size (per spec)
+      AFRAME.registerComponent('fdar-fit-parent', {
+        schema: { w: {type: 'number', default: 0}, h: {type: 'number', default: 0}, d: {type: 'number', default: 0} },
+        init: function () {
+          var self = this;
+          var fit = function () {
+            var parent = self.el.parentElement;
+            if (!parent || !parent.object3D) return;
+            var box = new THREE.Box3();
+            var tmp = new THREE.Box3();
+            parent.object3D.updateWorldMatrix(true, true);
+            parent.object3D.traverse(function (o) {
+              if (!o.isMesh) return;
+              var p = o, own = false;
+              while (p) { if (p === self.el.object3D) { own = true; break; } p = p.parent; }
+              if (own) return;
+              tmp.setFromObject(o);
+              if (!tmp.isEmpty()) box.union(tmp);
+            });
+            if (box.isEmpty()) return;
+            var size = new THREE.Vector3(); box.getSize(size);
+            var center = new THREE.Vector3(); box.getCenter(center);
+            parent.object3D.worldToLocal(center);
+            var ws = new THREE.Vector3(); parent.object3D.getWorldScale(ws);
+            var w = size.x / (ws.x || 1) + self.data.w;
+            var h = size.y / (ws.y || 1) + self.data.h;
+            var d = size.z / (ws.z || 1) + self.data.d;
+            self.el.setAttribute('geometry', 'primitive: box; width: ' + Math.max(w, 0.001) + '; height: ' + Math.max(h, 0.001) + '; depth: ' + Math.max(d, 0.001));
+            self.el.object3D.position.copy(center);
+            self.el.setAttribute('hover-outline', 'type: rect; width: ' + (w + 0.1) + '; height: ' + (h + 0.1));
+          };
+          var delayed = function () { setTimeout(fit, 100); };
+          if (this.el.parentElement) {
+            this.el.parentElement.addEventListener('model-loaded', delayed);
+            this.el.parentElement.addEventListener('textfontset', delayed);
+          }
+          this.el.sceneEl.addEventListener('loaded', function () { setTimeout(fit, 400); });
+        }
+      });
+      // TOUCH: drag to rotate/translate, wheel to scale
+      AFRAME.registerComponent('fdar-touch', {
+        schema: {
+          rotate: {type: 'boolean', default: false},
+          scale: {type: 'boolean', default: false},
+          translate: {type: 'boolean', default: false}
+        },
+        init: function () {
+          var self = this;
+          var dragging = false, lastX = 0, lastY = 0;
+          var area = this.el.querySelector('.clickable');
+          if (!area) return;
+          area.addEventListener('mousedown', function () { dragging = true; });
+          window.addEventListener('mousemove', function (e) {
+            if (!dragging) return;
+            var dx = e.movementX !== undefined ? e.movementX : e.clientX - lastX;
+            var dy = e.movementY !== undefined ? e.movementY : e.clientY - lastY;
+            lastX = e.clientX; lastY = e.clientY;
+            var o = self.el.object3D;
+            if (self.data.rotate) {
+              o.rotation.y += dx * 0.01;
+              o.rotation.x += dy * 0.01;
+            } else if (self.data.translate) {
+              o.position.x += dx * 0.005;
+              o.position.y -= dy * 0.005;
+            }
+          });
+          window.addEventListener('mouseup', function () { dragging = false; });
+          window.addEventListener('wheel', function (e) {
+            if (!self.data.scale) return;
+            var f = e.deltaY &lt; 0 ? 1.05 : 0.95;
+            self.el.object3D.scale.multiplyScalar(f);
+          });
+        }
+      });</xsl:text>
+          </xsl:if>
+
+          <xsl:if test="//SWITCH or //LINK or //STREAMER or //DISPLAY[starts-with(@text, '@video:')] or //TOUCH">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('hover-outline', {
         schema: { 
           type: { type: 'string', default: 'circle' },
@@ -319,22 +536,45 @@
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('fdar-color', {
         schema: { 
           rgba: {type: 'string', default: ''},
-          tint: {type: 'string', default: ''} 
+          tint: {type: 'string', default: ''},
+          backrgba: {type: 'string', default: ''},
+          border: {type: 'string', default: ''}
         },
         init: function () { this.applyColor(); },
         update: function () { this.applyColor(); },
-        applyColor: function() {
-          var parseHex = function(hex) {
-            if(!hex) return null;
-            if(hex.startsWith('#')) hex = hex.substring(1);
-            var r = hex.length &gt;= 6 ? hex.substring(0,6) : hex.substring(0,3);
-            var a = 'ff';
-            if(hex.length === 8) a = hex.substring(6,8);
-            else if(hex.length === 4) a = hex.substring(3,4) + hex.substring(3,4);
-            return { color: '#' + r, opacity: parseInt(a, 16) / 255 };
+        // TEXT background: a plane sized to the laid-out text plus the border
+        applyBackground: function () {
+          var self = this;
+          var bg = window.fdarParseHex(this.data.backrgba);
+          if (!bg) return;
+          var build = function () {
+            var textObj = self.el.getObject3D('text');
+            if (!textObj) return;
+            var box = new THREE.Box3().setFromObject(textObj);
+            if (box.isEmpty()) return;
+            var size = new THREE.Vector3(); box.getSize(size);
+            var center = new THREE.Vector3(); box.getCenter(center);
+            self.el.object3D.worldToLocal(center);
+            var ws = new THREE.Vector3(); self.el.object3D.getWorldScale(ws);
+            var pad = (parseFloat(self.data.border) || 0) / 10;
+            var w = size.x / (ws.x || 1) + pad * 2;
+            var h = size.y / (ws.y || 1) + pad * 2;
+            if (!self.bgEl) {
+              self.bgEl = document.createElement('a-plane');
+              self.bgEl.setAttribute('class', 'fdar-text-bg');
+              self.el.appendChild(self.bgEl);
+            }
+            self.bgEl.setAttribute('width', w);
+            self.bgEl.setAttribute('height', h);
+            self.bgEl.setAttribute('material', 'color: ' + bg.color + '; opacity: ' + bg.opacity + '; transparent: true; shader: flat; side: double');
+            self.bgEl.object3D.position.set(center.x, center.y, center.z - 0.01);
           };
-
-          var main = parseHex(this.data.rgba) || parseHex(this.data.tint);
+          this.el.addEventListener('textfontset', function () { setTimeout(build, 50); });
+          setTimeout(build, 600);
+        },
+        applyColor: function() {
+          var main = window.fdarParseHex(this.data.rgba) || window.fdarParseHex(this.data.tint);
+          if (this.data.backrgba) this.applyBackground();
           if(!main) return;
           
           if(this.el.tagName.toLowerCase() === 'a-text' || this.el.hasAttribute('text')) {
@@ -351,31 +591,89 @@
 
           <xsl:if test="//*[starts-with(@value, '@anim:') or starts-with(@label, '@anim:')]">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('ws-value-updater', {
-        schema: { url: {type: 'string', default: ''}, key: {type: 'string', default: ''} },
+        schema: { key: {type: 'string', default: ''} },
         init: function () { 
           var rawKey = this.data.key;
           this.animKey = rawKey.includes(':') ? rawKey.split(':')[0] : rawKey;
-          
           window.addEventListener('fdar-variable-update', (e) =&gt; {
             if (e.detail.key === this.animKey) {
               this.el.setAttribute('value', e.detail.value);
             }
           });
+        }
+      });</xsl:text>
+          </xsl:if>
 
-          if (this.data.url) this.connect(); 
+          <xsl:if test="//ANIMATION[count(KEYFRAME) &lt;= 1] or //NODE[contains(concat(@tx, '|', @ty, '|', @tz, '|', @rx, '|', @ry, '|', @rz, '|', @sx, '|', @sy, '|', @sz, '|', @sxyz), '@anim:')]">
+            <xsl:text disable-output-escaping="yes">&#10;      // Variable-bound transform attributes ("tx: var:inc:double:triple:jump; ...").
+      // Values approach their target at "increment" units/second; the double and
+      // triple thresholds speed that up, and jump applies the value immediately.
+      AFRAME.registerComponent('fdar-bind', {
+        init: function () {
+          var self = this;
+          this.bindings = {};
+          var spec = this.el.getAttribute('fdar-bind') || '';
+          spec.split(';').forEach(function (entry) {
+            entry = entry.trim();
+            if (!entry) return;
+            var sep = entry.indexOf(':');
+            if (sep &lt; 0) return;
+            var attr = entry.substring(0, sep).trim();
+            var parts = entry.substring(sep + 1).trim().split(':');
+            self.bindings[attr] = {
+              key: parts[0],
+              inc: parseFloat(parts[1]) || 0,
+              dbl: parseFloat(parts[2]) || 0,
+              tpl: parseFloat(parts[3]) || 0,
+              jmp: parseFloat(parts[4]) || 0,
+              target: null, current: null
+            };
+          });
+          window.addEventListener('fdar-variable-update', function (e) {
+            Object.keys(self.bindings).forEach(function (attr) {
+              var b = self.bindings[attr];
+              if (b.key !== e.detail.key) return;
+              var v = parseFloat(e.detail.value);
+              if (isNaN(v)) return;
+              if (b.current === null || b.inc &lt;= 0 ||
+                  (b.jmp &gt; 0 &amp;&amp; Math.abs(v - b.current) &gt;= b.jmp)) {
+                b.current = v;
+                self.applyAttr(attr, v);
+              }
+              b.target = v;
+            });
+          });
         },
-        connect: function () {
-          const el = this.el; const self = this;
-          this.socket = new WebSocket(this.data.url);
-          this.socket.onopen = () =&gt; { window.updateWsStatus(true); };
-          this.socket.onmessage = (event) =&gt; {
-            try { 
-              const data = JSON.parse(event.data); 
-              if (data[self.animKey] !== undefined) el.setAttribute('value', data[self.animKey]); 
-            } catch (e) {}
-          };
-          this.socket.onclose = () =&gt; { window.updateWsStatus(false); setTimeout(() =&gt; { self.connect(); }, 3000); };
-          this.socket.onerror = () =&gt; { this.socket.close(); };
+        tick: function (t, dt) {
+          var self = this;
+          Object.keys(this.bindings).forEach(function (attr) {
+            var b = self.bindings[attr];
+            if (b.target === null || b.current === null || b.current === b.target) return;
+            var diff = b.target - b.current;
+            var speed = b.inc;
+            if (b.tpl &gt; 0 &amp;&amp; Math.abs(diff) &gt;= b.tpl) speed = b.inc * 3;
+            else if (b.dbl &gt; 0 &amp;&amp; Math.abs(diff) &gt;= b.dbl) speed = b.inc * 2;
+            var step = speed * (dt / 1000);
+            if (Math.abs(diff) &lt;= step) b.current = b.target;
+            else b.current += (diff &gt; 0 ? step : -step);
+            self.applyAttr(attr, b.current);
+          });
+        },
+        applyAttr: function (attr, v) {
+          var o = this.el.object3D;
+          var d = Math.PI / 180;
+          switch (attr) {
+            case 'tx': o.position.x = v; break;
+            case 'ty': o.position.y = v; break;
+            case 'tz': o.position.z = -v; break;
+            case 'rx': o.rotation.x = -v * d; break;
+            case 'ry': o.rotation.y = -v * d; break;
+            case 'rz': o.rotation.z = v * d; break;
+            case 'sx': o.scale.x = v; break;
+            case 'sy': o.scale.y = v; break;
+            case 'sz': o.scale.z = v; break;
+            case 'sxyz': o.scale.set(v, v, v); break;
+          }
         }
       });</xsl:text>
           </xsl:if>
@@ -400,10 +698,220 @@
       });</xsl:text>
           </xsl:if>
 
+          <xsl:if test="//CAMERA[@x != '' or @y != '' or @distance != '' or @scaleto != '']">
+            <xsl:text disable-output-escaping="yes">&#10;      // CAMERA x/y origin (screen fractions), distance and scaleto normalisation
+      AFRAME.registerComponent('fdar-camera-fit', {
+        schema: {
+          x: {type: 'number', default: 0.5},
+          y: {type: 'number', default: 0.5},
+          distance: {type: 'number', default: 1},
+          scaleto: {type: 'string', default: ''}
+        },
+        init: function () {
+          var self = this;
+          var apply = function () { self.apply(); };
+          this.el.sceneEl.addEventListener('loaded', function () { setTimeout(apply, 100); });
+          window.addEventListener('resize', function () { setTimeout(apply, 100); });
+        },
+        apply: function () {
+          var cam = this.el.sceneEl.camera;
+          if (!cam) return;
+          var d = this.data.distance || 1;
+          var halfH = d * Math.tan(cam.fov * Math.PI / 360);
+          var halfW = halfH * cam.aspect;
+          var o = this.el.object3D;
+          o.position.set((this.data.x - 0.5) * 2 * halfW, (this.data.y - 0.5) * 2 * halfH, -d);
+          var st = this.data.scaleto;
+          var s = 1;
+          if (st === 'width' || st === 'w') s = 2 * halfW;
+          else if (st === 'height' || st === 'h') s = 2 * halfH;
+          else if (st === 'min') s = 2 * Math.min(halfW, halfH);
+          else if (st === 'max') s = 2 * Math.max(halfW, halfH);
+          o.scale.set(s, s, s);
+        }
+      });</xsl:text>
+          </xsl:if>
+
+          <xsl:if test="//REFLECT">
+            <xsl:text disable-output-escaping="yes">&#10;      // VIRTUAL/REFLECT: mirror the pose of visible nodes onto virtual targets
+      AFRAME.registerComponent('fdar-reflect', {
+        schema: { to: {type: 'string', default: ''}, priority: {type: 'string', default: '0'} },
+        init: function () {
+          this.becameVisible = 0;
+          this.reg = window._fdarVirtualReg = window._fdarVirtualReg || {};
+        },
+        tick: function (t) {
+          var parent = this.el.parentElement;
+          if (!parent || !parent.object3D) return;
+          var visible = !window.fdarHiddenChain(parent);
+          if (!visible) { this.becameVisible = 0; return; }
+          if (!this.becameVisible) this.becameVisible = t;
+          var pri;
+          if (this.data.priority === 'activated') pri = this.becameVisible / 1000;
+          else if (this.data.priority === 'running') pri = (t - this.becameVisible) / 1000;
+          else pri = parseFloat(this.data.priority) || 0;
+          var target = document.getElementById('fdar-virtual-' + this.data.to);
+          if (!target || !target.object3D) return;
+          var mode = target.dataset.prioritisation || 'weighted';
+          var slot = this.reg[this.data.to];
+          var stale = !slot || t - slot.t &gt; 150;
+          var wins = stale || (mode === 'lowest' ? pri &lt;= slot.pri : pri &gt;= slot.pri);
+          if (!wins) return;
+          this.reg[this.data.to] = { pri: pri, t: t };
+          parent.object3D.updateWorldMatrix(true, false);
+          parent.object3D.matrixWorld.decompose(target.object3D.position, target.object3D.quaternion, target.object3D.scale);
+          target.object3D.visible = true;
+        }
+      });</xsl:text>
+          </xsl:if>
+
+          <xsl:if test="//COUNTER">
+            <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('fdar-counter', {
+        schema: {
+          value: {type: 'string', default: ''},
+          intdigits: {type: 'number', default: 3},
+          fractdigits: {type: 'number', default: 0},
+          intrgb: {type: 'string', default: 'fff'},
+          fractrgb: {type: 'string', default: 'fff'},
+          wheelintrgb: {type: 'string', default: '000'},
+          wheelfractrgb: {type: 'string', default: 'f00'},
+          casergb: {type: 'string', default: '111'},
+          commargb: {type: 'string', default: 'fff'}
+        },
+        init: function () {
+          var self = this;
+          var raw = this.data.value;
+          this.animKey = raw.indexOf('@anim:') === 0 ? raw.substring(6).split(':')[0] : null;
+          this.current = this.animKey ? 0 : (parseFloat(raw) || 0);
+          var col = function (v, def) { return (window.fdarParseHex(v) || { color: def }).color; };
+          var ints = Math.max(1, Math.min(8, this.data.intdigits));
+          var fracts = Math.max(0, Math.min(8, this.data.fractdigits));
+          var digitW = 0.5;
+          var caseW = (ints + fracts) * digitW + (fracts ? 0.25 : 0) + 0.4;
+          var mk = function (tag) { var e = document.createElement(tag); self.el.appendChild(e); return e; };
+          var casePlane = mk('a-plane');
+          casePlane.setAttribute('width', caseW);
+          casePlane.setAttribute('height', 1);
+          casePlane.setAttribute('material', 'color: ' + col(this.data.casergb, '#111') + '; shader: flat; side: double');
+          var intWheel = mk('a-plane');
+          intWheel.setAttribute('width', ints * digitW);
+          intWheel.setAttribute('height', 0.8);
+          intWheel.setAttribute('position', (-caseW / 2 + 0.2 + ints * digitW / 2) + ' 0 0.01');
+          intWheel.setAttribute('material', 'color: ' + col(this.data.wheelintrgb, '#000') + '; shader: flat; side: double');
+          this.intText = mk('a-text');
+          this.intText.setAttribute('align', 'center');
+          this.intText.setAttribute('baseline', 'center');
+          this.intText.setAttribute('anchor', 'center');
+          this.intText.setAttribute('color', col(this.data.intrgb, '#fff'));
+          this.intText.setAttribute('position', (-caseW / 2 + 0.2 + ints * digitW / 2) + ' 0 0.02');
+          this.intText.setAttribute('scale', '1.6 1.6 1.6');
+          if (fracts) {
+            var comma = mk('a-text');
+            comma.setAttribute('value', ',');
+            comma.setAttribute('align', 'center');
+            comma.setAttribute('color', col(this.data.commargb, '#fff'));
+            comma.setAttribute('position', (-caseW / 2 + 0.2 + ints * digitW + 0.12) + ' -0.1 0.02');
+            comma.setAttribute('scale', '1.6 1.6 1.6');
+            var fractWheel = mk('a-plane');
+            fractWheel.setAttribute('width', fracts * digitW);
+            fractWheel.setAttribute('height', 0.8);
+            fractWheel.setAttribute('position', (caseW / 2 - 0.2 - fracts * digitW / 2) + ' 0 0.01');
+            fractWheel.setAttribute('material', 'color: ' + col(this.data.wheelfractrgb, '#f00') + '; shader: flat; side: double');
+            this.fractText = mk('a-text');
+            this.fractText.setAttribute('align', 'center');
+            this.fractText.setAttribute('baseline', 'center');
+            this.fractText.setAttribute('anchor', 'center');
+            this.fractText.setAttribute('color', col(this.data.fractrgb, '#fff'));
+            this.fractText.setAttribute('position', (caseW / 2 - 0.2 - fracts * digitW / 2) + ' 0 0.02');
+            this.fractText.setAttribute('scale', '1.6 1.6 1.6');
+          }
+          this.ints = ints; this.fracts = fracts;
+          this.render();
+          if (this.animKey) {
+            window.addEventListener('fdar-variable-update', function (e) {
+              if (e.detail.key !== self.animKey) return;
+              var v = parseFloat(e.detail.value);
+              if (!isNaN(v)) { self.current = v; self.render(); }
+            });
+          }
+        },
+        render: function () {
+          var v = Math.abs(this.current);
+          var intPart = String(Math.floor(v));
+          while (intPart.length &lt; this.ints) intPart = '0' + intPart;
+          this.intText.setAttribute('value', intPart);
+          if (this.fracts &amp;&amp; this.fractText) {
+            var fract = v.toFixed(this.fracts);
+            this.fractText.setAttribute('value', fract.substring(fract.indexOf('.') + 1));
+          }
+        }
+      });</xsl:text>
+          </xsl:if>
+
+          <xsl:if test="//VUMETER">
+            <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('fdar-vumeter', {
+        schema: {
+          value: {type: 'string', default: ''},
+          label: {type: 'string', default: ''},
+          labelmin: {type: 'string', default: ''},
+          labelmax: {type: 'string', default: ''}
+        },
+        init: function () {
+          var self = this;
+          var raw = this.data.value;
+          this.animKey = raw.indexOf('@anim:') === 0 ? raw.substring(6).split(':')[0] : null;
+          this.current = this.animKey ? 0 : (parseFloat(raw) || 0);
+          var mk = function (tag, parent) { var e = document.createElement(tag); (parent || self.el).appendChild(e); return e; };
+          var casePlane = mk('a-plane');
+          casePlane.setAttribute('width', 2);
+          casePlane.setAttribute('height', 1.2);
+          casePlane.setAttribute('material', 'color: #f4f2ea; shader: flat; side: double');
+          var txt = function (value, x, y, s, color) {
+            var t = mk('a-text');
+            t.setAttribute('value', value); t.setAttribute('align', 'center');
+            t.setAttribute('baseline', 'center'); t.setAttribute('anchor', 'center');
+            t.setAttribute('color', color || '#222');
+            t.setAttribute('position', x + ' ' + y + ' 0.02');
+            t.setAttribute('scale', s + ' ' + s + ' ' + s);
+            return t;
+          };
+          if (this.data.label) txt(this.data.label, 0, -0.4, 0.8);
+          if (this.data.labelmin) txt(this.data.labelmin, -0.7, 0.35, 0.7);
+          if (this.data.labelmax) txt(this.data.labelmax, 0.7, 0.35, 0.7);
+          this.lamp = mk('a-circle');
+          this.lamp.setAttribute('radius', '0.07');
+          this.lamp.setAttribute('position', '0 -0.15 0.02');
+          this.lamp.setAttribute('material', 'color: #400; shader: flat; side: double');
+          this.needle = mk('a-entity');
+          var blade = mk('a-plane', this.needle);
+          blade.setAttribute('width', 0.04);
+          blade.setAttribute('height', 0.75);
+          blade.setAttribute('position', '0 0.375 0.03');
+          blade.setAttribute('material', 'color: #c22; shader: flat; side: double');
+          this.needle.object3D.position.set(0, -0.15, 0);
+          this.render();
+          if (this.animKey) {
+            window.addEventListener('fdar-variable-update', function (e) {
+              if (e.detail.key !== self.animKey) return;
+              var v = parseFloat(e.detail.value);
+              if (!isNaN(v)) { self.current = v; self.render(); }
+            });
+          }
+        },
+        render: function () {
+          var v = this.current;
+          var over = v &lt; 0 || v &gt; 1;
+          // 0 -&gt; needle left (+60deg), 1 -&gt; right (-60deg), small overtravel
+          var clamped = Math.max(-0.05, Math.min(1.05, v));
+          this.needle.object3D.rotation.z = (0.5 - clamped) * 2 * Math.PI / 3;
+          this.lamp.setAttribute('material', 'color: ' + (over ? '#f00' : '#400') + '; shader: flat; side: double');
+        }
+      });</xsl:text>
+          </xsl:if>
+
           <xsl:if test="//SIGNAL">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('ws-signal', {
         schema: {
-          url: {type: 'string', default: ''},
           key: {type: 'string', default: ''},
           color: {type: 'string', default: '#f00'},
           on: {type: 'boolean', default: false}
@@ -412,36 +920,13 @@
           this.isOn = this.data.on;
           var rawKey = this.data.key;
           this.animKey = rawKey.includes(':') ? rawKey.split(':')[0] : rawKey;
-          
           window.addEventListener('fdar-variable-update', (e) =&gt; {
             if (e.detail.key === this.animKey) {
-              const val = String(e.detail.value).toLowerCase();
-              this.isOn = (val === 'true' || val === 'wahr' || val === 'on' || val === 'enable' || val === 'show' || val === '1');
+              this.isOn = window.fdarTruthy(String(e.detail.value));
               this.updateVisual();
             }
           });
-
-          if (this.data.url &amp;&amp; this.animKey) {
-            this.connect();
-          }
           this.updateVisual();
-        },
-        connect: function () {
-          const self = this;
-          this.socket = new WebSocket(this.data.url);
-          this.socket.onopen = () =&gt; { window.updateWsStatus(true); };
-          this.socket.onmessage = (event) =&gt; {
-            try {
-              const data = JSON.parse(event.data);
-              if (data[self.animKey] !== undefined) {
-                const val = String(data[self.animKey]).toLowerCase();
-                self.isOn = (val === 'true' || val === 'wahr' || val === 'on' || val === 'enable' || val === 'show' || val === '1');
-                self.updateVisual();
-              }
-            } catch(e) { }
-          };
-          this.socket.onclose = () =&gt; { window.updateWsStatus(false); setTimeout(() =&gt; { self.connect(); }, 3000); };
-          this.socket.onerror = () =&gt; { this.socket.close(); };
         },
         updateVisual: function() {
           if (this.isOn) {
@@ -464,7 +949,7 @@
           <xsl:if test="//SWITCH">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('fdar-switch', {
         schema: {
-          url: {type: 'string', default: ''},
+          transmitter: {type: 'string', default: ''},
           transmitKey: {type: 'string', default: ''},
           on: {type: 'boolean', default: false},
           onvalue: {type: 'string', default: 'true'},
@@ -474,12 +959,6 @@
         },
         init: function () {
           this.isOn = this.data.on;
-          this.socket = null;
-          
-          if (this.data.url) {
-            this.connect();
-          }
-          
           if (this.data.pressedvalue !== '') {
             // Momentary button: one value while pressed, another on release
             this.el.addEventListener('mousedown', () =&gt; {
@@ -503,31 +982,60 @@
           window.dispatchEvent(new CustomEvent('fdar-variable-update', { 
             detail: { key: this.data.transmitKey, value: valStr } 
           }));
-          if (this.socket &amp;&amp; this.socket.readyState === WebSocket.OPEN) {
+          // Without a transmitter the variable stays local (per spec)
+          var socket = window.fdarTransmitters &amp;&amp; window.fdarTransmitters[this.data.transmitter];
+          if (socket &amp;&amp; socket.readyState === WebSocket.OPEN) {
             const payload = {};
             payload[this.data.transmitKey] = valStr;
-            this.socket.send(JSON.stringify(payload));
+            socket.send(JSON.stringify(payload));
           }
-        },
-        connect: function () {
-          this.socket = new WebSocket(this.data.url);
-          this.socket.onopen = () =&gt; { window.updateWsStatus(true); };
-          this.socket.onclose = () =&gt; { window.updateWsStatus(false); setTimeout(() =&gt; { this.connect(); }, 3000); };
-          this.socket.onerror = () =&gt; { this.socket.close(); };
         }
       });</xsl:text>
           </xsl:if>
 
           <xsl:if test="//STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('video-controller', {
+        schema: {
+          status: {type: 'string', default: 'play'},
+          position: {type: 'number', default: 0},
+          showpos: {type: 'boolean', default: false}
+        },
         init: function () {
           const el = this.el;
+          const self = this;
           const videoId = el.getAttribute('src');
           if(!videoId || !videoId.startsWith('#')) return;
           const video = document.querySelector(videoId);
-          if(video) {
-            video.addEventListener('loadeddata', () =&gt; { video.play().catch(e =&gt; {}); });
-            el.addEventListener('click', () =&gt; { video.muted = false; if (video.paused) { video.play(); } else { video.pause(); } });
+          if(!video) return;
+          video.addEventListener('loadeddata', () =&gt; {
+            if (self.data.position &gt; 0) { try { video.currentTime = self.data.position; } catch (e) {} }
+            if (self.data.status !== 'pause') video.play().catch(e =&gt; {});
+          });
+          // Non-looping videos pause and rewind at the end (per spec)
+          video.addEventListener('ended', () =&gt; {
+            if (!video.loop) { video.pause(); video.currentTime = 0; }
+          });
+          el.addEventListener('click', () =&gt; { video.muted = false; if (video.paused) { video.play(); } else { video.pause(); } });
+          if (self.data.showpos) {
+            const w = parseFloat(el.getAttribute('width')) || 1.6;
+            const h = parseFloat(el.getAttribute('height')) || 0.9;
+            const track = document.createElement('a-plane');
+            track.setAttribute('width', w);
+            track.setAttribute('height', 0.05);
+            track.setAttribute('material', 'color: #222; shader: flat; side: double');
+            track.setAttribute('position', '0 ' + (-h / 2 - 0.05) + ' 0.01');
+            el.appendChild(track);
+            const bar = document.createElement('a-plane');
+            bar.setAttribute('height', 0.05);
+            bar.setAttribute('width', 0.001);
+            bar.setAttribute('material', 'color: #0a84ff; shader: flat; side: double');
+            track.appendChild(bar);
+            setInterval(() =&gt; {
+              if (!video.duration) return;
+              const p = video.currentTime / video.duration;
+              bar.setAttribute('width', Math.max(0.001, w * p));
+              bar.object3D.position.x = -w / 2 + (w * p) / 2;
+            }, 250);
           }
         }
       });</xsl:text>
@@ -624,6 +1132,14 @@
         </xsl:if>
 
         
+        <xsl:if test="@viewdisplay = 'true' or @viewswitch = 'true'">
+          <div id="view-hud">
+            <xsl:if test="@viewswitch = 'true'"><button id="view-prev" onclick="window.fdarViewStep(-1)">&#x25C0;</button></xsl:if>
+            <span id="view-name"><xsl:text> </xsl:text></span>
+            <xsl:if test="@viewswitch = 'true'"><button id="view-next" onclick="window.fdarViewStep(1)">&#x25B6;</button></xsl:if>
+          </div>
+        </xsl:if>
+
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
           <div id="marker-free-toggle">
             <label class="mf-switch">
@@ -645,7 +1161,7 @@
             </xsl:otherwise>
           </xsl:choose>
 
-          <xsl:if test="//LINK or //SWITCH or //STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
+          <xsl:if test="//LINK or //SWITCH or //STREAMER or //TOUCH or //DISPLAY[starts-with(@text, '@video:')]">
             <xsl:attribute name="cursor">rayOrigin: mouse</xsl:attribute>
             <xsl:attribute name="raycaster">objects: .clickable</xsl:attribute>
             <xsl:attribute name="keyboard-nav"> </xsl:attribute>
@@ -679,6 +1195,7 @@
 
           <!-- Applied per-kind (not as one union) so output order is identical
                across XSLT engines when a scene mixes markers and camera content -->
+          <xsl:apply-templates select="VIRTUAL" />
           <xsl:apply-templates select="TARGETBASE" />
           <xsl:apply-templates select="IMGTARGET" />
           <xsl:apply-templates select="TARGET" />
@@ -698,7 +1215,17 @@
   
   <xsl:template match="CAMERA">
     <a-camera near="0.001">
-      <xsl:apply-templates />
+      <xsl:choose>
+        <xsl:when test="@x != '' or @y != '' or @distance != '' or @scaleto != ''">
+          <a-entity>
+            <xsl:attribute name="fdar-camera-fit">x: <xsl:choose><xsl:when test="@x != ''"><xsl:value-of select="@x"/></xsl:when><xsl:otherwise>0.5</xsl:otherwise></xsl:choose>; y: <xsl:choose><xsl:when test="@y != ''"><xsl:value-of select="@y"/></xsl:when><xsl:otherwise>0.5</xsl:otherwise></xsl:choose>; distance: <xsl:choose><xsl:when test="@distance != ''"><xsl:value-of select="@distance"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose>; scaleto: <xsl:value-of select="@scaleto"/></xsl:attribute>
+            <xsl:apply-templates />
+          </a-entity>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates />
+        </xsl:otherwise>
+      </xsl:choose>
     </a-camera>
   </xsl:template>
   
@@ -731,29 +1258,37 @@
   </xsl:template>
 
   <xsl:template match="NODE">
-    <xsl:variable name="tx"><xsl:choose><xsl:when test="@tx"><xsl:value-of select="@tx"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
-    <xsl:variable name="ty"><xsl:choose><xsl:when test="@ty"><xsl:value-of select="@ty"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="tx"><xsl:choose><xsl:when test="starts-with(@tx, '@anim:')">0</xsl:when><xsl:when test="@tx"><xsl:value-of select="@tx"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="ty"><xsl:choose><xsl:when test="starts-with(@ty, '@anim:')">0</xsl:when><xsl:when test="@ty"><xsl:value-of select="@ty"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="tz">
       <xsl:choose>
+        <xsl:when test="starts-with(@tz, '@anim:')">0</xsl:when>
         <xsl:when test="@tz"><xsl:value-of select="0 - number(@tz)"/></xsl:when>
         <xsl:otherwise>0</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="rx"><xsl:choose><xsl:when test="@rx"><xsl:value-of select="0 - number(@rx)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
-    <xsl:variable name="ry"><xsl:choose><xsl:when test="@ry"><xsl:value-of select="0 - number(@ry)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
-    <xsl:variable name="rz"><xsl:choose><xsl:when test="@rz"><xsl:value-of select="@rz"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="rx"><xsl:choose><xsl:when test="starts-with(@rx, '@anim:')">0</xsl:when><xsl:when test="@rx"><xsl:value-of select="0 - number(@rx)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="ry"><xsl:choose><xsl:when test="starts-with(@ry, '@anim:')">0</xsl:when><xsl:when test="@ry"><xsl:value-of select="0 - number(@ry)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="rz"><xsl:choose><xsl:when test="starts-with(@rz, '@anim:')">0</xsl:when><xsl:when test="@rz"><xsl:value-of select="@rz"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
     
-    <xsl:variable name="sxyz"><xsl:choose><xsl:when test="@sxyz"><xsl:value-of select="@sxyz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
-    <xsl:variable name="sx"><xsl:choose><xsl:when test="@sx"><xsl:value-of select="@sx"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
-    <xsl:variable name="sy"><xsl:choose><xsl:when test="@sy"><xsl:value-of select="@sy"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
-    <xsl:variable name="sz"><xsl:choose><xsl:when test="@sz"><xsl:value-of select="@sz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sxyz"><xsl:choose><xsl:when test="starts-with(@sxyz, '@anim:')">1</xsl:when><xsl:when test="@sxyz"><xsl:value-of select="@sxyz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sx"><xsl:choose><xsl:when test="starts-with(@sx, '@anim:')">1</xsl:when><xsl:when test="@sx"><xsl:value-of select="@sx"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sy"><xsl:choose><xsl:when test="starts-with(@sy, '@anim:')">1</xsl:when><xsl:when test="@sy"><xsl:value-of select="@sy"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sz"><xsl:choose><xsl:when test="starts-with(@sz, '@anim:')">1</xsl:when><xsl:when test="@sz"><xsl:value-of select="@sz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
 
-    <a-entity position="{$tx} {$ty} {$tz}" rotation="{$rx} {$ry} {$rz}" scale="{number($sxyz) * number($sx)} {number($sxyz) * number($sy)} {number($sxyz) * number($sz)}">
-      <xsl:if test="(@view and @view != '') or starts-with(@show, '@anim:') or starts-with(@collapse, '@anim:')">
-        <xsl:attribute name="fdar-visibility">views: <xsl:value-of select="@view"/>; show: <xsl:value-of select="substring-after(@show, '@anim:')"/>; collapse: <xsl:value-of select="substring-after(@collapse, '@anim:')"/></xsl:attribute>
+    <a-entity class="fdar-node" position="{$tx} {$ty} {$tz}" rotation="{$rx} {$ry} {$rz}" scale="{number($sxyz) * number($sx)} {number($sxyz) * number($sy)} {number($sxyz) * number($sz)}">
+      <xsl:if test="(@view and @view != '') or (@show and @show != '') or (@collapse and @collapse != '')">
+        <xsl:attribute name="fdar-visibility">views: <xsl:value-of select="@view"/>; show: <xsl:value-of select="@show"/>; collapse: <xsl:value-of select="@collapse"/></xsl:attribute>
       </xsl:if>
 
-      <xsl:for-each select="ANIMATION">
+      <!-- Variable-bound attributes: @anim: shorthand or single-keyframe
+           ANIMATION (with increment/double/triple/jump smoothing) -->
+      <xsl:variable name="bindSpec"><xsl:if test="starts-with(@tx, '@anim:')">tx: <xsl:value-of select="substring-after(@tx, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@ty, '@anim:')">ty: <xsl:value-of select="substring-after(@ty, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@tz, '@anim:')">tz: <xsl:value-of select="substring-after(@tz, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@rx, '@anim:')">rx: <xsl:value-of select="substring-after(@rx, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@ry, '@anim:')">ry: <xsl:value-of select="substring-after(@ry, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@rz, '@anim:')">rz: <xsl:value-of select="substring-after(@rz, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@sx, '@anim:')">sx: <xsl:value-of select="substring-after(@sx, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@sy, '@anim:')">sy: <xsl:value-of select="substring-after(@sy, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@sz, '@anim:')">sz: <xsl:value-of select="substring-after(@sz, '@anim:')"/>; </xsl:if><xsl:if test="starts-with(@sxyz, '@anim:')">sxyz: <xsl:value-of select="substring-after(@sxyz, '@anim:')"/>; </xsl:if><xsl:for-each select="ANIMATION[count(KEYFRAME) &lt;= 1 and (KEYFRAME/@value != '' or @targetvalue != '')]"><xsl:value-of select="@attribute"/>: <xsl:value-of select="concat(KEYFRAME/@value, @targetvalue)"/>:<xsl:choose><xsl:when test="@increment != ''"><xsl:value-of select="@increment"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>:<xsl:choose><xsl:when test="@double != ''"><xsl:value-of select="@double"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>:<xsl:choose><xsl:when test="@triple != ''"><xsl:value-of select="@triple"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>:<xsl:choose><xsl:when test="@jump != ''"><xsl:value-of select="@jump"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; </xsl:for-each></xsl:variable>
+      <xsl:if test="string($bindSpec) != ''">
+        <xsl:attribute name="fdar-bind"><xsl:value-of select="$bindSpec"/></xsl:attribute>
+      </xsl:if>
+
+      <xsl:for-each select="ANIMATION[count(KEYFRAME) &gt;= 2]">
         <xsl:variable name="attr" select="@attribute" />
         <xsl:variable name="kf1" select="KEYFRAME[1]" />
         <xsl:variable name="kf2" select="KEYFRAME[last()]" />
@@ -831,6 +1366,18 @@
 
   <xsl:template match="TRANSMIT" />
 
+  <!-- VIRTUAL: an anchor whose pose is driven by REFLECT elements; hidden
+       until the first REFLECT reports a visible source -->
+  <xsl:template match="VIRTUAL">
+    <a-entity id="fdar-virtual-{@name}" visible="false" data-prioritisation="{@prioritisation}">
+      <xsl:apply-templates />
+    </a-entity>
+  </xsl:template>
+
+  <xsl:template match="REFLECT">
+    <a-entity fdar-reflect="to: {@to}; priority: {@priority}"><xsl:text> </xsl:text></a-entity>
+  </xsl:template>
+
   <!-- Unknown elements (e.g. xNODE / LINKxxx used to disable content in
        authored scenes) are dropped along with their subtree -->
   <xsl:template match="*" />
@@ -868,16 +1415,10 @@
     <xsl:variable name="transmit" select="TRANSMIT" />
     <xsl:variable name="transmitKey" select="$transmit/@variable" />
     <xsl:variable name="transmitterId" select="$transmit/@transmitter" />
-    <xsl:variable name="wsUrl">
-      <xsl:choose>
-        <xsl:when test="$transmitterId != ''"><xsl:value-of select="//VALUESERVER/WEBSOCKET[@transmitter=$transmitterId]/@url" /></xsl:when>
-        <xsl:otherwise><xsl:value-of select="//VALUESERVER/WEBSOCKET[1]/@url" /></xsl:otherwise>
-      </xsl:choose>
-    </xsl:variable>
 
     <xsl:variable name="isOn">
       <xsl:choose>
-        <xsl:when test="@on='true' or @on='wahr' or @on='on' or @on='enable' or @on='show' or @on='1'">true</xsl:when>
+        <xsl:when test="@on='true' or @on='wahr' or @on='on' or @on='enable' or @on='show'">true</xsl:when>
         <xsl:otherwise>false</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -887,7 +1428,7 @@
         <xsl:with-param name="w" select="$w"/>
         <xsl:with-param name="h" select="$h"/>
       </xsl:call-template>
-      <xsl:attribute name="fdar-switch">transmitKey: <xsl:value-of select="$transmitKey"/>; url: <xsl:value-of select="$wsUrl"/>; on: <xsl:value-of select="$isOn"/>;<xsl:if test="@onvalue != ''"> onvalue: <xsl:value-of select="@onvalue"/>;</xsl:if><xsl:if test="@offvalue != ''"> offvalue: <xsl:value-of select="@offvalue"/>;</xsl:if><xsl:if test="@pressedvalue != ''"> pressedvalue: <xsl:value-of select="@pressedvalue"/>;</xsl:if><xsl:if test="@unpressedvalue != ''"> unpressedvalue: <xsl:value-of select="@unpressedvalue"/>;</xsl:if></xsl:attribute>
+      <xsl:attribute name="fdar-switch">transmitKey: <xsl:value-of select="$transmitKey"/>; transmitter: <xsl:value-of select="$transmitterId"/>; on: <xsl:value-of select="$isOn"/>;<xsl:if test="@onvalue != ''"> onvalue: <xsl:value-of select="@onvalue"/>;</xsl:if><xsl:if test="@offvalue != ''"> offvalue: <xsl:value-of select="@offvalue"/>;</xsl:if><xsl:if test="@pressedvalue != ''"> pressedvalue: <xsl:value-of select="@pressedvalue"/>;</xsl:if><xsl:if test="@unpressedvalue != ''"> unpressedvalue: <xsl:value-of select="@unpressedvalue"/>;</xsl:if></xsl:attribute>
       <xsl:call-template name="clickable-fill"/>
     </a-entity>
   </xsl:template>
@@ -927,9 +1468,6 @@
             <xsl:with-param name="fallbackLang" select="LINK/METADATA/@fallback"/>
           </xsl:call-template>
         </xsl:variable>
-        <xsl:attribute name="class">clickable</xsl:attribute>
-        <xsl:attribute name="hover-outline">type: circle</xsl:attribute>
-        <xsl:attribute name="navigate-on-click">url: <xsl:value-of select="$linkUrl"/></xsl:attribute>
       </xsl:if>
 
       <xsl:choose>
@@ -984,8 +1522,61 @@
           <xsl:attribute name="scale">1 1 1</xsl:attribute>
         </xsl:otherwise>
       </xsl:choose>
+      <xsl:if test="LINK">
+        <xsl:variable name="linkUrl2">
+          <xsl:call-template name="localized-value">
+            <xsl:with-param name="direct" select="LINK/@refer"/>
+            <xsl:with-param name="container" select="LINK/METADATA/refer"/>
+            <xsl:with-param name="fallbackLang" select="LINK/METADATA/@fallback"/>
+          </xsl:call-template>
+        </xsl:variable>
+        <a-entity class="clickable" navigate-on-click="url: {$linkUrl2}">
+          <xsl:attribute name="fdar-fit-parent">w: <xsl:choose><xsl:when test="LINK/@w"><xsl:value-of select="LINK/@w"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; h: <xsl:choose><xsl:when test="LINK/@h"><xsl:value-of select="LINK/@h"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; d: <xsl:choose><xsl:when test="LINK/@d"><xsl:value-of select="LINK/@d"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:attribute>
+          <xsl:attribute name="fdar-area">color: <xsl:choose><xsl:when test="LINK/@rgba"><xsl:value-of select="LINK/@rgba"/></xsl:when><xsl:when test="LINK/@rgb"><xsl:value-of select="LINK/@rgb"/></xsl:when></xsl:choose>; alpha: <xsl:value-of select="LINK/@alpha"/>; pulse: <xsl:value-of select="LINK/@pulse"/></xsl:attribute>
+          <xsl:text> </xsl:text>
+        </a-entity>
+      </xsl:if>
       <xsl:text> </xsl:text>
     </a-entity>
+  </xsl:template>
+
+  <!-- TOUCH: a NODE with a draggable interaction area -->
+  <xsl:template match="TOUCH">
+    <xsl:variable name="tx"><xsl:choose><xsl:when test="@tx"><xsl:value-of select="@tx"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="ty"><xsl:choose><xsl:when test="@ty"><xsl:value-of select="@ty"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="tz"><xsl:choose><xsl:when test="@tz"><xsl:value-of select="0 - number(@tz)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="rx"><xsl:choose><xsl:when test="@rx"><xsl:value-of select="0 - number(@rx)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="ry"><xsl:choose><xsl:when test="@ry"><xsl:value-of select="0 - number(@ry)"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="rz"><xsl:choose><xsl:when test="@rz"><xsl:value-of select="@rz"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sxyz"><xsl:choose><xsl:when test="@sxyz"><xsl:value-of select="@sxyz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sx"><xsl:choose><xsl:when test="@sx"><xsl:value-of select="@sx"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sy"><xsl:choose><xsl:when test="@sy"><xsl:value-of select="@sy"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="sz"><xsl:choose><xsl:when test="@sz"><xsl:value-of select="@sz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="w"><xsl:choose><xsl:when test="@w"><xsl:value-of select="@w"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="h"><xsl:choose><xsl:when test="@h"><xsl:value-of select="@h"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <xsl:variable name="d"><xsl:choose><xsl:when test="@d"><xsl:value-of select="@d"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
+    <a-entity class="fdar-node" position="{$tx} {$ty} {$tz}" rotation="{$rx} {$ry} {$rz}" scale="{number($sxyz) * number($sx)} {number($sxyz) * number($sy)} {number($sxyz) * number($sz)}">
+      <xsl:if test="(@view and @view != '') or (@show and @show != '') or (@collapse and @collapse != '')">
+        <xsl:attribute name="fdar-visibility">views: <xsl:value-of select="@view"/>; show: <xsl:value-of select="@show"/>; collapse: <xsl:value-of select="@collapse"/></xsl:attribute>
+      </xsl:if>
+      <xsl:attribute name="fdar-touch">rotate: <xsl:choose><xsl:when test="@rotate = 'true'">true</xsl:when><xsl:otherwise>false</xsl:otherwise></xsl:choose>; scale: <xsl:choose><xsl:when test="@scale = 'true'">true</xsl:when><xsl:otherwise>false</xsl:otherwise></xsl:choose>; translate: <xsl:choose><xsl:when test="@translate = 'true'">true</xsl:when><xsl:otherwise>false</xsl:otherwise></xsl:choose></xsl:attribute>
+      <a-entity class="clickable" geometry="primitive: box; width: {$w}; height: {$h}; depth: {$d}">
+        <xsl:call-template name="clickable-fill"/>
+        <xsl:text> </xsl:text>
+      </a-entity>
+      <xsl:apply-templates />
+    </a-entity>
+  </xsl:template>
+
+  <!-- EFFECT: approximated fire (billboard-free cone flames + point light) -->
+  <xsl:template match="EFFECT">
+    <xsl:if test="@type = 'fire' and not(@enabled = 'false')">
+      <a-entity>
+        <a-cone radius-bottom="0.15" radius-top="0.02" height="0.5" position="0 0.25 0" material="color: #ff6a00; emissive: #ff3300; emissiveIntensity: 1; transparent: true; opacity: 0.85; shader: flat" animation__flicker="property: material.opacity; from: 0.85; to: 0.45; dir: alternate; dur: 120; loop: true" animation__sway="property: scale; from: 1 1 1; to: 1.15 0.9 1.15; dir: alternate; dur: 180; loop: true"><xsl:text> </xsl:text></a-cone>
+        <a-cone radius-bottom="0.08" radius-top="0.01" height="0.3" position="0 0.18 0" material="color: #ffd000; emissive: #ffaa00; emissiveIntensity: 1; transparent: true; opacity: 0.9; shader: flat" animation__flicker="property: material.opacity; from: 0.9; to: 0.6; dir: alternate; dur: 90; loop: true"><xsl:text> </xsl:text></a-cone>
+        <a-light type="point" color="#ff8800" intensity="0.8" distance="2" position="0 0.3 0"><xsl:text> </xsl:text></a-light>
+      </a-entity>
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="VIEWER">
@@ -1045,7 +1636,8 @@
     <xsl:variable name="vWidth"><xsl:choose><xsl:when test="@w"><xsl:value-of select="@w"/></xsl:when><xsl:otherwise>1.6</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="vHeight"><xsl:choose><xsl:when test="@h"><xsl:value-of select="@h"/></xsl:when><xsl:otherwise>0.9</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:if test="$videoUrl != ''">
-      <a-video src="#vid-{generate-id()}" width="{$vWidth}" height="{$vHeight}" class="clickable" crossorigin="anonymous" video-controller="">
+      <a-video src="#vid-{generate-id()}" width="{$vWidth}" height="{$vHeight}" class="clickable" crossorigin="anonymous">
+        <xsl:attribute name="video-controller">status: <xsl:choose><xsl:when test="@status != ''"><xsl:value-of select="@status"/></xsl:when><xsl:otherwise>play</xsl:otherwise></xsl:choose>; position: <xsl:choose><xsl:when test="@position != ''"><xsl:value-of select="@position"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; showpos: <xsl:choose><xsl:when test="@showpos = 'true'">true</xsl:when><xsl:otherwise>false</xsl:otherwise></xsl:choose></xsl:attribute>
         <xsl:call-template name="hover-outline-rect">
           <xsl:with-param name="w" select="$vWidth"/>
           <xsl:with-param name="h" select="$vHeight"/>
@@ -1060,8 +1652,31 @@
     </xsl:if>
   </xsl:template>
 
-  <!-- [FIX #8] TEXT+LINK: a-plane hitbox separated from a-text for reliable click -->
-  <xsl:template match="TEXT | COUNTER | VUMETER">
+  <!-- COUNTER: mechanical counter (padded digits on rollers, colored case) -->
+  <xsl:template match="COUNTER">
+    <xsl:variable name="instScale"><xsl:choose>
+      <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
+      <xsl:otherwise>50 50 50</xsl:otherwise>
+    </xsl:choose></xsl:variable>
+    <a-entity scale="{$instScale}">
+      <xsl:attribute name="fdar-counter">value: <xsl:value-of select="@value"/>; intdigits: <xsl:choose><xsl:when test="@intdigits != ''"><xsl:value-of select="@intdigits"/></xsl:when><xsl:otherwise>3</xsl:otherwise></xsl:choose>; fractdigits: <xsl:choose><xsl:when test="@fractdigits != ''"><xsl:value-of select="@fractdigits"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; intrgb: <xsl:value-of select="@intrgb"/>; fractrgb: <xsl:value-of select="@fractrgb"/>; wheelintrgb: <xsl:value-of select="@wheelintrgb"/>; wheelfractrgb: <xsl:value-of select="@wheelfractrgb"/>; casergb: <xsl:value-of select="@casergb"/>; commargb: <xsl:value-of select="@commargb"/></xsl:attribute>
+      <xsl:text> </xsl:text>
+    </a-entity>
+  </xsl:template>
+
+  <!-- VUMETER: pointer instrument (needle deflection 0..1, over/under lamp) -->
+  <xsl:template match="VUMETER">
+    <xsl:variable name="instScale"><xsl:choose>
+      <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
+      <xsl:otherwise>50 50 50</xsl:otherwise>
+    </xsl:choose></xsl:variable>
+    <a-entity scale="{$instScale}">
+      <xsl:attribute name="fdar-vumeter">value: <xsl:value-of select="@value"/>; label: <xsl:value-of select="@label"/>; labelmin: <xsl:value-of select="@labelmin"/>; labelmax: <xsl:value-of select="@labelmax"/></xsl:attribute>
+      <xsl:text> </xsl:text>
+    </a-entity>
+  </xsl:template>
+
+  <xsl:template match="TEXT">
     <xsl:variable name="txtVal">
       <xsl:choose>
         <xsl:when test="@value"><xsl:value-of select="@value"/></xsl:when>
@@ -1075,8 +1690,6 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-
-    <xsl:variable name="wsUrl" select="//VALUESERVER/WEBSOCKET[1]/@url" />
 
     <xsl:variable name="textScale"><xsl:choose>
       <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
@@ -1094,21 +1707,20 @@
         </xsl:variable>
         <xsl:variable name="lw"><xsl:choose><xsl:when test="LINK/@w"><xsl:value-of select="LINK/@w"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
         <xsl:variable name="lh"><xsl:choose><xsl:when test="LINK/@h"><xsl:value-of select="LINK/@h"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
+        <xsl:variable name="ld"><xsl:choose><xsl:when test="LINK/@d"><xsl:value-of select="LINK/@d"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
         <a-entity scale="{$textScale}">
-          <a-plane class="clickable" material="color: #0088ff; opacity: 0.15; transparent: true; side: double; depthWrite: false; depthTest: false" position="0 0 0.05">
-            <xsl:attribute name="width"><xsl:value-of select="2 + number($lw)"/></xsl:attribute>
-            <xsl:attribute name="height"><xsl:value-of select="1 + number($lh)"/></xsl:attribute>
+          <a-entity class="clickable" fdar-fit-parent="w: {$lw}; h: {$lh}; d: {$ld}" geometry="primitive: box; width: 2; height: 1; depth: 0.01">
+            <xsl:attribute name="fdar-area">color: <xsl:choose><xsl:when test="LINK/@rgba"><xsl:value-of select="LINK/@rgba"/></xsl:when><xsl:when test="LINK/@rgb"><xsl:value-of select="LINK/@rgb"/></xsl:when></xsl:choose>; alpha: <xsl:value-of select="LINK/@alpha"/>; pulse: <xsl:value-of select="LINK/@pulse"/></xsl:attribute>
             <xsl:call-template name="hover-outline-rect">
               <xsl:with-param name="w" select="2 + number($lw)"/>
               <xsl:with-param name="h" select="1 + number($lh)"/>
             </xsl:call-template>
             <xsl:attribute name="navigate-on-click">url: <xsl:value-of select="$linkUrl"/></xsl:attribute>
             <xsl:text> </xsl:text>
-          </a-plane>
+          </a-entity>
           <a-text align="center" baseline="center" anchor="center" color="white" outlineColor="black" outlineWidth="0.1" side="double">
             <xsl:call-template name="text-display-attrs">
               <xsl:with-param name="txtVal" select="$txtVal"/>
-              <xsl:with-param name="wsUrl" select="$wsUrl"/>
             </xsl:call-template>
             <xsl:text> </xsl:text>
           </a-text>
@@ -1118,7 +1730,6 @@
         <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double">
           <xsl:call-template name="text-display-attrs">
             <xsl:with-param name="txtVal" select="$txtVal"/>
-            <xsl:with-param name="wsUrl" select="$wsUrl"/>
             <xsl:with-param name="scale" select="$textScale"/>
           </xsl:call-template>
           <xsl:text> </xsl:text>
@@ -1131,11 +1742,9 @@
     <xsl:variable name="hexColor"><xsl:choose><xsl:when test="starts-with(@rgb, '#')"><xsl:value-of select="@rgb"/></xsl:when><xsl:otherwise><xsl:value-of select="concat('#', @rgb)"/></xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="wsKey"><xsl:if test="starts-with(@status, '@anim:')"><xsl:value-of select="substring-after(@status, '@anim:')"/></xsl:if></xsl:variable>
     
-    <xsl:variable name="wsUrl" select="//VALUESERVER/WEBSOCKET[1]/@url" />
-    
     <xsl:variable name="isOn">
       <xsl:choose>
-        <xsl:when test="@status='true' or @status='wahr' or @status='on' or @status='enable' or @status='show' or @status='1'">true</xsl:when>
+        <xsl:when test="@status='true' or @status='wahr' or @status='on' or @status='enable' or @status='show'">true</xsl:when>
         <xsl:otherwise>false</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
@@ -1148,7 +1757,7 @@
     </xsl:variable>
 
     <a-sphere radius="{$rad}" color="{$hexColor}">
-      <xsl:attribute name="ws-signal">color: <xsl:value-of select="$hexColor"/>; key: <xsl:value-of select="$wsKey"/>; url: <xsl:value-of select="$wsUrl"/>; on: <xsl:value-of select="$isOn"/>;</xsl:attribute>
+      <xsl:attribute name="ws-signal">color: <xsl:value-of select="$hexColor"/>; key: <xsl:value-of select="$wsKey"/>; on: <xsl:value-of select="$isOn"/>;</xsl:attribute>
     </a-sphere>
   </xsl:template>
 
@@ -1159,7 +1768,7 @@
   <!-- the entry XML is transformed in the browser with the native  -->
   <!-- XSLTProcessor as a fallback.                                 -->
   <!-- ============================================================ -->
-  <xsl:template match="/COMPILATION">
+  <xsl:template match="/COMPILATION | /DIRECTORY">
     <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;&#10;</xsl:text>
     <html>
       <head>
@@ -1188,7 +1797,7 @@
           <h1><xsl:value-of select="@name"/></h1>
           <xsl:variable name="desc">
             <xsl:call-template name="localized-value">
-              <xsl:with-param name="direct" select="''"/>
+              <xsl:with-param name="direct" select="@desc"/>
               <xsl:with-param name="container" select="METADATA/desc"/>
               <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
             </xsl:call-template>
@@ -1202,9 +1811,29 @@
                   <xsl:otherwise><xsl:value-of select="@url"/></xsl:otherwise>
                 </xsl:choose>
               </xsl:variable>
+              <xsl:variable name="entryName">
+                <xsl:call-template name="localized-value">
+                  <xsl:with-param name="direct" select="@name"/>
+                  <xsl:with-param name="container" select="METADATA/name"/>
+                  <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
+                </xsl:call-template>
+              </xsl:variable>
+              <xsl:variable name="entryDesc">
+                <xsl:call-template name="localized-value">
+                  <xsl:with-param name="direct" select="@desc"/>
+                  <xsl:with-param name="container" select="METADATA/desc"/>
+                  <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
+                </xsl:call-template>
+              </xsl:variable>
               <li><a class="entry" href="{$base}.html" data-xml="{@url}">
-                <xsl:value-of select="$base"/>
-                <small><xsl:value-of select="@url"/></small>
+                <xsl:choose>
+                  <xsl:when test="$entryName != ''"><xsl:value-of select="$entryName"/></xsl:when>
+                  <xsl:otherwise><xsl:value-of select="$base"/></xsl:otherwise>
+                </xsl:choose>
+                <small><xsl:choose>
+                  <xsl:when test="$entryDesc != ''"><xsl:value-of select="$entryDesc"/></xsl:when>
+                  <xsl:otherwise><xsl:value-of select="@url"/></xsl:otherwise>
+                </xsl:choose></small>
               </a></li>
             </xsl:for-each>
           </ul>
@@ -1263,6 +1892,43 @@
     </html>
   </xsl:template>
 
+  <!-- PACK: a downloadable package; CONTENT entries link to their archives -->
+  <xsl:template match="/PACK">
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;&#10;</xsl:text>
+    <html>
+      <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title><xsl:value-of select="@name"/></title>
+        <style><xsl:text disable-output-escaping="yes">
+      body { margin: 0; min-height: 100vh; background: #1e1e1e; color: #ccc;
+             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+             display: flex; justify-content: center; }
+      main { max-width: 640px; width: 100%; padding: 48px 24px; }
+      h1 { color: #e0e0e0; font-size: 22px; margin: 0 0 12px; }
+      .desc { color: #999; font-size: 14px; line-height: 1.6; white-space: pre-line; margin: 0 0 28px; }
+      ul.entries { list-style: none; margin: 0; padding: 0; }
+      ul.entries li { margin: 0 0 10px; }
+      a.entry { display: block; background: #2d2d2d; border: 1px solid #3c3c3c;
+                border-radius: 8px; padding: 14px 18px; color: #4fb3ff;
+                text-decoration: none; font-size: 15px; }
+      a.entry:hover { background: #37373d; }
+        </xsl:text></style>
+      </head>
+      <body>
+        <main>
+          <h1><xsl:value-of select="@name"/></h1>
+          <xsl:if test="@desc != ''"><p class="desc"><xsl:value-of select="@desc"/></p></xsl:if>
+          <ul class="entries">
+            <xsl:for-each select="CONTENT">
+              <li><a class="entry" href="{@file}" download=""><xsl:value-of select="@file"/></a></li>
+            </xsl:for-each>
+          </ul>
+        </main>
+      </body>
+    </html>
+  </xsl:template>
+
   <!-- ============================================================ -->
   <!-- Shared helpers                                               -->
   <!-- ============================================================ -->
@@ -1299,23 +1965,16 @@
     <xsl:attribute name="hover-outline">type: rect; width: <xsl:value-of select="number($w) + 0.1"/>; height: <xsl:value-of select="number($h) + 0.1"/></xsl:attribute>
   </xsl:template>
 
-  <!-- Fill for clickable boxes: rgba/rgb color if given, otherwise invisible -->
+  <!-- Interaction-area appearance (LINK/SWITCH/TOUCH): rgba wins over rgb,
+       alpha/pulse pass through, defaults resolved in the fdar-area component -->
   <xsl:template name="clickable-fill">
-    <xsl:choose>
-      <xsl:when test="@rgba or @rgb">
-        <xsl:attribute name="fdar-color">rgba: <xsl:choose><xsl:when test="@rgba"><xsl:value-of select="@rgba"/></xsl:when><xsl:otherwise><xsl:value-of select="@rgb"/></xsl:otherwise></xsl:choose></xsl:attribute>
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:attribute name="material">opacity: 0; transparent: true; depthWrite: false</xsl:attribute>
-      </xsl:otherwise>
-    </xsl:choose>
+    <xsl:attribute name="fdar-area">color: <xsl:choose><xsl:when test="@rgba"><xsl:value-of select="@rgba"/></xsl:when><xsl:when test="@rgb"><xsl:value-of select="@rgb"/></xsl:when></xsl:choose>; alpha: <xsl:value-of select="@alpha"/>; pulse: <xsl:value-of select="@pulse"/></xsl:attribute>
   </xsl:template>
 
   <!-- Attributes common to every a-text: width, colors, optional scale and the
        static value or its @anim: websocket binding -->
   <xsl:template name="text-display-attrs">
     <xsl:param name="txtVal"/>
-    <xsl:param name="wsUrl"/>
     <xsl:param name="scale" select="''"/>
     <xsl:if test="@width and @width != '0'"><xsl:attribute name="width"><xsl:value-of select="@width"/></xsl:attribute></xsl:if>
     <xsl:if test="@rgba or @backrgba">
@@ -1324,7 +1983,7 @@
     <xsl:if test="$scale != ''"><xsl:attribute name="scale"><xsl:value-of select="$scale"/></xsl:attribute></xsl:if>
     <xsl:choose>
       <xsl:when test="starts-with($txtVal, '@anim:')">
-        <xsl:attribute name="ws-value-updater">key: <xsl:value-of select="substring-after($txtVal, '@anim:')"/>; url: <xsl:value-of select="$wsUrl"/></xsl:attribute>
+        <xsl:attribute name="ws-value-updater">key: <xsl:value-of select="substring-after($txtVal, '@anim:')"/></xsl:attribute>
         <xsl:attribute name="value">---</xsl:attribute>
       </xsl:when>
       <xsl:otherwise><xsl:attribute name="value"><xsl:value-of select="$txtVal"/></xsl:attribute></xsl:otherwise>

@@ -162,6 +162,91 @@ test.describe('preview tabs', () => {
   });
 });
 
+test.describe('open dialog', () => {
+  test('Open shows a dialog with file drop zone, URL input and QR scan', async ({ page }) => {
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    const dialog = page.locator('#open-dialog');
+    await expect(dialog).toBeVisible();
+    await expect(page.locator('#od-drop-zone')).toBeVisible();
+    await expect(page.locator('#od-url-input')).toBeVisible();
+    await expect(page.locator('#od-qr-btn')).toBeVisible();
+    // Escape closes it
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+  });
+
+  test('clicking the drop zone opens the OS file picker', async ({ page }) => {
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    const chooserPromise = page.waitForEvent('filechooser');
+    await page.locator('#od-drop-zone').click();
+    const chooser = await chooserPromise;
+    expect(chooser.isMultiple()).toBe(false);
+  });
+
+  test('dropping an XML file onto the drop zone opens it as a tab', async ({ page }) => {
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    // Synthesize a drag & drop with a DataTransfer carrying an XML file
+    await page.evaluate(() => {
+      const dt = new DataTransfer();
+      dt.items.add(new File(
+        ['<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="100">\n      <TEXT label="dropped!" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>'],
+        'dropped_scene.xml', { type: 'text/xml' }));
+      const zone = /** @type {HTMLElement} */ (document.getElementById('od-drop-zone'));
+      zone.dispatchEvent(new DragEvent('dragover', { bubbles: true, dataTransfer: dt }));
+      zone.dispatchEvent(new DragEvent('drop', { bubbles: true, dataTransfer: dt }));
+    });
+    await expect(page.locator('#open-dialog')).toBeHidden();
+    await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/dropped_scene/);
+    await expect.poll(() => getEditorValue(page)).toContain('dropped!');
+  });
+
+  test('loading an XML from a URL adds a tab and transforms it', async ({ page }) => {
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    await page.locator('#od-url-input').fill('http://localhost:8321/tests/scenes/link.xml');
+    await page.locator('#od-url-load').click();
+    await expect(page.locator('#open-dialog')).toBeHidden();
+    await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/link/);
+    await expect.poll(() => getEditorValue(page)).toContain('nodered.jp');
+    await expect.poll(() => getGeneratedHtml(page), { timeout: 20_000 }).toContain('navigate-on-click');
+  });
+
+  test('a failing URL shows an error and keeps the dialog open', async ({ page }) => {
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    await page.locator('#od-url-input').fill('http://localhost:8321/does-not-exist.xml');
+    await page.locator('#od-url-load').click();
+    await expect(page.locator('#od-error')).toContainText('Failed to load', { timeout: 20_000 });
+    await expect(page.locator('#open-dialog')).toBeVisible();
+  });
+
+  test('QR scan flow loads the decoded URL', async ({ page }) => {
+    // Stub BarcodeDetector to decode a known URL from the fake camera stream
+    await page.addInitScript(() => {
+      // @ts-ignore
+      window.BarcodeDetector = class {
+        static getSupportedFormats() { return Promise.resolve(['qr_code']); }
+        detect() {
+          return Promise.resolve([{ rawValue: 'http://localhost:8321/tests/scenes/signal.xml' }]);
+        }
+      };
+    });
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    await page.locator('#od-qr-btn').click();
+    await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/signal/, { timeout: 20_000 });
+    await expect.poll(() => getEditorValue(page)).toContain('<SIGNAL');
+    // Camera must be released after a successful scan
+    expect(await page.evaluate(() => {
+      const v = /** @type {HTMLVideoElement} */ (document.getElementById('od-qr-video'));
+      return v.srcObject === null;
+    })).toBe(true);
+  });
+});
+
 test.describe('file operations', () => {
   test('Save XML downloads the active tab as .xml', async ({ page }) => {
     await openApp(page);

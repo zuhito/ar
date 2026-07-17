@@ -781,11 +781,191 @@
   xmlFileInput.addEventListener('change', function (e) {
     var file = e.target.files[0];
     if (!file) return;
-    readFileAsText(file, function (text) { addXmlTab(file.name.replace(/\.[^.]+$/, ''), text); });
+    readFileAsText(file, function (text) {
+      addXmlTab(file.name.replace(/\.[^.]+$/, ''), text);
+      closeOpenDialog();
+    });
     xmlFileInput.value = '';
   });
 
-  document.getElementById('btn-open-xml').addEventListener('click', function () { xmlFileInput.click(); });
+  /* ---- Open dialog: local file (click or drop) / URL / QR scan ---- */
+
+  var openDialogOverlay = document.getElementById('open-dialog-overlay');
+  var odDropZone = document.getElementById('od-drop-zone');
+  var odUrlInput = document.getElementById('od-url-input');
+  var odError = document.getElementById('od-error');
+  var odQrArea = document.getElementById('od-qr-area');
+  var odQrVideo = document.getElementById('od-qr-video');
+  var odQrBtn = document.getElementById('od-qr-btn');
+  var _qrStream = null;
+  var _qrTimer = null;
+
+  function showOpenDialog() {
+    odError.textContent = '';
+    odUrlInput.value = '';
+    openDialogOverlay.classList.add('show');
+    odUrlInput.focus();
+  }
+
+  function closeOpenDialog() {
+    stopQrScan();
+    openDialogOverlay.classList.remove('show');
+  }
+
+  function tabNameFromUrl(url) {
+    var base = url.split(/[?#]/)[0].split('/').pop() || 'remote';
+    try { base = decodeURIComponent(base); } catch (e) { /* keep raw */ }
+    return base.replace(/\.[^.]+$/, '') || 'remote';
+  }
+
+  // Direct fetch first; if the server does not allow CORS (e.g.
+  // festodidacticsw.azurewebsites.net), retry through a public CORS proxy.
+  function fetchXmlWithFallback(url) {
+    var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    var check = function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.text();
+    };
+    return fetch(url).then(check).catch(function (directErr) {
+      // An HTTP status is a definitive answer; only network/CORS failures
+      // are worth retrying through the proxy
+      if (/^HTTP \d+/.test(directErr.message)) throw directErr;
+      return fetch(proxied).then(check).catch(function () { throw directErr; });
+    });
+  }
+
+  function loadXmlFromUrl(url) {
+    url = (url || '').trim();
+    if (!url) return;
+    odError.textContent = '';
+    odError.style.color = '';
+    odError.textContent = 'Loading ' + url + ' ...';
+    odError.style.color = '#999';
+    fetchXmlWithFallback(url)
+      .then(function (text) {
+        var doc = new DOMParser().parseFromString(text, 'text/xml');
+        if (doc.getElementsByTagName('parsererror').length > 0) {
+          throw new Error('Not a valid XML document');
+        }
+        addXmlTab(tabNameFromUrl(url), text);
+        closeOpenDialog();
+      })
+      .catch(function (e) {
+        odError.style.color = '';
+        odError.textContent = 'Failed to load: ' + e.message;
+      });
+  }
+
+  /* QR scanning: native BarcodeDetector when available, jsQR (CDN) otherwise */
+  function stopQrScan() {
+    if (_qrTimer) { clearInterval(_qrTimer); _qrTimer = null; }
+    if (_qrStream) {
+      _qrStream.getTracks().forEach(function (t) { t.stop(); });
+      _qrStream = null;
+    }
+    odQrVideo.srcObject = null;
+    odQrArea.style.display = 'none';
+    odQrBtn.textContent = '\u{1F4F7} Start camera';
+  }
+
+  function onQrResult(text) {
+    stopQrScan();
+    odUrlInput.value = text;
+    if (/^https?:\/\//i.test(text)) loadXmlFromUrl(text);
+    else odError.textContent = 'QR code does not contain a URL: ' + text;
+  }
+
+  function loadJsQr() {
+    return new Promise(function (resolve, reject) {
+      if (window.jsQR) return resolve(window.jsQR);
+      var s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+      s.onload = function () { resolve(window.jsQR); };
+      s.onerror = function () { reject(new Error('failed to load jsQR')); };
+      document.head.appendChild(s);
+    });
+  }
+
+  function startQrScan() {
+    odError.textContent = '';
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } })
+      .then(function (stream) {
+        _qrStream = stream;
+        odQrVideo.srcObject = stream;
+        odQrVideo.play();
+        odQrArea.style.display = 'block';
+        odQrBtn.textContent = 'Stop camera';
+        if ('BarcodeDetector' in window) {
+          var detector = new window.BarcodeDetector({ formats: ['qr_code'] });
+          _qrTimer = setInterval(function () {
+            detector.detect(odQrVideo).then(function (codes) {
+              if (codes.length && codes[0].rawValue) onQrResult(codes[0].rawValue);
+            }).catch(function () { /* frame not ready */ });
+          }, 300);
+        } else {
+          loadJsQr().then(function (jsQR) {
+            var canvas = document.createElement('canvas');
+            var ctx = canvas.getContext('2d', { willReadFrequently: true });
+            _qrTimer = setInterval(function () {
+              if (!odQrVideo.videoWidth) return;
+              canvas.width = odQrVideo.videoWidth;
+              canvas.height = odQrVideo.videoHeight;
+              ctx.drawImage(odQrVideo, 0, 0);
+              var img = ctx.getImageData(0, 0, canvas.width, canvas.height);
+              var code = jsQR(img.data, img.width, img.height);
+              if (code && code.data) onQrResult(code.data);
+            }, 300);
+          }).catch(function (e) { odError.textContent = e.message; });
+        }
+      })
+      .catch(function (e) {
+        odError.textContent = 'Camera unavailable: ' + e.message;
+      });
+  }
+
+  document.getElementById('btn-open-xml').addEventListener('click', showOpenDialog);
+  document.getElementById('od-close').addEventListener('click', closeOpenDialog);
+  openDialogOverlay.addEventListener('click', function (e) {
+    if (e.target === openDialogOverlay) closeOpenDialog();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && openDialogOverlay.classList.contains('show')) closeOpenDialog();
+  });
+
+  // Drop zone: click opens the OS file picker, drag & drop reads the file
+  odDropZone.addEventListener('click', function () { xmlFileInput.click(); });
+  odDropZone.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); xmlFileInput.click(); }
+  });
+  odDropZone.addEventListener('dragover', function (e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    odDropZone.classList.add('drag-over');
+  });
+  odDropZone.addEventListener('dragleave', function () {
+    odDropZone.classList.remove('drag-over');
+  });
+  odDropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    odDropZone.classList.remove('drag-over');
+    var file = e.dataTransfer.files[0];
+    if (!file) return;
+    readFileAsText(file, function (text) {
+      addXmlTab(file.name.replace(/\.[^.]+$/, ''), text);
+      closeOpenDialog();
+    });
+  });
+
+  document.getElementById('od-url-load').addEventListener('click', function () {
+    loadXmlFromUrl(odUrlInput.value);
+  });
+  odUrlInput.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); loadXmlFromUrl(odUrlInput.value); }
+  });
+  odQrBtn.addEventListener('click', function () {
+    if (_qrStream) stopQrScan();
+    else startQrScan();
+  });
 
   document.getElementById('btn-save-xml').addEventListener('click', function () {
     var tab = xmlTabs.find(function (t) { return t.id === activeXmlTabId; });

@@ -306,3 +306,119 @@ body {
   outline: 2px dashed #007acc;
   outline-offset: -4px;
 }
+
+/* ---- Open dialog ---- */
+
+#open-dialog-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, .75);
+  z-index: 1100;
+  justify-content: center;
+  align-items: center;
+}
+#open-dialog-overlay.show { display: flex; }
+
+#open-dialog {
+  position: relative;
+  background: #2d2d2d;
+  border: 1px solid #4a4a4a;
+  border-radius: 12px;
+  padding: 28px 32px 24px;
+  width: 440px;
+  max-width: 92vw;
+}
+#open-dialog h2 { color: #e0e0e0; font-size: 16px; margin: 0 0 18px; }
+
+#od-close {
+  position: absolute;
+  top: 10px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 20px;
+  cursor: pointer;
+  line-height: 1;
+}
+#od-close:hover { color: #fff; }
+
+.od-section { margin: 10px 0; }
+.od-url-row { display: flex; gap: 8px; }
+
+#od-url-input {
+  flex: 1;
+  background: #1e1e1e;
+  color: #e0e0e0;
+  border: 1px solid #4a4a4a;
+  border-radius: 4px;
+  padding: 7px 10px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+#od-url-input:focus { border-color: #007acc; }
+
+.od-main-btn {
+  background: #0e639c;
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+}
+.od-main-btn:hover { background: #1177bb; }
+#od-drop-zone {
+  border: 2px dashed #4a4a4a;
+  border-radius: 8px;
+  padding: 22px 16px;
+  text-align: center;
+  color: #999;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+  line-height: 1.5;
+}
+#od-drop-zone small { color: #666; font-size: 11px; }
+#od-drop-zone:hover, #od-drop-zone.drag-over {
+  border-color: #007acc;
+  background: rgba(0, 122, 204, .08);
+}
+.od-drop-icon { font-size: 22px; margin-bottom: 4px; }
+
+.od-sep {
+  display: flex;
+  align-items: center;
+  color: #666;
+  font-size: 11px;
+  margin: 14px 0 6px;
+  gap: 10px;
+}
+.od-sep::before, .od-sep::after {
+  content: '';
+  flex: 1;
+  border-top: 1px solid #3c3c3c;
+}
+
+#od-qr-area { margin-top: 10px; }
+#od-qr-video {
+  width: 100%;
+  border-radius: 6px;
+  background: #000;
+}
+#od-qr-hint { color: #888; font-size: 11px; margin-top: 6px; text-align: center; }
+
+#od-error {
+  color: #f48771;
+  font-size: 12px;
+  margin-top: 12px;
+  min-height: 16px;
+  word-break: break-all;
+}

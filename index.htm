@@ -20,6 +20,34 @@
 <input type="file" id="xsl-file-input" accept=".xsl,.xslt,.xml,.txt" style="display:none">
 <input type="file" id="xml-file-input" accept=".xml,.txt" style="display:none">
 
+<!-- Open dialog: local file / URL / QR scan -->
+<div id="open-dialog-overlay">
+  <div id="open-dialog">
+    <button id="od-close" title="Close">&times;</button>
+    <h2>&#x1f4c2; Open XML</h2>
+    <div class="od-section">
+      <div id="od-drop-zone" tabindex="0">
+        <div class="od-drop-icon">&#x1f4c4;</div>
+        <div>Drop an XML file here<br><small>or click to browse&hellip;</small></div>
+      </div>
+    </div>
+    <div class="od-sep"><span>or load from URL</span></div>
+    <div class="od-section od-url-row">
+      <input type="url" id="od-url-input" placeholder="https://example.net/ar/scene.xml" spellcheck="false">
+      <button class="od-main-btn" id="od-url-load">Load</button>
+    </div>
+    <div class="od-sep"><span>or scan a QR code</span></div>
+    <div class="od-section">
+      <button class="od-main-btn" id="od-qr-btn">&#x1f4f7; Start camera</button>
+      <div id="od-qr-area" style="display:none">
+        <video id="od-qr-video" playsinline muted></video>
+        <div id="od-qr-hint">Point the camera at a QR code containing an XML URL</div>
+      </div>
+    </div>
+    <div id="od-error"></div>
+  </div>
+</div>
+
 <!-- Left: XML source tabs and editor -->
 <div id="editor-pane">
   <div class="pane-bar">

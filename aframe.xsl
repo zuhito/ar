@@ -10,6 +10,12 @@
         <meta charset="utf-8" />
         <title><xsl:choose><xsl:when test="@name != ''"><xsl:value-of select="@name"/></xsl:when><xsl:otherwise>AR App</xsl:otherwise></xsl:choose></title>
         <script src="https://aframe.io/releases/1.7.1/aframe.min.js"><xsl:text> </xsl:text></script>
+        <style><xsl:text disable-output-escaping="yes">
+      /* Embedded scenes have no intrinsic size; guarantee they fill the page
+         (AR.js may override with its own video-fitting geometry later) */
+      html, body { height: 100%; }
+      a-scene { display: block; width: 100%; height: 100%; }
+        </xsl:text></style>
         
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
           <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
@@ -678,6 +684,34 @@
       });</xsl:text>
           </xsl:if>
 
+          <xsl:if test="//MODEL[@texture] or //VIEWER or //DISPLAY">
+            <xsl:text disable-output-escaping="yes">&#10;      // A texture that failed to load leaves material.map without an image,
+      // which renders black; drop such maps so the base colour shows instead
+      AFRAME.registerComponent('fdar-texture-guard', {
+        init: function () {
+          var sceneEl = this.el;
+          var sweep = function () {
+            sceneEl.object3D.traverse(function (o) {
+              if (!o.isMesh || !o.material || !o.material.map) return;
+              var img = o.material.map.image;
+              var broken = !img ||
+                (typeof HTMLImageElement !== 'undefined' &amp;&amp; img instanceof HTMLImageElement &amp;&amp; img.complete &amp;&amp; img.naturalWidth === 0) ||
+                (typeof HTMLVideoElement !== 'undefined' &amp;&amp; img instanceof HTMLVideoElement &amp;&amp; img.networkState === 3);
+              if (broken) {
+                o.material.map = null;
+                o.material.needsUpdate = true;
+              }
+            });
+          };
+          sceneEl.addEventListener('loaded', function () {
+            setTimeout(sweep, 2000);
+            setTimeout(sweep, 5000);
+            setTimeout(sweep, 10000);
+          });
+        }
+      });</xsl:text>
+          </xsl:if>
+
           <xsl:if test="//MATERIAL[@type = 'mask']">
             <xsl:text disable-output-escaping="yes">&#10;      // AR occluder: writes depth only, hiding virtual content behind it
       AFRAME.registerComponent('fdar-mask', {
@@ -1107,6 +1141,11 @@
             window._mfStage = stage;
           }
           var stageEl = window._mfStage;
+          // Neutral backdrop while inspecting (restored on toggle off)
+          if (scene.object3D &amp;&amp; !window._mfBackground) {
+            window._mfBackground = { had: scene.object3D.background };
+            scene.object3D.background = new THREE.Color('#333333');
+          }
           var mount = function () {
             markers.forEach(function (m, i) {
               if (m._mfGroup) return;
@@ -1114,9 +1153,25 @@
               var inner = new THREE.Group();
               pivot.add(inner);
               m.object3D.children.slice().forEach(function (child) { inner.add(child); });
-              // Normalise: centre the content and scale it to ~1.2 units radius
+              // Normalise: centre the content and scale it to ~1.2 units radius.
+              // Only effectively visible meshes count — view-hidden content can
+              // span a far larger volume and would shrink the visible part to
+              // sub-pixel size.
               inner.updateMatrixWorld(true);
-              var box = new THREE.Box3().setFromObject(inner);
+              var box = new THREE.Box3();
+              var tmp = new THREE.Box3();
+              inner.traverse(function (o) {
+                if (!o.isMesh) return;
+                var p = o, vis = true;
+                while (p &amp;&amp; p !== inner.parent) {
+                  if (p.visible === false) { vis = false; break; }
+                  p = p.parent;
+                }
+                if (!vis) return;
+                tmp.setFromObject(o);
+                if (!tmp.isEmpty()) box.union(tmp);
+              });
+              if (box.isEmpty()) box.setFromObject(inner);
               if (!box.isEmpty()) {
                 var sphere = box.getBoundingSphere(new THREE.Sphere());
                 if (sphere.radius &gt; 0) {
@@ -1125,7 +1180,10 @@
                   inner.position.copy(sphere.center).multiplyScalar(-s);
                 }
               }
-              pivot.position.set((i - (markers.length - 1) / 2) * 3, 0, -3);
+              // Place the stage at eye height, in front of the camera
+              var camY = 0;
+              try { camY = scene.camera.getWorldPosition(new THREE.Vector3()).y; } catch (e) {}
+              pivot.position.set((i - (markers.length - 1) / 2) * 3, camY, -3);
               pivot.rotation.x = Math.PI / 2;   // marker content faces +Y; turn it to the camera
               m._mfGroup = pivot;
               stageEl.object3D.add(pivot);
@@ -1134,6 +1192,10 @@
           if (stageEl.object3D) mount();
           else stageEl.addEventListener('loaded', mount, { once: true });
         } else {
+          if (window._mfBackground) {
+            scene.object3D.background = window._mfBackground.had || null;
+            window._mfBackground = null;
+          }
           markers.forEach(function (m) {
             if (!m._mfGroup) return;
             var inner = m._mfGroup.children[0];
@@ -1175,6 +1237,9 @@
         </xsl:if>
 
         <a-scene vr-mode-ui="enabled: false">
+          <xsl:if test="//MODEL[@texture] or //VIEWER or //DISPLAY">
+            <xsl:attribute name="fdar-texture-guard"></xsl:attribute>
+          </xsl:if>
           <xsl:choose>
             <xsl:when test="TARGETBASE or IMGTARGET or TARGET">
               <xsl:attribute name="embedded">embedded</xsl:attribute>

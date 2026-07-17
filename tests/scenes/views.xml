@@ -1,0 +1,38 @@
+<AUGMENTATION viewlist="v_main,v_detail" viewswitch="true" viewdisplay="false" version="550">
+  <VALUESERVER predefined="{&quot;flag_on&quot;:true,&quot;flag_off&quot;:false}">
+  </VALUESERVER>
+  <CAMERA>
+    <NODE tz="100" view="">
+      <NODE view="v_main" collapse="" show="">
+        <TEXT label="Main view" width="10" />
+      </NODE>
+      <NODE view="v_detail" collapse="" show="">
+        <TEXT label="Detail view" width="10" />
+      </NODE>
+      <NODE view="v_main,v_detail" show="@anim:flag_on" collapse="">
+        <TEXT label="Always both views" width="10" />
+      </NODE>
+      <NODE view="" show="@anim:flag_off" collapse="">
+        <TEXT label="Hidden by flag" width="10" />
+      </NODE>
+      <NODE view="v_main" collapse="" show="">
+        <MODEL file="planexy" texture="images/arrow.png">
+          <LINK refer="@view:v_detail" w="0" h="0" d="1" />
+        </MODEL>
+      </NODE>
+      <SWITCH w="2" h="2" d="0" on="true" onvalue="GO" offvalue="STOP">
+        <TRANSMIT attribute="pressed" variable="cmd" transmitter="send" threshold="" />
+      </SWITCH>
+      <NODE ty="-20">
+        <TEXT width="10">
+          <METADATA fallback="en">
+            <label>
+              <en><![CDATA[From metadata]]></en>
+              <xde><![CDATA[label]]></xde>
+            </label>
+          </METADATA>
+        </TEXT>
+      </NODE>
+    </NODE>
+  </CAMERA>
+</AUGMENTATION>

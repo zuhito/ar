@@ -1,0 +1,7 @@
+<AUGMENTATION>
+  <CAMERA>
+    <NODE tz="1">
+      <VIEWER picture="https://picsum.photos/200" refresh="5" />
+    </NODE>
+  </CAMERA>
+</AUGMENTATION>

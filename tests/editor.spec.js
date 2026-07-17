@@ -162,6 +162,32 @@ test.describe('preview tabs', () => {
   });
 });
 
+test.describe('preview state', () => {
+  test('marker-free toggle survives editing the XML', async ({ page }) => {
+    test.slow(); // AR preview pulls AR.js from a CDN
+    await openApp(page);
+    // Switch to a marker scene so the preview shows the toggle
+    await page.locator('#xml-tab-bar .dtab', { hasText: 'model_ar' }).locator('.dtab-label').click();
+    await expect.poll(() => getEditorValue(page)).toContain('<TARGETBASE');
+    const frame = page.frameLocator('#preview-iframe');
+    await expect(frame.locator('#mf-checkbox')).toBeAttached({ timeout: 30_000 });
+    await frame.locator('.mf-slider').click();
+    await expect(frame.locator('#mf-checkbox')).toBeChecked();
+
+    // Editing the XML reloads the preview; the toggle must stay on
+    await setEditorValue(page, (await getEditorValue(page)).replace('sxyz="0.1"', 'sxyz="0.2"'));
+    await expect.poll(() => getGeneratedHtml(page), { timeout: 20_000 }).toContain('scale="0.2 0.2 0.2"');
+    await expect(frame.locator('#mf-checkbox')).toBeChecked({ timeout: 30_000 });
+    // ...and actually re-applies (marker content moved onto the stage)
+    await expect.poll(() => page.evaluate(() => {
+      const iframe = /** @type {HTMLIFrameElement} */ (document.getElementById('preview-iframe'));
+      const doc = iframe.contentDocument;
+      const stage = doc && /** @type {any} */ (doc.getElementById('mf-stage'));
+      return stage && stage.object3D ? stage.object3D.children.length : 0;
+    }), { timeout: 30_000 }).toBeGreaterThan(0);
+  });
+});
+
 test.describe('open dialog', () => {
   test('Open shows a dialog with file drop zone, URL input and QR scan', async ({ page }) => {
     await openApp(page);

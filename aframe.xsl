@@ -1123,7 +1123,18 @@
       // every frame, so the marker contents are reparented (THREE-level, the
       // DOM stays put) onto a stage entity in front of the camera, normalised
       // to a uniform size. Turning the toggle off moves them back.
+      // Restore the previous marker-free choice (survives preview reloads)
+      document.addEventListener('DOMContentLoaded', function () {
+        var saved = null;
+        try { saved = localStorage.getItem('fdar_marker_free'); } catch (e) {}
+        if (saved === '1') {
+          var cb = document.getElementById('mf-checkbox');
+          if (cb) cb.checked = true;
+          window.fdarMarkerFree(true);
+        }
+      });
       window.fdarMarkerFree = function (on) {
+        try { localStorage.setItem('fdar_marker_free', on ? '1' : '0'); } catch (e) {}
         var scene = document.querySelector('a-scene');
         if (!scene) return;
         if (!scene.hasLoaded) {

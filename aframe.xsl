@@ -163,6 +163,73 @@
       };</xsl:text>
           </xsl:if>
 
+          <xsl:if test="//NODE[@view != ''] or @viewlist or //*[starts-with(@show, '@anim:')] or //*[starts-with(@collapse, '@anim:')]">
+            <xsl:text disable-output-escaping="yes">&#10;      // View system: fdar-visibility nodes toggle with the current view and
+      // @anim: bound show/collapse variables; @view: links call fdarSetView
+      window.fdarVars = {};
+      window.fdarCurrentView = '</xsl:text><xsl:value-of select="substring-before(concat(@viewlist, ','), ',')"/><xsl:text disable-output-escaping="yes">';
+      window.fdarSetView = function (name) {
+        window.fdarCurrentView = name;
+        window.dispatchEvent(new CustomEvent('fdar-view-change', { detail: { view: name } }));
+      };
+      window.addEventListener('fdar-variable-update', function (e) {
+        window.fdarVars[e.detail.key] = e.detail.value;
+      });
+      window.fdarTruthy = function (v) {
+        var s = String(v).toLowerCase();
+        return s === 'true' || s === 'wahr' || s === 'on' || s === 'enable' || s === 'show' || s === '1';
+      };
+      window.fdarHiddenChain = function (el) {
+        var o = el.object3D;
+        while (o) { if (o.visible === false) return true; o = o.parent; }
+        return false;
+      };
+      AFRAME.registerComponent('fdar-visibility', {
+        schema: {
+          views: {type: 'string', default: ''},
+          show: {type: 'string', default: ''},
+          collapse: {type: 'string', default: ''}
+        },
+        init: function () {
+          var self = this;
+          this.viewList = this.data.views ? this.data.views.split(',') : null;
+          window.addEventListener('fdar-view-change', function () { self.apply(); });
+          window.addEventListener('fdar-variable-update', function (e) {
+            if (e.detail.key === self.data.show || e.detail.key === self.data.collapse) self.apply();
+          });
+          this.apply();
+        },
+        apply: function () {
+          var visible = true;
+          if (this.viewList &amp;&amp; this.viewList.indexOf(window.fdarCurrentView) === -1) visible = false;
+          if (visible &amp;&amp; this.data.show) {
+            var v = window.fdarVars[this.data.show];
+            if (v !== undefined &amp;&amp; !window.fdarTruthy(v)) visible = false;
+          }
+          if (visible &amp;&amp; this.data.collapse) {
+            var c = window.fdarVars[this.data.collapse];
+            if (c !== undefined &amp;&amp; window.fdarTruthy(c)) visible = false;
+          }
+          this.el.setAttribute('visible', visible);
+        }
+      });</xsl:text>
+          </xsl:if>
+
+          <xsl:if test="//VALUESERVER/@predefined">
+            <xsl:text disable-output-escaping="yes">&#10;      // Initial variable values from VALUESERVER/@predefined (JSON)
+      document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+          var data = {};</xsl:text>
+            <xsl:for-each select="//VALUESERVER/@predefined">
+              <xsl:text disable-output-escaping="yes">&#10;          try { Object.assign(data, </xsl:text><xsl:value-of select="."/><xsl:text disable-output-escaping="yes">); } catch (e) { console.warn('predefined parse failed', e); }</xsl:text>
+            </xsl:for-each>
+            <xsl:text disable-output-escaping="yes">&#10;          Object.keys(data).forEach(function (k) {
+            window.dispatchEvent(new CustomEvent('fdar-variable-update', { detail: { key: k, value: data[k] } }));
+          });
+        }, 800);
+      });</xsl:text>
+          </xsl:if>
+
           <xsl:if test="//SWITCH or //LINK or //STREAMER">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('hover-outline', {
         schema: { 
@@ -358,7 +425,9 @@
         schema: {
           url: {type: 'string', default: ''},
           transmitKey: {type: 'string', default: ''},
-          on: {type: 'boolean', default: false}
+          on: {type: 'boolean', default: false},
+          onvalue: {type: 'string', default: 'true'},
+          offvalue: {type: 'string', default: 'false'}
         },
         init: function () {
           this.isOn = this.data.on;
@@ -369,8 +438,9 @@
           }
           
           this.el.addEventListener('click', () =&gt; {
+            if (window.fdarHiddenChain &amp;&amp; window.fdarHiddenChain(this.el)) return;
             this.isOn = !this.isOn;
-            const valStr = this.isOn ? "true" : "false";
+            const valStr = this.isOn ? this.data.onvalue : this.data.offvalue;
 
             if (this.data.transmitKey) {
               window.dispatchEvent(new CustomEvent('fdar-variable-update', { 
@@ -435,9 +505,12 @@
         schema: { url: { default: '' } },
         init: function () {
           const el = this.el;
-          el.addEventListener('click', () =&gt; { 
+          el.addEventListener('click', () =&gt; {
+            if (window.fdarHiddenChain &amp;&amp; window.fdarHiddenChain(el)) return;
             var url = this.data.url;
-            if (!url.startsWith('@view:')) window.open(url, '_blank'); 
+            if (url.indexOf('@view:') === 0) { if (window.fdarSetView) window.fdarSetView(url.substring(6)); return; }
+            if (url.charAt(0) === '@') return;
+            window.open(url, '_blank');
           });
         }
       });</xsl:text>
@@ -492,7 +565,11 @@
             </a-assets>
           </xsl:if>
 
-          <xsl:apply-templates select="TARGETBASE | IMGTARGET | CAMERA" />
+          <!-- Applied per-kind (not as one union) so output order is identical
+               across XSLT engines when a scene mixes markers and camera content -->
+          <xsl:apply-templates select="TARGETBASE" />
+          <xsl:apply-templates select="IMGTARGET" />
+          <xsl:apply-templates select="CAMERA" />
 
           <xsl:if test="not(CAMERA)">
             <a-entity camera="camera">
@@ -533,7 +610,7 @@
     <xsl:variable name="scaleFactor" select="1 div number($markerSize)" />
     <a-marker type="pattern" url="{$pattUrl}.patt" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <a-entity rotation="0 0 0" scale="{$scaleFactor} {$scaleFactor} {$scaleFactor}">
-        <a-entity position="0 0.005 {0 - $markerSize}">
+        <a-entity position="0 0.005 {0 - number($markerSize)}">
           <xsl:apply-templates />
         </a-entity>
       </a-entity>
@@ -559,7 +636,10 @@
     <xsl:variable name="sz"><xsl:choose><xsl:when test="@sz"><xsl:value-of select="@sz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
 
     <a-entity position="{$tx} {$ty} {$tz}" rotation="{$rx} {$ry} {$rz}" scale="{number($sxyz) * number($sx)} {number($sxyz) * number($sy)} {number($sxyz) * number($sz)}">
-      
+      <xsl:if test="(@view and @view != '') or starts-with(@show, '@anim:') or starts-with(@collapse, '@anim:')">
+        <xsl:attribute name="fdar-visibility">views: <xsl:value-of select="@view"/>; show: <xsl:value-of select="substring-after(@show, '@anim:')"/>; collapse: <xsl:value-of select="substring-after(@collapse, '@anim:')"/></xsl:attribute>
+      </xsl:if>
+
       <xsl:for-each select="ANIMATION">
         <xsl:variable name="attr" select="@attribute" />
         <xsl:variable name="kf1" select="KEYFRAME[1]" />
@@ -665,7 +745,7 @@
         <xsl:with-param name="w" select="$w"/>
         <xsl:with-param name="h" select="$h"/>
       </xsl:call-template>
-      <xsl:attribute name="fdar-switch">transmitKey: <xsl:value-of select="$transmitKey"/>; url: <xsl:value-of select="$wsUrl"/>; on: <xsl:value-of select="$isOn"/>;</xsl:attribute>
+      <xsl:attribute name="fdar-switch">transmitKey: <xsl:value-of select="$transmitKey"/>; url: <xsl:value-of select="$wsUrl"/>; on: <xsl:value-of select="$isOn"/>;<xsl:if test="@onvalue != ''"> onvalue: <xsl:value-of select="@onvalue"/>;</xsl:if><xsl:if test="@offvalue != ''"> offvalue: <xsl:value-of select="@offvalue"/>;</xsl:if></xsl:attribute>
       <xsl:call-template name="clickable-fill"/>
     </a-entity>
   </xsl:template>
@@ -823,7 +903,14 @@
     <xsl:variable name="txtVal">
       <xsl:choose>
         <xsl:when test="@value"><xsl:value-of select="@value"/></xsl:when>
-        <xsl:otherwise><xsl:value-of select="@label"/></xsl:otherwise>
+        <xsl:when test="@label"><xsl:value-of select="@label"/></xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="localized-value">
+            <xsl:with-param name="direct" select="''"/>
+            <xsl:with-param name="container" select="METADATA/label"/>
+            <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
+          </xsl:call-template>
+        </xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
 

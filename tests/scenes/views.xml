@@ -33,6 +33,14 @@
           </METADATA>
         </TEXT>
       </NODE>
+      <NODE tx="30" sx="10" sy="10" sz="10">
+        <MODEL file="cube">
+          <MATERIAL type="mask"/>
+        </MODEL>
+      </NODE>
+      <NODE tx="-30" sx="5" sy="5" sz="5">
+        <MODEL file="cube" texture="fdar_white" tint="#D50000" />
+      </NODE>
     </NODE>
   </CAMERA>
 </AUGMENTATION>

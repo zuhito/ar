@@ -85,6 +85,19 @@ test.describe('xsltproc-generated pages', () => {
     await expect(page.locator('a-text[value="From metadata"]')).toBeAttached();
     // SWITCH custom payloads reach the component config
     await expect(page.locator('[fdar-switch]')).toHaveAttribute('fdar-switch', /onvalue: GO; offvalue: STOP;/);
+
+    // MODEL file="cube" renders as a box; MATERIAL type="mask" makes it an
+    // occluder (depth-only: colorWrite disabled on the mesh material)
+    const mask = page.locator('[fdar-mask]');
+    await expect(mask).toHaveAttribute('geometry', /primitive: box/);
+    await expect.poll(() => page.evaluate(() => {
+      const el = /** @type {any} */ (document.querySelector('[fdar-mask]'));
+      let result = null;
+      el.object3D.traverse((o) => { if (o.isMesh && o.material) result = o.material.colorWrite; });
+      return result;
+    })).toBe(false);
+    // Tinted plain cube gets its color from fdar-color
+    await expect(page.locator('a-entity[geometry*="box"][fdar-color]')).toHaveAttribute('fdar-color', 'tint: #D50000');
   });
 
   test('compilation renders a menu and entries open their scenes', async ({ page }) => {

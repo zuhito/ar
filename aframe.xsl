@@ -359,6 +359,26 @@
       });</xsl:text>
           </xsl:if>
 
+          <xsl:if test="//MATERIAL[@type = 'mask']">
+            <xsl:text disable-output-escaping="yes">&#10;      // AR occluder: writes depth only, hiding virtual content behind it
+      AFRAME.registerComponent('fdar-mask', {
+        init: function () {
+          var el = this.el;
+          var apply = function () {
+            el.object3D.traverse(function (o) {
+              if (o.isMesh &amp;&amp; o.material) {
+                o.material.colorWrite = false;
+                o.renderOrder = -1;
+              }
+            });
+          };
+          el.addEventListener('loaded', apply);
+          el.addEventListener('model-loaded', apply);
+          apply();
+        }
+      });</xsl:text>
+          </xsl:if>
+
           <xsl:if test="//SIGNAL">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('ws-signal', {
         schema: {
@@ -427,7 +447,9 @@
           transmitKey: {type: 'string', default: ''},
           on: {type: 'boolean', default: false},
           onvalue: {type: 'string', default: 'true'},
-          offvalue: {type: 'string', default: 'false'}
+          offvalue: {type: 'string', default: 'false'},
+          pressedvalue: {type: 'string', default: ''},
+          unpressedvalue: {type: 'string', default: ''}
         },
         init: function () {
           this.isOn = this.data.on;
@@ -437,23 +459,34 @@
             this.connect();
           }
           
-          this.el.addEventListener('click', () =&gt; {
-            if (window.fdarHiddenChain &amp;&amp; window.fdarHiddenChain(this.el)) return;
-            this.isOn = !this.isOn;
-            const valStr = this.isOn ? this.data.onvalue : this.data.offvalue;
-
-            if (this.data.transmitKey) {
-              window.dispatchEvent(new CustomEvent('fdar-variable-update', { 
-                detail: { key: this.data.transmitKey, value: valStr } 
-              }));
-              
-              if (this.socket &amp;&amp; this.socket.readyState === WebSocket.OPEN) {
-                const payload = {};
-                payload[this.data.transmitKey] = valStr;
-                this.socket.send(JSON.stringify(payload));
-              }
-            }
-          });
+          if (this.data.pressedvalue !== '') {
+            // Momentary button: one value while pressed, another on release
+            this.el.addEventListener('mousedown', () =&gt; {
+              if (window.fdarHiddenChain &amp;&amp; window.fdarHiddenChain(this.el)) return;
+              this.transmit(this.data.pressedvalue);
+            });
+            this.el.addEventListener('mouseup', () =&gt; {
+              if (window.fdarHiddenChain &amp;&amp; window.fdarHiddenChain(this.el)) return;
+              this.transmit(this.data.unpressedvalue);
+            });
+          } else {
+            this.el.addEventListener('click', () =&gt; {
+              if (window.fdarHiddenChain &amp;&amp; window.fdarHiddenChain(this.el)) return;
+              this.isOn = !this.isOn;
+              this.transmit(this.isOn ? this.data.onvalue : this.data.offvalue);
+            });
+          }
+        },
+        transmit: function (valStr) {
+          if (!this.data.transmitKey) return;
+          window.dispatchEvent(new CustomEvent('fdar-variable-update', { 
+            detail: { key: this.data.transmitKey, value: valStr } 
+          }));
+          if (this.socket &amp;&amp; this.socket.readyState === WebSocket.OPEN) {
+            const payload = {};
+            payload[this.data.transmitKey] = valStr;
+            this.socket.send(JSON.stringify(payload));
+          }
         },
         connect: function () {
           this.socket = new WebSocket(this.data.url);
@@ -780,7 +813,7 @@
         <xsl:with-param name="w" select="$w"/>
         <xsl:with-param name="h" select="$h"/>
       </xsl:call-template>
-      <xsl:attribute name="fdar-switch">transmitKey: <xsl:value-of select="$transmitKey"/>; url: <xsl:value-of select="$wsUrl"/>; on: <xsl:value-of select="$isOn"/>;<xsl:if test="@onvalue != ''"> onvalue: <xsl:value-of select="@onvalue"/>;</xsl:if><xsl:if test="@offvalue != ''"> offvalue: <xsl:value-of select="@offvalue"/>;</xsl:if></xsl:attribute>
+      <xsl:attribute name="fdar-switch">transmitKey: <xsl:value-of select="$transmitKey"/>; url: <xsl:value-of select="$wsUrl"/>; on: <xsl:value-of select="$isOn"/>;<xsl:if test="@onvalue != ''"> onvalue: <xsl:value-of select="@onvalue"/>;</xsl:if><xsl:if test="@offvalue != ''"> offvalue: <xsl:value-of select="@offvalue"/>;</xsl:if><xsl:if test="@pressedvalue != ''"> pressedvalue: <xsl:value-of select="@pressedvalue"/>;</xsl:if><xsl:if test="@unpressedvalue != ''"> unpressedvalue: <xsl:value-of select="@unpressedvalue"/>;</xsl:if></xsl:attribute>
       <xsl:call-template name="clickable-fill"/>
     </a-entity>
   </xsl:template>
@@ -838,6 +871,18 @@
           <xsl:attribute name="material"><xsl:value-of select="$matSrc"/></xsl:attribute>
         </xsl:when>
         
+        <xsl:when test="@file = 'cube'">
+          <xsl:attribute name="geometry">primitive: box; width: 1; height: 1; depth: 1</xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="MATERIAL[@type = 'mask']">
+              <xsl:attribute name="fdar-mask"></xsl:attribute>
+            </xsl:when>
+            <xsl:when test="@texture and @texture != 'fdar_white'">
+              <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>)</xsl:attribute>
+            </xsl:when>
+          </xsl:choose>
+        </xsl:when>
+
         <xsl:when test="contains(@file, '.glb') or contains(@file, '.gltf') or @filetype='glb' or @filetype='gltf'">
           <xsl:attribute name="gltf-model"><xsl:value-of select="@file"/></xsl:attribute>
           <xsl:variable name="clip"><xsl:choose><xsl:when test="@clip"><xsl:value-of select="@clip"/></xsl:when><xsl:otherwise>*</xsl:otherwise></xsl:choose></xsl:variable>

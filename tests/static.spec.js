@@ -117,6 +117,32 @@ test.describe('xsltproc-generated pages', () => {
     await expect(page.locator('a-text')).toHaveAttribute('value', 'Hello World');
   });
 
+  test('marker-free toggle shows marker content without tracking', async ({ page }) => {
+    test.slow(); // waits on the AR.js CDN, which is slow under parallel load
+    await page.goto('/static-html/model_ar.html');
+    await expect(page.locator('#marker-free-toggle')).toBeVisible();
+    // Wait for A-Frame to attach the marker's object3D
+    await expect.poll(() => page.evaluate(() => {
+      const m = /** @type {any} */ (document.querySelector('a-marker'));
+      return !!(m && m.object3D);
+    }), { timeout: 30_000 }).toBe(true);
+
+    await page.locator('.mf-slider').click();
+    await expect.poll(() => page.evaluate(() => {
+      const m = /** @type {any} */ (document.querySelector('a-marker'));
+      return m.object3D.visible && m.object3D.position.z === -3;
+    })).toBe(true);
+
+    await page.locator('.mf-slider').click();
+    await expect.poll(() => page.evaluate(() =>
+      /** @type {any} */ (document.querySelector('a-marker')).object3D.visible
+    )).toBe(false);
+
+    // Non-marker scenes must not show the toggle
+    await page.goto('/static-html/text.html');
+    await expect(page.locator('#marker-free-toggle')).toHaveCount(0);
+  });
+
   test('every Festo sample scene transforms into a scene or catalog page', () => {
     // global-setup already fails on xsltproc errors; here we check each
     // generated page carries the expected top-level structure

@@ -34,6 +34,27 @@
           </xsl:text></style>
         </xsl:if>
         
+        <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
+          <style><xsl:text disable-output-escaping="yes">
+      #marker-free-toggle {
+        position: fixed; bottom: 14px; right: 16px; z-index: 9999;
+        display: flex; align-items: center; gap: 8px;
+        background: rgba(0,0,0,0.55); padding: 8px 14px; border-radius: 22px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        user-select: none;
+      }
+      .mf-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
+      .mf-switch input { opacity: 0; width: 0; height: 0; position: absolute; }
+      .mf-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+        background: #666; border-radius: 22px; transition: background 0.2s; cursor: pointer; }
+      .mf-slider:before { content: ''; position: absolute; width: 18px; height: 18px;
+        left: 2px; top: 2px; background: #fff; border-radius: 50%; transition: transform 0.2s; }
+      .mf-switch input:checked + .mf-slider { background: #0a84ff; }
+      .mf-switch input:checked + .mf-slider:before { transform: translateX(18px); }
+      #mf-label { color: #fff; font-size: 12px; letter-spacing: 0.3px; }
+          </xsl:text></style>
+        </xsl:if>
+
         <script>
           <xsl:text disable-output-escaping="yes">&#10;      console.log('A-Frame Custom Components Initialized');</xsl:text>
 
@@ -548,6 +569,49 @@
         }
       });</xsl:text>
           </xsl:if>
+          <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
+            <xsl:text disable-output-escaping="yes">&#10;      // Marker-free preview: show every a-marker's content in front of the
+      // camera without tracking. AR.js hides markers on markerLost, so the
+      // forced pose is reasserted while the toggle is on.
+      window._mfOn = false;
+      window._mfSaved = null;
+      window._mfTimer = null;
+      window.fdarMarkerFree = function (on) {
+        window._mfOn = on;
+        var markers = Array.prototype.slice.call(document.querySelectorAll('a-marker'))
+          .filter(function (m) { return m.object3D; });
+        if (!markers.length) return;
+        if (on) {
+          if (!window._mfSaved) {
+            window._mfSaved = markers.map(function (m) {
+              var o = m.object3D;
+              return { position: o.position.clone(), rotation: o.rotation.clone(), scale: o.scale.clone() };
+            });
+          }
+          var apply = function () {
+            if (!window._mfOn) return;
+            markers.forEach(function (m, i) {
+              var o = m.object3D;
+              o.visible = true;
+              o.position.set((i - (markers.length - 1) / 2) * 3, 0, -3);
+              o.rotation.set(Math.PI / 2, 0, 0);
+              o.scale.set(1, 1, 1);
+              o.matrixAutoUpdate = true;
+            });
+          };
+          apply();
+          window._mfTimer = setInterval(apply, 500);
+        } else {
+          if (window._mfTimer) { clearInterval(window._mfTimer); window._mfTimer = null; }
+          markers.forEach(function (m, i) {
+            var o = m.object3D;
+            var s = window._mfSaved &amp;&amp; window._mfSaved[i];
+            if (s) { o.position.copy(s.position); o.rotation.copy(s.rotation); o.scale.copy(s.scale); }
+            o.visible = false;
+          });
+        }
+      };</xsl:text>
+          </xsl:if>
         <xsl:text disable-output-escaping="yes">&#10;    </xsl:text></script>
       </head>
 
@@ -560,6 +624,16 @@
         </xsl:if>
 
         
+        <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
+          <div id="marker-free-toggle">
+            <label class="mf-switch">
+              <input type="checkbox" id="mf-checkbox" onchange="window.fdarMarkerFree(this.checked)" />
+              <span class="mf-slider"><xsl:text> </xsl:text></span>
+            </label>
+            <span id="mf-label">Show without marker</span>
+          </div>
+        </xsl:if>
+
         <a-scene vr-mode-ui="enabled: false">
           <xsl:choose>
             <xsl:when test="TARGETBASE or IMGTARGET or TARGET">

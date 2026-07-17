@@ -1,0 +1,828 @@
+<AUGMENTATION viewdisplay="false" viewlist="press01_home,press01_sensors,press01_actuators,press01_live,press01_info" viewswitch="false" version="550">
+  <!-- ================================================================== -->
+  <!-- Show relative to screen [ar-camera] -->
+  <CAMERA x="1" y="0.5" scaleto="max" distance="0.8">
+    <NODE sxyz="0.001">
+    </NODE>
+  </CAMERA>
+  <!-- ================================================================== -->
+  <!-- Target [image] -->
+  <IMGTARGET file="targets/CP-AM-PRESS_01.jpg" width="0.06" extended="true">
+    <NODE sxyz="0.001">
+      <!-- Menu [ar-node] -->
+      <NODE view="" collapse="" show="">
+        <!-- menuPlane [ar-model] -->
+        <NODE sxyz="70" view="" collapse="" show="">
+          <MODEL file="obj/menuplane.obj" texture="images/menutex.png">
+          </MODEL>
+        </NODE>
+        <!-- press01_sensors [ar-node] -->
+        <NODE tx="-17" ty="5" tz="17" view="" collapse="" show="">
+          <!-- SensorsLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/sensors_squared.png">
+                <LINK refer="@view:press01_sensors" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- SensorsLink [ar-link-2d] -->
+          <NODE ty="1" view="press01_sensors" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="press01_sensors" collapse="" show="">
+              <MODEL file="planexy" texture="images/sensors_squared_hero.png">
+                <LINK refer="@view:press01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- press01_actuators [ar-node] -->
+        <NODE tx="17" ty="5" tz="17" view="" collapse="" show="">
+          <!-- ActuatorsLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/actuators_squared.png">
+                <LINK refer="@view:press01_actuators" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- ActuatorsLink [ar-link-2d] -->
+          <NODE ty="1" view="press01_actuators" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="press01_actuators" collapse="" show="">
+              <MODEL file="planexy" texture="images/actuators_squared_hero.png">
+                <LINK refer="@view:press01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- press01_live [ar-node] -->
+        <NODE tx="-17" ty="5" tz="-17" view="" collapse="" show="">
+          <!-- LiveLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/live_squared.png">
+                <LINK refer="@view:press01_live" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- LiveLink [ar-link-2d] -->
+          <NODE ty="1" view="press01_live" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="press01_live" collapse="" show="">
+              <MODEL file="planexy" texture="images/live_squared_hero.png">
+                <LINK refer="@view:press01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- press01_info [ar-node] -->
+        <NODE tx="17" ty="5" tz="-17" view="" collapse="" show="">
+          <!-- press01_info [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/info_squared.png">
+                <LINK refer="@view:press01_info" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- press01_info [ar-link-2d] -->
+          <NODE ty="1" view="press01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="press01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/info_squared_hero.png">
+                <LINK refer="@view:press01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Sensors [ar-node] -->
+      <NODE view="press01_sensors" collapse="" show="">
+        <!-- BG8 [ar-node] -->
+        <NODE tx="115" view="press01_sensors" collapse="" show="">
+          <!-- SensorFront [ar-node] -->
+          <NODE ty="-10" view="press01_sensors" collapse="" show="">
+            <!-- Front [ar-node] -->
+            <NODE ty="6" view="press01_sensors" collapse="" show="">
+              <!-- Info icon [ar-static-image] -->
+              <NODE view="press01_sensors" collapse="" show="@anim:press01_collapse_BG8">
+                <NODE sx="15" sy="1" sz="15" view="press01_sensors" collapse="" show="@anim:press01_collapse_BG8">
+                  <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- Active [ar-node] -->
+              <NODE view="press01_sensors" collapse="@anim:press01_collapse_BG8" show="">
+                <!-- IO-Name [ar-text] -->
+                <NODE tx="-39" tz="38" rx="90" sxyz="2" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Back cover present]]></en>
+                        <de><![CDATA[<align="left">Rückschale vorhanden]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- Datasheet [ar-link-2d] -->
+                <NODE tx="-42.5" view="press01_sensors" collapse="" show="">
+                  <NODE sx="30" sy="1" sz="30" view="press01_sensors" collapse="" show="">
+                    <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                      <LINK w="0" h="0" d="1">
+                        <METADATA fallback="en">
+                          <refer>
+                            <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/165360.pdf]]></en>
+                            <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/165360.pdf]]></de>
+                          </refer>
+                        </METADATA>
+                      </LINK>
+                    </MODEL>
+                  </NODE>
+                </NODE>
+                <!-- IO-Table [ar-node] -->
+                <NODE tx="28" tz="8" view="press01_sensors" collapse="" show="">
+                  <!-- rType [ar-text] -->
+                  <NODE rx="90" view="press01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Type:]]></en>
+                          <de><![CDATA[<align="left">Typ:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vType [ar-text] -->
+                  <NODE tx="50" rx="90" view="press01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Photoelectric barrier]]></en>
+                          <de><![CDATA[<align="left">Lichtschranke]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- rAddress [ar-text] -->
+                  <NODE tz="-10" rx="90" view="press01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Address:]]></en>
+                          <de><![CDATA[<align="left">Adresse:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vAddress [ar-text] -->
+                  <NODE tx="50" tz="-10" rx="90" view="press01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">-BG8]]></en>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                </NODE>
+              </NODE>
+            </NODE>
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="press01_sensors">
+              <SWITCH w="50" h="20" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="press01_collapse_BG8" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="50" sy="10" sz="20" rx="90" view="press01_sensors" collapse="@anim:press01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="50" sy="10" sz="20" rx="90" view="press01_sensors" show="@anim:press01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- SensorBack [ar-node] -->
+          <NODE ty="-170" view="press01_sensors" collapse="@anim:press01_collapse_BG8" show="">
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="press01_sensors">
+              <SWITCH w="50" h="20" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="press01_collapse_BG8" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="50" sy="10" sz="20" rx="90" view="press01_sensors" collapse="@anim:press01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="50" sy="10" sz="20" rx="90" view="press01_sensors" show="@anim:press01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Beam [ar-node] -->
+          <NODE tx="-13" tz="-19" view="press01_sensors" collapse="@anim:press01_collapse_BG8" show="">
+            <!-- Beam [ar-model] -->
+            <NODE ty="-89" tz="17" sy="150" view="press01_sensors" collapse="@anim:press01_xHL_BG8" show="">
+              <MODEL file="cube" texture="fdar_white" tint="#D50000">
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG1 [ar-node] -->
+        <NODE tx="74" ty="-79" tz="91" view="press01_sensors" collapse="" show="">
+          <!-- Front [ar-node] -->
+          <NODE ty="8" view="press01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="press01_sensors" collapse="" show="@anim:press01_collapse_BG1">
+              <NODE sx="15" sy="1" sz="15" view="press01_sensors" collapse="" show="@anim:press01_collapse_BG1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="press01_sensors" collapse="@anim:press01_collapse_BG1" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="19" tz="42" rx="90" sxyz="2" view="press01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Press cylinder at top]]></en>
+                      <de><![CDATA[<align="left">Presszylinder oben]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="33" tz="-25" view="press01_sensors" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="press01_sensors" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/574335.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/574335.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="19" tz="16" view="press01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Proximity sensor]]></en>
+                        <de><![CDATA[<align="left">Näherungsschalter]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-BG1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="press01_sensors">
+            <SWITCH w="14" h="40" d="14" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_collapse_BG1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="14" sy="14" sz="40" rx="90" view="press01_sensors" collapse="@anim:press01_collapse_BG1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="14" sy="14" sz="40" rx="90" view="press01_sensors" show="@anim:press01_collapse_BG1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG2 [ar-node] -->
+        <NODE tx="59" ty="-79" tz="79" view="press01_sensors" collapse="" show="">
+          <!-- Front [ar-node] -->
+          <NODE ty="8" view="press01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="press01_sensors" collapse="" show="@anim:press01_collapse_BG2">
+              <NODE sx="15" sy="1" sz="15" view="press01_sensors" collapse="" show="@anim:press01_collapse_BG2">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="press01_sensors" collapse="@anim:press01_collapse_BG2" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-260" tz="42" rx="90" sxyz="2" view="press01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="120" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="right">Press cylinder at pressing position]]></en>
+                      <de><![CDATA[<align="right">Presszylinder Pressposition]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-37" tz="-25" view="press01_sensors" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="press01_sensors" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/574335.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/574335.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="-133" tz="16" view="press01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Proximity sensor]]></en>
+                        <de><![CDATA[<align="left">Näherungsschalter]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="press01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-BG2]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="press01_sensors">
+            <SWITCH w="14" h="40" d="14" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_collapse_BG2" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="14" sy="14" sz="40" rx="90" view="press01_sensors" collapse="@anim:press01_collapse_BG2">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="14" sy="14" sz="40" rx="90" view="press01_sensors" show="@anim:press01_collapse_BG2">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Actuators [ar-node] -->
+      <NODE view="press01_actuators" collapse="" show="">
+        <!-- XD1 [ar-node] -->
+        <NODE tx="88" ty="-137" tz="427" view="press01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="press01_actuators">
+            <SWITCH w="140" h="90" d="51" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_collapse_XD1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="140" sy="51" sz="90" rx="90" view="press01_actuators" collapse="@anim:press01_collapse_XD1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="140" sy="51" sz="90" rx="90" view="press01_actuators" show="@anim:press01_collapse_XD1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="26" view="press01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="press01_actuators" collapse="" show="@anim:press01_collapse_XD1">
+              <NODE sx="15" sy="1" sz="15" view="press01_actuators" collapse="" show="@anim:press01_collapse_XD1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="press01_actuators" collapse="@anim:press01_collapse_XD1" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-30" tz="50" rx="90" sxyz="2" view="press01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">I/O Module]]></en>
+                      <de><![CDATA[<align="left">E/A Modul]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="-33" tz="-8" view="press01_actuators" collapse="" show="">
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-XD1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MB1 [ar-node] -->
+        <NODE tx="86" ty="-85" tz="72" view="press01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="press01_actuators">
+            <SWITCH w="31" h="54" d="25" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_collapse_MB1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="31" sy="25" sz="54" rx="90" view="press01_actuators" collapse="@anim:press01_collapse_MB1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="31" sy="25" sz="54" rx="90" view="press01_actuators" show="@anim:press01_collapse_MB1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="15" view="press01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="press01_actuators" collapse="" show="@anim:press01_collapse_MB1">
+              <NODE sx="15" sy="1" sz="15" view="press01_actuators" collapse="" show="@anim:press01_collapse_MB1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="press01_actuators" collapse="@anim:press01_collapse_MB1" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="20" tz="50" rx="90" sxyz="2" view="press01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Move press cylinder up]]></en>
+                      <de><![CDATA[<align="left">Presszylinder nach oben]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="20" tz="25" view="press01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Magnetic valve]]></en>
+                        <de><![CDATA[<align="left">Magnetventil]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MB2 [ar-node] -->
+        <NODE tx="47" ty="-85" tz="72" view="press01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="press01_actuators">
+            <SWITCH w="31" h="54" d="25" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_collapse_MB2" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="31" sy="25" sz="54" rx="90" view="press01_actuators" collapse="@anim:press01_collapse_MB2">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="31" sy="25" sz="54" rx="90" view="press01_actuators" show="@anim:press01_collapse_MB2">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="15" view="press01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="press01_actuators" collapse="" show="@anim:press01_collapse_MB2">
+              <NODE sx="15" sy="1" sz="15" view="press01_actuators" collapse="" show="@anim:press01_collapse_MB2">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="press01_actuators" collapse="@anim:press01_collapse_MB2" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-157" tz="50" rx="90" sxyz="2" view="press01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Move press cylinder down]]></en>
+                      <de><![CDATA[<align="left">Presszylinder nach unten]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="-139" tz="25" view="press01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Magnetic valve]]></en>
+                        <de><![CDATA[<align="left">Magnetventil]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="press01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB2]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Live [ar-node] -->
+      <NODE tx="89" ty="89" tz="-56" view="press01_live" collapse="" show="">
+        <!-- NoLiveLicense [ar-node] -->
+        <NODE tx="-245" ty="-99" tz="147" rx="104" view="press01_live" collapse="" show="">
+          <!-- Line 1 [ar-text] -->
+          <NODE sxyz="1.5" view="press01_live" collapse="" show="">
+            <TEXT rgba="#000000FF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">The additional option package "AR Extended Functions"]]></en>
+                  <de><![CDATA[<align="center">Zur Visualisierung von Live-Daten ist das Erweiterungspaket]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Line 2 [ar-text] -->
+          <NODE ty="-16" sxyz="1.5" view="press01_live" collapse="" show="">
+            <TEXT rgba="#000000FF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">is required to show live data.]]></en>
+                  <de><![CDATA[<align="center">"Erweiterte AR Funktionen für CP Systeme" erforderlich.]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Line 3 [ar-text] -->
+          <NODE ty="-32" sxyz="1.5" view="press01_live" collapse="" show="">
+            <TEXT rgba="#0091DCFF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">Please contact your local sales distributor.]]></en>
+                  <de><![CDATA[<align="center">Bitte kontaktieren Sie hierzu den Festo Didactic Vertrieb.]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Movie [ar-node] -->
+          <NODE rx="-14" view="press01_live" collapse="" show="">
+            <!-- ar-streamer [ar-streamer] -->
+            <NODE tx="154" ty="111" tz="8" sxyz="5" view="press01_live" collapse="" show="@anim:press01_livemovie">
+              <STREAMER loop="true" status="play" position="0" showpos="false" w="5" h="3.2">
+                <METADATA fallback="en">
+                  <url>
+                    <en><![CDATA[http://ftp.festo.com/Public/DIDACTIC/FactoryViews/v1.6.0/AR/AR_Extended_Functions.mp4]]></en>
+                  </url>
+                </METADATA>
+              </STREAMER>
+            </NODE>
+          </NODE>
+          <!-- Movie Switch [ar-switch] -->
+          <NODE tx="153" ty="16" tz="-1" rx="-14" view="press01_live">
+            <SWITCH w="30" h="30" d="0" on="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_livemovie" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="30" sz="30" rx="90" view="press01_live" collapse="@anim:press01_livemovie">
+              <MODEL file="planexy" texture="images/video_rounded_colored.png"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="30" sz="30" rx="90" view="press01_live" show="@anim:press01_livemovie">
+              <MODEL file="planexy" texture="images/video_rounded_hero.png"/>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Info [ar-node] -->
+      <NODE view="press01_info" collapse="" show="">
+        <!-- Movie [ar-node] -->
+        <NODE view="press01_info" collapse="" show="">
+          <!-- ar-streamer [ar-streamer] -->
+          <NODE tx="125" ty="17" tz="188" rx="90" sxyz="5" view="press01_info" collapse="" show="@anim:press01_movie">
+            <STREAMER loop="true" status="play" position="0" showpos="false" w="5" h="4">
+              <METADATA fallback="en">
+                <url>
+                  <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-PRESS/files/simulation.h264.mp4]]></en>
+                </url>
+              </METADATA>
+            </STREAMER>
+          </NODE>
+        </NODE>
+        <!-- InfoBar [ar-node] -->
+        <NODE tx="-70" ty="84" tz="-52" rx="45" view="press01_info" collapse="false" show="">
+          <!-- MenuName [ar-text] -->
+          <NODE tx="-15" tz="48" rx="90" sxyz="3" view="press01_info" collapse="" show="">
+            <TEXT rgba="#333333FF" width="75" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="left">CP-AM-PRESS]]></en>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Movie Switch [ar-switch] -->
+          <NODE rx="90" view="press01_info">
+            <SWITCH w="30" h="30" d="0" on="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="press01_movie" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="30" sz="30" rx="90" view="press01_info" collapse="@anim:press01_movie">
+              <MODEL file="planexy" texture="images/video_rounded_colored.png"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="30" sz="30" rx="90" view="press01_info" show="@anim:press01_movie">
+              <MODEL file="planexy" texture="images/video_rounded_hero.png"/>
+            </NODE>
+          </NODE>
+          <!-- Manual [ar-link-2d] -->
+          <NODE tx="35" view="press01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="press01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/book_rounded_colored.png">
+                <LINK w="0" h="0" d="1">
+                  <METADATA fallback="en">
+                    <refer>
+                      <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-PRESS/files/manual_en.pdf]]></en>
+                      <de><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-PRESS/files/manual_de.pdf]]></de>
+                    </refer>
+                  </METADATA>
+                </LINK>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- Circuit Diagram [ar-link-2d] -->
+          <NODE tx="70" view="press01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="press01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/circuit_rounded_colored.png">
+                <LINK refer="https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-PRESS/files/schematics.pdf" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- NoLiveLicense [ar-node] -->
+          <NODE view="press01_info" collapse="" show="">
+            <!-- Info Portal [ar-link-2d] -->
+            <NODE tx="105" view="press01_info" collapse="" show="">
+              <NODE sx="30" sy="1" sz="30" view="press01_info" collapse="" show="">
+                <MODEL file="planexy" texture="images/globe_rounded_colored.png">
+                  <LINK w="0" h="0" d="1">
+                    <METADATA fallback="en">
+                      <refer>
+                        <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/FDForward.php?Language=EN&FDMaterial=8032507]]></en>
+                        <de><![CDATA[https://ip.festo-didactic.com/InfoPortal/FDForward.php?Language=DE&FDMaterial=8032507]]></de>
+                      </refer>
+                    </METADATA>
+                  </LINK>
+                </MODEL>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+    </NODE>
+  </IMGTARGET>
+  <!-- ================================================================== -->
+</AUGMENTATION>

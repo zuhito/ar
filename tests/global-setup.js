@@ -1,10 +1,22 @@
 // @ts-check
-// Pre-generates static HTML from tests/scenes/*.xml with xsltproc, mirroring
-// the offline workflow: xsltproc aframe.xsl scene.xml > scene.html
-// The results are served alongside the app and exercised by static.spec.js.
+// Pre-generates static HTML from every XML under tests/scenes/ (recursively)
+// with xsltproc, mirroring the offline workflow:
+//   xsltproc aframe.xsl scene.xml > scene.html
+// Output lands in static-html/ preserving the directory layout, and is
+// exercised by static.spec.js. A scene that fails to transform fails setup.
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
+
+function collectXml(dir) {
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const p = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...collectXml(p));
+    else if (entry.name.endsWith('.xml')) out.push(p);
+  }
+  return out;
+}
 
 module.exports = async () => {
   try {
@@ -16,10 +28,12 @@ module.exports = async () => {
   const root = path.resolve(__dirname, '..');
   const scenesDir = path.join(__dirname, 'scenes');
   const outDir = path.join(root, 'static-html');
-  fs.mkdirSync(outDir, { recursive: true });
 
-  for (const file of fs.readdirSync(scenesDir).filter((f) => f.endsWith('.xml'))) {
-    const html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), path.join(scenesDir, file)]);
-    fs.writeFileSync(path.join(outDir, file.replace(/\.xml$/, '.html')), html);
+  for (const file of collectXml(scenesDir)) {
+    const rel = path.relative(scenesDir, file);
+    const html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), file], { maxBuffer: 64 * 1024 * 1024 });
+    const target = path.join(outDir, rel.replace(/\.xml$/, '.html'));
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, html);
   }
 };

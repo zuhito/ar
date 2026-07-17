@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<COMPILATION name="cp (v2.0.6)">
+  <METADATA fallback="en">
+    <desc>
+      <de><![CDATA[Die hier benutzten Marker können Sie im Festo Didaictic Infoportal herunterladen. (ip.festo-didactic.com)
+
+Enthaltene Module für cp:
+- CP-AM-CAM-V2
+- CP-AM-CAM
+- CP-AM-DRILL
+- CP-AM-iDRILL
+- CP-AM-iPICK
+- CP-AM-LABEL-V2
+- CP-AM-LABEL-V3
+- CP-AM-LABEL
+- CP-AM-MAG
+- CP-AM-MEASURE-V2
+- CP-AM-MEASURE
+- CP-AM-MPRESS-V2
+- CP-AM-MPRESS
+- CP-AM-OUT
+- CP-AM-OVEN
+- CP-AM-PRESS
+- CP-AM-TURNOVER]]></de>
+<en><![CDATA[You can download the markers at the Festo Didactic Infoportal. (ip.festo-didactic.com)
+
+Included modules for cp:
+- CP-AM-CAM-V2
+- CP-AM-CAM
+- CP-AM-DRILL
+- CP-AM-iDRILL
+- CP-AM-iPICK
+- CP-AM-LABEL-V2
+- CP-AM-LABEL-V3
+- CP-AM-LABEL
+- CP-AM-MAG
+- CP-AM-MEASURE-V2
+- CP-AM-MEASURE
+- CP-AM-MPRESS-V2
+- CP-AM-MPRESS
+- CP-AM-OUT
+- CP-AM-OVEN
+- CP-AM-PRESS
+- CP-AM-TURNOVER]]></en>
+    </desc>
+  </METADATA>
+
+  <ENTRY url="CP-AM-CAM-V2_01.xml"/>
+  <ENTRY url="CP-AM-CAM_01.xml"/>
+  <ENTRY url="CP-AM-DRILL_01.xml"/>
+  <ENTRY url="CP-AM-iDRILL_01.xml"/>
+  <ENTRY url="CP-AM-iPICK_01.xml"/>
+  <ENTRY url="CP-AM-LABEL-V2_01.xml"/>
+  <ENTRY url="CP-AM-LABEL-V3_01.xml"/>
+  <ENTRY url="CP-AM-LABEL_01.xml"/>
+  <ENTRY url="CP-AM-MAG_01.xml"/>
+  <ENTRY url="CP-AM-MEASURE-V2_01.xml"/>
+  <ENTRY url="CP-AM-MEASURE_01.xml"/>
+  <ENTRY url="CP-AM-MPRESS-V2_01.xml"/>
+  <ENTRY url="CP-AM-MPRESS_01.xml"/>
+  <ENTRY url="CP-AM-OUT_01.xml"/>
+  <ENTRY url="CP-AM-OVEN_01.xml"/>
+  <ENTRY url="CP-AM-PRESS_01.xml"/>
+  <ENTRY url="CP-AM-TURNOVER_01.xml"/>
+
+</COMPILATION>

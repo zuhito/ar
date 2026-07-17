@@ -1,0 +1,1596 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<AUGMENTATION targetbase="Marker" views="Station,Sensors,Actuators,Sensor0,Sensor1,Sensor2,RFID,Sensor3,Sensor4,Sensor5,Sensor6,Actuator0,Actuator1,Actuator2,Actuator3,Actuator4,Sensor0Video,Sensor1Video,Sensor2Video,Sensor3Video,Sensor4Video,Sensor5Video,Sensor6Video,Modules,ModuleConveyor,ModuleConveyorDetails,ModuleConveyorVideo,ModuleStackMagazine,ModuleDetection,StationVideo,ModuleStackMagazineVideo,ModuleStackMagazineDetails,SetupStep1,SetupStep2,SetupStep3,SetupStep4,SetupStep5" >
+
+    <TARGET marker="Marker_MPSDistributionConveyorStation">
+
+		<NODE sx="70" sy="70" sz="70" rx="90">
+			<MODEL file="menucube.obj" texture="menucube.png">
+				<LINK w="-0.2" h="-0.2" d="-0.2" refer="@view:Station" rgb="000000"/>
+			</MODEL>
+			<NODE tx="-0.225" tz="0.225" ty="0.5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="@view:Sensors"/>
+			</NODE>
+			<NODE tx="0.225" tz="0.225" ty="0.5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="@view:Actuators"/>
+			</NODE>
+			<NODE tx="-0.225" tz="-0.225" ty=".5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="@view:Modules"/>
+			</NODE>
+			<NODE tx="0.225" tz="-0.225" ty="0.5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html"/>
+			</NODE>
+		</NODE>
+
+
+        <NODE view="Station" tx="-125" ty="-75" tz="60">
+			<NODE view="Station" tx="-50" tz="30" rx="135">
+				<NODE view="Station" tx="-3.3" ty="4.6" sx="4" sy="4" sz="4">
+					<TEXT label="MPS® Distribution I4.0 Station" rgba="ffffffff" backrgba="0091dcff" >
+						<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DistributionConveyorStation/EN/index.html"/>
+					</TEXT>			
+				</NODE>			
+				<NODE view="Station" ty="-36">
+					<NODE view="Station" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="IPLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DistributionConveyorStation/EN/index.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="3DLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DistributionConveyorStation/EN/3DAnimation.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="80" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Setup.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep1"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="115" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Manual.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DistributionConveyorStation/Documentation/Manual.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="150" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DistributionConveyorStation/EN/VideoSimulation.html"/>
+						</MODEL>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="SetupStep1" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep1" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep1" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 1. Check power and air supply " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>	
+				<NODE view="SetupStep1" ty="-45">
+					<NODE view="SetupStep1" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep2"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep1" tx="-150" ty="0" tz="-100">
+			<NODE view="SetupStep1" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep1" tx="-35" tz="125" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" LED is on? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+        <NODE view="SetupStep1" tx="-165" ty="-375" tz="15">
+			<NODE view="SetupStep1" rx="-90" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep1" tx="10" ty="50" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" Pressure above 5 bar? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep2" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep2" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep2" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 2. Remove workpieces " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep2" ty="-45">
+					<NODE view="SetupStep2" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep3"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep2" ty="-45">
+					<NODE view="SetupStep2" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep1"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep2" tx="-190" ty="-150" tz="0">
+			<NODE view="SetupStep2" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+		</NODE>
+        <NODE view="SetupStep2" tx="-115" ty="-150" tz="0">
+			<NODE view="SetupStep2" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep2" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" No workpieces? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+        <NODE view="SetupStep2" tx="100" ty="-150" tz="0">
+			<NODE view="SetupStep2" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep3" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep3" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep3" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 3. Carry out adjustment procedure " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep3" ty="-45">
+					<NODE view="SetupStep3" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep4"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep3" ty="-45">
+					<NODE view="SetupStep3" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep2"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep3" tx="-100" ty="100" tz="0">
+			<NODE view="SetupStep3" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep3" tx="0" rx="135" sx="43.34" sy="50" sz="15">
+				<MODEL file="plane.obj" texture="Panel.png"/>
+			</NODE>			
+			<NODE view="SetupStep3" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" 'Reset' button pressed? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep4" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep4" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep4" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 4. Fill the magazine " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep4" ty="-45">
+					<NODE view="SetupStep4" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep5"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep4" ty="-45">
+					<NODE view="SetupStep4" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep3"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep4" tx="-5" ty="-300" tz="100">
+			<NODE view="SetupStep4" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep4" tx="10" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" Workpieces filled in? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep5" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep5" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep5" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 5. Start the sequence " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep5" ty="-45">
+					<NODE view="SetupStep5" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Station"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep5" ty="-45">
+					<NODE view="SetupStep5" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep4"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep5" tx="-100" ty="100" tz="0">
+			<NODE view="SetupStep5" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep5" tx="0" ty="15" tz="-15" rx="135" sx="43.34" sy="50" sz="15">
+				<MODEL file="plane.obj" texture="Panel.png"/>
+			</NODE>			
+			<NODE view="SetupStep5" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" 'Start' button pressed? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+
+        <NODE view="Sensor0" tx="-190" ty="-200" tz="30">
+			<NODE view="Sensors,Sensor0" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="80" d="30" refer="@view:Sensor0"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor0">
+					<LINK w="40" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor0" tz="30" rx="135">
+				<NODE view="Sensor0" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Workpiece at beginning of conveyor " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor0" ty="-45">
+					<NODE view="Sensor0" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.0.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor0" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/165358.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor0" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor0Video"/>
+						</MODEL>
+						<NODE view="Sensor0Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/DiffuseSensor.mp4"/>
+							<NODE view="Sensor0Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor0"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Sensor1" tx="-125" ty="-200" tz="30">
+			<NODE view="Sensors,Sensor1" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="80" d="30" refer="@view:Sensor1"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor1">
+					<LINK w="40" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor1" tz="30" rx="135">
+				<NODE view="Sensor1" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Workpiece in middle of conveyor " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor1" ty="-45">
+					<NODE view="Sensor1" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.1.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor1" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/165358.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor1" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor1Video"/>
+						</MODEL>
+						<NODE view="Sensor1Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/DiffuseSensor.mp4"/>
+							<NODE view="Sensor1Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor1"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Sensor2" tx="90" ty="-200" tz="30">
+			<NODE view="Sensors,Sensor2" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="80" d="30" refer="@view:Sensor2"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor2">
+					<LINK w="40" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor2" tx="-150" tz="30" rx="135">
+				<NODE view="Sensor2" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" No workpiece at end of conveyor " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor2" ty="-45">
+					<NODE view="Sensor2" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.2.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor2" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/165360.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor2" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor2Video"/>
+						</MODEL>
+						<NODE view="Sensor2Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/LightBarrier.mp4"/>
+							<NODE view="Sensor2Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor2"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="RFID" tx="50" ty="-170" tz="50">
+			<NODE view="Sensors,RFID" ty="10" tz="-10">
+				<NODE view="Sensors">
+					<LINK w="50" h="50" d="75" refer="@view:RFID"/>
+					<NODE view="Sensors" tz="38" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="RFID">
+					<LINK w="50" h="50" d="75" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="RFID" tx="-150" tz="30" rx="135">
+				<NODE view="RFID" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" RFID Read/Write Head " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="RFID" ty="-45">
+					<NODE view="RFID" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerProfinet.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="RFID" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/Turck-TN-CK40-H1147.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<xNODE view="RFID" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:RFIDVideo"/>
+						</MODEL>
+						<NODE view="RFIDVideo" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/XXXX.mp4"/>
+							<NODE view="RFIDVideo" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:RFID"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</xNODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="Sensor4" tx="-55" ty="-450" tz="0">
+			<NODE view="Sensors,Sensor4" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="80" d="30" refer="@view:Sensor4"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor4">
+					<LINK w="40" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor4" tz="30" rx="135">
+				<NODE view="Sensor4" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Slide retracted " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor4" ty="-45">
+					<NODE view="Sensor4" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.4.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor4" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/150855.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor4" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor4Video"/>
+						</MODEL>
+						<NODE view="Sensor4Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/SensorInductive.mp4"/>
+							<NODE view="Sensor4Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor4"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="Sensor5" tx="-55" ty="-350" tz="0">
+			<NODE view="Sensors,Sensor5" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="80" d="30" refer="@view:Sensor5"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor5">
+					<LINK w="40" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor5" tz="30" rx="135">
+				<NODE view="Sensor5" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Slide advanced " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor5" ty="-45">
+					<NODE view="Sensor5" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.5.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor5" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/150855.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor5" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor5Video"/>
+						</MODEL>
+						<NODE view="Sensor5Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/SensorInductive.mp4"/>
+							<NODE view="Sensor5Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor5"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+		
+        <NODE view="Sensor6" tx="-5" ty="-293" tz="30">
+			<NODE view="Sensors,Sensor6" ty="33" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="60" h="30" d="30" refer="@view:Sensor6"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor6">
+					<LINK w="60" h="30" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor6" tz="30" rx="135">
+				<NODE view="Sensor6" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Magazine empty " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor6" ty="-45">
+					<NODE view="Sensor6" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.6.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor6" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/165360.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor6" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor6Video"/>
+						</MODEL>
+						<NODE view="Sensor6Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/LightBarrier.mp4"/>
+							<NODE view="Sensor6Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor6"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="Actuator0" tx="-140" ty="-200" tz="30">
+			<NODE view="Actuators,Actuator0" ty="40" tz="-30">
+				<NODE view="Actuator0" tx="80" ry="-90" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="175" h="50" d="40" refer="@view:Actuator0"/>
+					<NODE view="Actuators" tz="21" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator0">
+					<LINK w="175" h="50" d="40" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator0" tx="-60" tz="35" rx="135">
+				<NODE view="Actuator0" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Conveyor forward " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator0" ty="-45">
+					<NODE view="Actuator0" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.0.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator0" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/374134.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Actuator1" tx="35" ty="-200" tz="30">
+			<NODE view="Actuators,Actuator1" ty="40" tz="-30">
+				<NODE view="Actuator1" tx="-75" ry="90" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="175" h="50" d="40" refer="@view:Actuator1"/>
+					<NODE view="Actuators" tz="21" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator1">
+					<LINK w="175" h="50" d="40" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator1" tx="-40" tz="35" rx="135">
+				<NODE view="Actuator1" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Conveyor reverse " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator1" ty="-45">
+					<NODE view="Actuator1" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.1.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator1" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/374134.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Actuator2" tx="-115" ty="-150" tz="30">
+			<NODE view="Actuators,Actuator2" ty="40" tz="-30">
+				<NODE view="Actuator2" ty="-80" rx="-90" ry="180" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="50" h="50" d="40" refer="@view:Actuator2"/>
+					<NODE view="Actuators" tz="21" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator2">
+					<LINK w="50" h="50" d="40" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator2" tx="25" tz="30" rx="135">
+				<NODE view="Actuator2" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Advance feed separator " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator2" ty="-45">
+					<NODE view="Actuator2" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.2.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator2" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/665109.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Actuator4" tx="-55" ty="-400" tz="30">
+			<NODE view="Actuators,Actuator4" ty="40" tz="-30">
+				<NODE view="Actuator4" ty="80" rx="90" ry="180" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="30" h="200" d="20" refer="@view:Actuator4"/>
+					<NODE view="Actuators" tz="11" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator4">
+					<LINK w="30" h="200" d="20" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator4" tz="30" rx="135">
+				<NODE view="Actuator4" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Advance slide " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator4" ty="-45">
+					<NODE view="Actuator4" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.4.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator4" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/19182.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="ModuleConveyor" tx="-45" ty="-200" tz="30">
+			<NODE view="Modules,ModuleConveyor" ty="40" tz="-50">
+				<NODE view="Modules">
+					<LINK w="350" h="80" d="50" refer="@view:ModuleConveyor"/>
+					<NODE view="Modules" tz="26" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="ModuleConveyor">
+					<LINK w="350" h="80" d="50" refer="@view:Modules"/>
+				</NODE>
+			</NODE>
+			<NODE view="ModuleConveyor" tx="-50" tz="30" rx="135">
+				<NODE view="ModuleConveyor" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Conveyor Module " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="ModuleConveyor" ty="-45">
+					<NODE view="ModuleConveyor" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="IPLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/EN/index.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleConveyor" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="3DLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/EN/3DAnimation.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleConveyor" tx="80" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/Documentation/DataSheet.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleConveyor" tx="115" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/EN/VideoSimulation.html"/>
+						</MODEL>
+					</NODE>
+					<NODE view="ModuleConveyor" tx="150" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Details.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:ModuleConveyorDetails"/>
+						</MODEL>
+					</NODE>
+				</NODE>			
+			</NODE>			
+			<NODE view="ModuleConveyorDetails" tx="70" ty="-5" tz="-110" rx="90" ry="0" rz="0">
+				<MODEL file="band.obj" texture="modultextur.png" alpha="90">
+					<LINKxxx w="0" h="0" d="0" refer="@view:ModuleConveyor"/>
+				</MODEL>
+			</NODE>
+		</NODE>
+
+        <NODE view="ModuleStackMagazine" tx="0" ty="-350" tz="50">
+			<NODE view="Modules,ModuleStackMagazine" ty="40">
+				<NODE view="Modules">
+					<LINK w="100" h="150" d="200" refer="@view:ModuleStackMagazine"/>
+					<NODE view="Modules" ty="101" rx="90" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="ModuleStackMagazine">
+					<LINK w="100" h="150" d="200" refer="@view:Modules"/>
+				</NODE>
+			</NODE>
+			<NODE view="ModuleStackMagazine" tx="-100" tz="50" ty="110" rx="135">
+				<NODE view="ModuleStackMagazine" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Stack Magazine Module " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="ModuleStackMagazine" ty="-45">
+					<NODE view="ModuleStackMagazine" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="IPLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/StackMagazineModule/EN/index.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleStackMagazine" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="3DLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/StackMagazineModule/EN/3DAnimation.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleStackMagazine" tx="80" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/StackMagazineModule/Documentation/DataSheet.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleStackMagazine" tx="115" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/StackMagazineModule/EN/VideoSimulation.html"/>
+						</MODEL>
+					</NODE>
+					<NODE view="ModuleStackMagazine" tx="150" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Details.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:ModuleStackMagazineDetails"/>
+						</MODEL>
+					</NODE>
+				</NODE>			
+			</NODE>			
+			<NODE view="ModuleStackMagazineDetails" tx="-125" ty="-15" tz="-95" rx="90" ry="0" rz="0">
+				<MODEL file="stapelmagazin.obj" texture="modultextur.png" alpha="90">
+					<LINKxxx w="0" h="0" d="0" refer="@view:ModuleStackMagazine"/>
+				</MODEL>
+			</NODE>
+		</NODE>
+
+	</TARGET>
+
+
+    <TARGET marker="Marker_MPSSortingStation">
+
+		<NODE sx="70" sy="70" sz="70" rx="90">
+			<MODEL file="menucube.obj" texture="menucube.png">
+				<LINK w="-0.2" h="-0.2" d="-0.2" refer="@view:Station" rgb="000000"/>
+			</MODEL>
+			<NODE tx="-0.225" tz="0.225" ty="0.5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="@view:Sensors"/>
+			</NODE>
+			<NODE tx="0.225" tz="0.225" ty="0.5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="@view:Actuators"/>
+			</NODE>
+			<NODE tx="-0.225" tz="-0.225" ty=".5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="@view:Modules"/>
+			</NODE>
+			<NODE tx="0.225" tz="-0.225" ty="0.5">
+				<LINK w="0.4" h="0.05" d="0.4" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html"/>
+			</NODE>
+		</NODE>
+
+
+        <NODE view="Station" tx="-125" ty="-75" tz="60">
+			<NODE view="Station" tx="-50" tz="30" rx="135">
+				<NODE view="Station" tx="-3.3" ty="4.6" sx="4" sy="4" sz="4">
+					<TEXT label="MPS® Sorting I4.0 Station" rgba="ffffffff" backrgba="0091dcff" >
+						<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/SortingStation/EN/index.html"/>
+					</TEXT>			
+				</NODE>			
+				<NODE view="Station" ty="-36">
+					<NODE view="Station" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="IPLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/SortingStation/EN/index.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="3DLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/SortingStation/EN/3DAnimation.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="80" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Setup.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep1"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="115" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Manual.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/SortingStation/Documentation/Manual.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Station" tx="150" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/SortingStation/EN/VideoSimulation.html"/>
+						</MODEL>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="SetupStep1" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep1" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep1" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 1. Check power and air supply " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep1" ty="-45">
+					<NODE view="SetupStep1" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep2"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep1" tx="-90" ty="10" tz="-100">
+			<NODE view="SetupStep1" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep1" tx="-80" tz="125" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" LED is on? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+        <NODE view="SetupStep1" tx="-165" ty="-375" tz="15">
+			<NODE view="SetupStep1" rx="-90" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep1" tx="10" ty="50" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" Pressure above 5 bar? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep2" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep2" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep2" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 2. Remove workpieces " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep2" ty="-45">
+					<NODE view="SetupStep2" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep3"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep2" ty="-45">
+					<NODE view="SetupStep2" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep1"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep2" tx="-190" ty="-150" tz="0">
+			<NODE view="SetupStep2" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+		</NODE>
+        <NODE view="SetupStep2" tx="-115" ty="-150" tz="0">
+			<NODE view="SetupStep2" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep2" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" No workpieces? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+        <NODE view="SetupStep2" tx="100" ty="-150" tz="0">
+			<NODE view="SetupStep2" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep3" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep3" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep3" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 3. Carry out adjustment procedure " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep3" ty="-45">
+					<NODE view="SetupStep3" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep4"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep3" ty="-45">
+					<NODE view="SetupStep3" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep2"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep3" tx="-100" ty="100" tz="0">
+			<NODE view="SetupStep3" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep3" tx="0" rx="135" sx="43.34" sy="50" sz="15">
+				<MODEL file="plane.obj" texture="Panel.png"/>
+			</NODE>			
+			<NODE view="SetupStep3" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" 'Reset' button pressed? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep4" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep4" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep4" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 4. Place workpiece on the conveyor " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep4" ty="-45">
+					<NODE view="SetupStep4" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep5"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep4" ty="-45">
+					<NODE view="SetupStep4" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep1"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep4" tx="-190" ty="-150" tz="0">
+			<NODE view="SetupStep4" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep4" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" Workpiece placed? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+        <NODE view="SetupStep5" tx="-100" ty="-75" tz="25">
+			<NODE view="SetupStep5" tx="-50" tz="30" rx="135">
+				<NODE view="SetupStep5" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" 5. Start the sequence " rgba="ffffffff" backrgba="0091DCff"/>
+				</NODE>
+				<NODE view="SetupStep5" ty="-45">
+					<NODE view="SetupStep5" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="OK.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Station"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+				<NODE view="SetupStep5" ty="-45">
+					<NODE view="SetupStep5" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="back.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:SetupStep4"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+        <NODE view="SetupStep5" tx="-100" ty="100" tz="0">
+			<NODE view="SetupStep5" sx="4" sy="4" sz="4">
+				<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+			</NODE>
+			<NODE view="SetupStep5" tx="0" ty="15" tz="-15" rx="135" sx="43.34" sy="50" sz="15">
+				<MODEL file="plane.obj" texture="Panel.png"/>
+			</NODE>			
+			<NODE view="SetupStep5" tx="20" tz="75" rx="135" sx="4" sy="4" sz="4">
+				<TEXT label=" 'Start' button pressed? " rgba="0091DCff" backrgba="ffffffff"/>
+			</NODE>
+		</NODE>
+
+
+        <NODE view="Sensor0" tx="-210" ty="-200" tz="30">
+			<NODE view="Sensors,Sensor0" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="20" h="80" d="30" refer="@view:Sensor0"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor0">
+					<LINK w="20" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor0" tz="30" rx="135">
+				<NODE view="Sensor0" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Workpiece at beginning of conveyor " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor0" ty="-45">
+					<NODE view="Sensor0" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.0.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor0" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/165358.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor0" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor0Video"/>
+						</MODEL>
+						<NODE view="Sensor0Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/DiffuseSensor.mp4"/>
+							<NODE view="Sensor0Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor0"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Sensor1" tx="-65" ty="-150" tz="20">
+			<NODE view="Sensors,Sensor1" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="40" d="30" refer="@view:Sensor1"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor1">
+					<LINK w="40" h="40" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor1" tz="30" rx="135">
+				<NODE view="Sensor1" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Deflector 1 extended " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor1" ty="-45">
+					<NODE view="Sensor1" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.1.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor1" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/150371.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor1" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor1Video"/>
+						</MODEL>
+						<NODE view="Sensor1Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/SensorInductive.mp4"/>
+							<NODE view="Sensor1Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor1"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Sensor2" tx="20" ty="-290" tz="0">
+			<NODE view="Sensors,Sensor2" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="240" h="40" d="30" refer="@view:Sensor2"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor2">
+					<LINK w="240" h="40" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor2" tx="-50" tz="30" rx="135">
+				<NODE view="Sensor2" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Chute full " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor2" ty="-45">
+					<NODE view="Sensor2" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.2.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor2" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/537753.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor2" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor2Video"/>
+						</MODEL>
+						<NODE view="Sensor2Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/LightBarrier.mp4"/>
+							<NODE view="Sensor2Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor2"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Sensor3" tx="15" ty="-150" tz="20">
+			<NODE view="Sensors,Sensor3" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="40" h="40" d="30" refer="@view:Sensor3"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor3">
+					<LINK w="40" h="40" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor3" tx="-50" tz="30" rx="135">
+				<NODE view="Sensor3" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Deflector 2 extended " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor3" ty="-45">
+					<NODE view="Sensor3" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.3.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor3" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/150371.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor3" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor3Video"/>
+						</MODEL>
+						<NODE view="Sensor3Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/SensorInductive.mp4"/>
+							<NODE view="Sensor3Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor3"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="RFID" tx="-115" ty="-170" tz="50">
+			<NODE view="Sensors,RFID" ty="10" tz="-10">
+				<NODE view="Sensors">
+					<LINK w="50" h="50" d="75" refer="@view:RFID"/>
+					<NODE view="Sensors" tz="38" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="RFID">
+					<LINK w="50" h="50" d="75" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="RFID" tx="0" tz="30" rx="135">
+				<NODE view="RFID" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" RFID Read/Write Head " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="RFID" ty="-45">
+					<NODE view="RFID" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerProfinet.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="RFID" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/Turck-TN-CK40-H1147.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<xNODE view="RFID" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:RFIDVideo"/>
+						</MODEL>
+						<NODE view="RFIDVideo" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/XXXX.mp4"/>
+							<NODE view="RFIDVideo" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:RFID"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</xNODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="Sensor4" tx="-190" ty="-200" tz="30">
+			<NODE view="Sensors,Sensor4" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="20" h="80" d="30" refer="@view:Sensor4"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor4">
+					<LINK w="20" h="80" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor4" tz="30" rx="135">
+				<NODE view="Sensor4" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Workpiece detected " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor4" ty="-45">
+					<NODE view="Sensor4" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.4.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor4" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/553563.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor4" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor4Video"/>
+						</MODEL>
+						<NODE view="Sensor4Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/LightBarrier.mp4"/>
+							<NODE view="Sensor4Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor4"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="Sensor5" tx="-170" ty="-220" tz="30">
+			<NODE view="Sensors,Sensor5" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="20" h="40" d="30" refer="@view:Sensor5"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor5">
+					<LINK w="20" h="40" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor5" tz="30" rx="135">
+				<NODE view="Sensor5" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Workpiece not black " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor5" ty="-45">
+					<NODE view="Sensor5" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.5.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor5" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/150855.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor5" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor5Video"/>
+						</MODEL>
+						<NODE view="Sensor5Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/DiffuseSensor.mp4"/>
+							<NODE view="Sensor5Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor5"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+		
+        <NODE view="Sensor6" tx="-170" ty="-180" tz="30">
+			<NODE view="Sensors,Sensor6" ty="40" tz="-30">
+				<NODE view="Sensors">
+					<LINK w="20" h="40" d="30" refer="@view:Sensor6"/>
+					<NODE view="Sensors" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Sensor6">
+					<LINK w="20" h="40" d="30" refer="@view:Sensors"/>
+				</NODE>
+			</NODE>
+			<NODE view="Sensor6" tz="30" rx="135">
+				<NODE view="Sensor6" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Workpiece metallic " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Sensor6" ty="-45">
+					<NODE view="Sensor6" tx="25" sx="30" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerI0.6.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Sensor6" tx="75" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/150395.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="Sensor6" tx="110" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor6Video"/>
+						</MODEL>
+						<NODE view="Sensor6Video" rx="-90" sx="0.3" sy="0.3" sz="0.3">
+							<DISPLAY text="@video:http://festodidacticsw.azurewebsites.net/ar/mps/SensorInductive.mp4"/>
+							<NODE view="Sensor6Video" tx="-21" rx="90" sx="2.5" sy="2.5" sz="2.5"> 
+								<MODEL file="plane.obj" texture="back.png">
+									<LINK w="0.1" h="0.1" xd="0.1" refer="@view:Sensor6"/>
+								</MODEL>
+							</NODE>
+						</NODE>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+        <NODE view="Actuator0" tx="-0" ty="-220" tz="30">
+			<NODE view="Actuators,Actuator0" ty="40" tz="-30">
+				<NODE view="Actuator0" tx="80" ry="-90" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="250" h="50" d="40" refer="@view:Actuator0"/>
+					<NODE view="Actuators" tz="21" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator0">
+					<LINK w="250" h="50" d="40" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator0" tx="-60" tz="35" rx="135">
+				<NODE view="Actuator0" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Conveyor forward " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator0" ty="-45">
+					<NODE view="Actuator0" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.0.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator0" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/374134.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Actuator1" tx="-65" ty="-150" tz="30">
+			<NODE view="Actuators,Actuator1" ty="40" tz="-30">
+				<NODE view="Actuator1" ty="-80" rx="-90" ry="180" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="50" h="50" d="40" refer="@view:Actuator1"/>
+					<NODE view="Actuators" tz="21" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator1">
+					<LINK w="50" h="50" d="40" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator1" tx="25" tz="30" rx="135">
+				<NODE view="Actuator1" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Extend deflector 1 " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator1" ty="-45">
+					<NODE view="Actuator1" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.1.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator1" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/665109.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Actuator2" tx="15" ty="-150" tz="30">
+			<NODE view="Actuators,Actuator2" ty="40" tz="-30">
+				<NODE view="Actuator2" ty="-80" rx="-90" ry="180" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="50" h="50" d="40" refer="@view:Actuator2"/>
+					<NODE view="Actuators" tz="21" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator2">
+					<LINK w="50" h="50" d="40" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator2" tx="25" tz="30" rx="135">
+				<NODE view="Actuator2" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Extend deflector 2 " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator2" ty="-45">
+					<NODE view="Actuator2" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.2.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator2" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/665109.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+        <NODE view="Actuator3" tx="-150" ty="-190" tz="30">
+			<NODE view="Actuators,Actuator3" ty="40" tz="-30">
+				<NODE view="Actuator3" ty="-80" rx="-90" ry="180" sx="4" sy="4" sz="4">
+					<MODEL file="targetArrow.obj" texture="targetArrow.png"/>
+				</NODE>
+				<NODE view="Actuators">
+					<LINK w="40" h="80" d="30" refer="@view:Actuator3"/>
+					<NODE view="Actuators" tz="16" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="Actuator3">
+					<LINK w="40" h="80" d="30" refer="@view:Actuators"/>
+				</NODE>
+			</NODE>
+			<NODE view="Actuator3" tx="25" tz="30" rx="135">
+				<NODE view="Actuator3" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Retract stopper " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="Actuator3" ty="-45">
+					<NODE view="Actuator3" tx="31.43" sx="36.43" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="ControllerQ0.3.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/AR/EN/Help.html#DisplayElements"/>
+						</MODEL>
+					</NODE>			
+					<NODE view="Actuator3" tx="87.86" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/DataSheets/EN/188083.pdf"/>
+						</MODEL>			
+					</NODE>			
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+
+
+        <NODE view="ModuleConveyor" tx="-40" ty="-200" tz="30">
+			<NODE view="Modules,ModuleConveyor" ty="40" tz="-50">
+				<NODE view="Modules">
+					<LINK w="350" h="80" d="50" refer="@view:ModuleConveyor"/>
+					<NODE view="Modules" tz="26" rx="180" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="ModuleConveyor">
+					<LINK w="350" h="80" d="50" refer="@view:Modules"/>
+				</NODE>
+			</NODE>
+			<NODE view="ModuleConveyor" tx="-50" tz="30" rx="135">
+				<NODE view="ModuleConveyor" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Conveyor Module " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="ModuleConveyor" ty="-45">
+					<NODE view="ModuleConveyor" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="IPLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/EN/index.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleConveyor" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="3DLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/EN/3DAnimation.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleConveyor" tx="80" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/Documentation/DataSheet.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleConveyor" tx="115" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/ConveyorModule/EN/VideoSimulation.html"/>
+						</MODEL>
+					</NODE>
+					<NODE view="ModuleConveyor" tx="150" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="Details.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="@view:ModuleConveyorDetails"/>
+						</MODEL>
+					</NODE>
+				</NODE>			
+			</NODE>			
+			<NODE view="ModuleConveyorDetails" tx="80" ty="5" tz="-110" rx="90" ry="0" rz="0">
+				<MODEL file="band.obj" texture="modultextur.png" alpha="90">
+					<LINKxxx w="0" h="0" d="0" refer="@view:ModuleConveyor"/>
+				</MODEL>
+			</NODE>
+		</NODE>
+
+
+        <NODE view="ModuleDetection" tx="-180" ty="-200" tz="75">
+			<NODE view="Modules,ModuleDetection" ty="40">
+				<NODE view="Modules">
+					<LINK w="75" h="200" d="80" refer="@view:ModuleDetection"/>
+					<NODE view="Modules" ty="41" rx="90" sx="10" sy="10" sz="10">
+						<MODEL file="plane.obj" texture="about.png"/>
+					</NODE>
+				</NODE>
+				<NODE view="ModuleDetection">
+					<LINK w="75" h="200" d="80" refer="@view:Modules"/>
+				</NODE>
+			</NODE>
+			<NODE view="ModuleDetection" tx="0" tz="50" ty="110" rx="135">
+				<NODE view="ModuleDetection" tx="-2.6" sx="4" sy="4" sz="4">
+					<TEXT label=" Detection Module " rgba="0091DCff" backrgba="ffffffff"/>
+				</NODE>
+				<NODE view="ModuleDetection" ty="-45">
+					<NODE view="ModuleDetection" tx="10" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="IPLogo.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DetectionModule/EN/index.html"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleDetection" tx="45" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="pdf.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/DetectionModule/Documentation/DataSheet.pdf"/>
+						</MODEL>			
+					</NODE>			
+					<NODE view="ModuleDetection" tx="80" sx="15" sy="15" sz="15">
+						<MODEL file="plane.obj" texture="movie.png">
+							<LINK w="0.1" h="0.1" xd="0.1" refer="http://ip.festo-didactic.com/InfoPortal/MPS/SortingStation/EN/VideoSimulation.html"/>
+						</MODEL>
+					</NODE>
+				</NODE>			
+			</NODE>			
+		</NODE>
+
+	</TARGET>
+	
+</AUGMENTATION>

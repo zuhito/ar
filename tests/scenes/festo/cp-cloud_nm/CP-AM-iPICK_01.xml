@@ -1,0 +1,575 @@
+<AUGMENTATION viewdisplay="false" viewlist="ipick01_home,ipick01_sensors,ipick01_actuators,ipick01_live,ipick01_info" viewswitch="false" version="550">
+  <!-- ================================================================== -->
+  <!-- Show relative to screen [ar-camera] -->
+  <CAMERA x="1" y="0.5" scaleto="max" distance="0.8">
+    <NODE sxyz="0.001">
+    </NODE>
+  </CAMERA>
+  <!-- ================================================================== -->
+  <!-- Target [image] -->
+  <IMGTARGET file="targets/CP-AM-iPICK_01.jpg" width="0.06" extended="true">
+    <NODE sxyz="0.001">
+      <!-- Menu [ar-node] -->
+      <NODE view="" collapse="" show="">
+        <!-- menuPlane [ar-model] -->
+        <NODE sxyz="70" view="" collapse="" show="">
+          <MODEL file="obj/menuplane.obj" texture="images/menutex.png">
+          </MODEL>
+        </NODE>
+        <!-- Sensors [ar-node] -->
+        <NODE tx="-17" ty="5" tz="17" view="" collapse="" show="">
+          <!-- SensorsLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/sensors_squared.png">
+                <LINK refer="@view:ipick01_sensors" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- SensorsLink [ar-link-2d] -->
+          <NODE ty="1" view="ipick01_sensors" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="ipick01_sensors" collapse="" show="">
+              <MODEL file="planexy" texture="images/sensors_squared_hero.png">
+                <LINK refer="@view:ipick01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- Actuators [ar-node] -->
+        <NODE tx="17" ty="5" tz="17" view="" collapse="" show="">
+          <!-- ActuatorsLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/actuators_squared.png">
+                <LINK refer="@view:ipick01_actuators" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- ActuatorsLink [ar-link-2d] -->
+          <NODE ty="1" view="ipick01_actuators" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="ipick01_actuators" collapse="" show="">
+              <MODEL file="planexy" texture="images/actuators_squared_hero.png">
+                <LINK refer="@view:ipick01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- Live [ar-node] -->
+        <NODE tx="-17" ty="5" tz="-17" view="" collapse="" show="">
+          <!-- LiveLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/live_squared.png">
+                <LINK refer="@view:ipick01_live" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- LiveLink [ar-link-2d] -->
+          <NODE ty="1" view="ipick01_live" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="ipick01_live" collapse="" show="">
+              <MODEL file="planexy" texture="images/live_squared_hero.png">
+                <LINK refer="@view:ipick01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- Info [ar-node] -->
+        <NODE tx="17" ty="5" tz="-17" view="" collapse="" show="">
+          <!-- Info [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/info_squared.png">
+                <LINK refer="@view:ipick01_info" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- Info [ar-link-2d] -->
+          <NODE ty="1" view="ipick01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="ipick01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/info_squared_hero.png">
+                <LINK refer="@view:ipick01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Sensors [ar-node] -->
+      <NODE view="ipick01_sensors" collapse="" show="">
+        <!-- PG1-4 [ar-node] -->
+        <NODE tx="115.8" ty="32" tz="552" view="ipick01_sensors" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="ipick01_sensors">
+            <SWITCH w="360" h="30" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="ipick01_collapse_PG1-4" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="360" sy="10" sz="30" rx="90" view="ipick01_sensors" collapse="@anim:ipick01_collapse_PG1-4">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="360" sy="10" sz="30" rx="90" view="ipick01_sensors" show="@anim:ipick01_collapse_PG1-4">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="14" view="ipick01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="ipick01_sensors" collapse="" show="@anim:ipick01_collapse_PG1-4">
+              <NODE sx="15" sy="1" sz="15" view="ipick01_sensors" collapse="" show="@anim:ipick01_collapse_PG1-4">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="ipick01_sensors" collapse="@anim:ipick01_collapse_PG1-4" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-120" tz="50" rx="90" sxyz="2" view="ipick01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="130" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Selection sensor and indicator]]></en>
+                      <de><![CDATA[<align="left">Fachauswahl Anzeige und Erkennung]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="ipick01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Light and sensor modules]]></en>
+                        <de><![CDATA[<align="left">Leucht- und Sensormodule]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-PG1-4]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- PG5-8 [ar-node] -->
+        <NODE tx="115.8" ty="32" tz="373" view="ipick01_sensors" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="ipick01_sensors">
+            <SWITCH w="360" h="30" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="ipick01_collapse_PG5-8" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="360" sy="10" sz="30" rx="90" view="ipick01_sensors" collapse="@anim:ipick01_collapse_PG5-8">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="360" sy="10" sz="30" rx="90" view="ipick01_sensors" show="@anim:ipick01_collapse_PG5-8">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="14" view="ipick01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="ipick01_sensors" collapse="" show="@anim:ipick01_collapse_PG5-8">
+              <NODE sx="15" sy="1" sz="15" view="ipick01_sensors" collapse="" show="@anim:ipick01_collapse_PG5-8">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="ipick01_sensors" collapse="@anim:ipick01_collapse_PG5-8" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-120" tz="50" rx="90" sxyz="2" view="ipick01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="130" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Selection sensor and indicator]]></en>
+                      <de><![CDATA[<align="left">Fachauswahl Anzeige und Erkennung]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="ipick01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Light and sensor modules]]></en>
+                        <de><![CDATA[<align="left">Leucht- und Sensormodule]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="ipick01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-PG5-8]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Actuators [ar-node] -->
+      <NODE view="ipick01_actuators" collapse="" show="">
+        <!-- KF1 [ar-node] -->
+        <NODE tx="57" ty="-111" tz="567" view="ipick01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="ipick01_actuators">
+            <SWITCH w="135" h="40" d="110" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="ipick01_collapse_KF1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="135" sy="110" sz="40" rx="90" view="ipick01_actuators" collapse="@anim:ipick01_collapse_KF1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="135" sy="110" sz="40" rx="90" view="ipick01_actuators" show="@anim:ipick01_collapse_KF1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="57" view="ipick01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="ipick01_actuators" collapse="" show="@anim:ipick01_collapse_KF1">
+              <NODE sx="15" sy="1" sz="15" view="ipick01_actuators" collapse="" show="@anim:ipick01_collapse_KF1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="ipick01_actuators" collapse="@anim:ipick01_collapse_KF1" show="">
+              <!-- IO Name [ar-text] -->
+              <NODE tx="-30" tz="50" rx="90" sxyz="2" view="ipick01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">CECC-S]]></en>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="12" view="ipick01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">PLC]]></en>
+                        <de><![CDATA[<align="left">SPS]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-KF1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- KF2 [ar-node] -->
+        <NODE tx="227" ty="-111" tz="567" view="ipick01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="ipick01_actuators">
+            <SWITCH w="175" h="40" d="110" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="ipick01_collapse_KF2" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="175" sy="110" sz="40" rx="90" view="ipick01_actuators" collapse="@anim:ipick01_collapse_KF2">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="175" sy="110" sz="40" rx="90" view="ipick01_actuators" show="@anim:ipick01_collapse_KF2">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="57" view="ipick01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="ipick01_actuators" collapse="" show="@anim:ipick01_collapse_KF2">
+              <NODE sx="15" sy="1" sz="15" view="ipick01_actuators" collapse="" show="@anim:ipick01_collapse_KF2">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="ipick01_actuators" collapse="@anim:ipick01_collapse_KF2" show="">
+              <!-- IO Name [ar-text] -->
+              <NODE tx="-104" tz="50" rx="90" sxyz="2" view="ipick01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="130" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Light module power supply]]></en>
+                      <de><![CDATA[<align="left">Leuchtmodul Stromversorgung]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="12" view="ipick01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Basic module]]></en>
+                        <de><![CDATA[<align="left">Basismodul]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="ipick01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-KF2]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Live [ar-node] -->
+      <NODE tx="89" ty="89" tz="-56" view="ipick01_live" collapse="" show="">
+        <!-- NoLiveLicense [ar-node] -->
+        <NODE tx="-245" ty="-99" tz="147" rx="104" view="ipick01_live" collapse="" show="">
+          <!-- Line 1 [ar-text] -->
+          <NODE sxyz="1.5" view="ipick01_live" collapse="" show="">
+            <TEXT rgba="#000000FF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">The additional option package "AR Extended Functions"]]></en>
+                  <de><![CDATA[<align="center">Zur Visualisierung von Live-Daten ist das Erweiterungspaket]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Line 2 [ar-text] -->
+          <NODE ty="-16" sxyz="1.5" view="ipick01_live" collapse="" show="">
+            <TEXT rgba="#000000FF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">is required to show live data.]]></en>
+                  <de><![CDATA[<align="center">"Erweiterte AR Funktionen für CP Systeme" erforderlich.]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Line 3 [ar-text] -->
+          <NODE ty="-32" sxyz="1.5" view="ipick01_live" collapse="" show="">
+            <TEXT rgba="#0091DCFF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">Please contact your local sales distributor.]]></en>
+                  <de><![CDATA[<align="center">Bitte kontaktieren Sie hierzu den Festo Didactic Vertrieb.]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Movie [ar-node] -->
+          <NODE rx="-14" view="ipick01_live" collapse="" show="">
+            <!-- ar-streamer [ar-streamer] -->
+            <NODE tx="154" ty="111" tz="8" sxyz="5" view="ipick01_live" collapse="" show="@anim:ipick01_livemovie">
+              <STREAMER loop="true" status="play" position="0" showpos="false" w="5" h="3.2">
+                <METADATA fallback="en">
+                  <url>
+                    <en><![CDATA[http://ftp.festo.com/Public/DIDACTIC/FactoryViews/v1.6.0/AR/AR_Extended_Functions.mp4]]></en>
+                  </url>
+                </METADATA>
+              </STREAMER>
+            </NODE>
+          </NODE>
+          <!-- Movie Switch [ar-switch] -->
+          <NODE tx="153" ty="16" tz="-1" rx="-14" view="ipick01_live">
+            <SWITCH w="30" h="30" d="0" on="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="ipick01_livemovie" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="30" sz="30" rx="90" view="ipick01_live" collapse="@anim:ipick01_livemovie">
+              <MODEL file="planexy" texture="images/video_rounded_colored.png"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="30" sz="30" rx="90" view="ipick01_live" show="@anim:ipick01_livemovie">
+              <MODEL file="planexy" texture="images/video_rounded_hero.png"/>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Info [ar-node] -->
+      <NODE view="ipick01_info" collapse="" show="">
+        <!-- InfoBar [ar-node] -->
+        <NODE tx="-70" ty="84" tz="-52" rx="45" view="ipick01_info" collapse="false" show="">
+          <!-- MenuName [ar-text] -->
+          <NODE tx="-15" tz="48" rx="90" sxyz="3" view="ipick01_info" collapse="" show="">
+            <TEXT rgba="#333333FF" width="75" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="left">CP-AM-iPICK]]></en>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Manual [ar-link-2d] -->
+          <NODE view="ipick01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="ipick01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/book_rounded_colored.png">
+                <LINK w="0" h="0" d="1">
+                  <METADATA fallback="en">
+                    <refer>
+                      <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-iPICK/files/manual_en.pdf]]></en>
+                      <de><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-iPICK/files/manual_de.pdf]]></de>
+                    </refer>
+                  </METADATA>
+                </LINK>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- Circuit Diagram [ar-link-2d] -->
+          <NODE tx="35" view="ipick01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="ipick01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/circuit_rounded_colored.png">
+                <LINK refer="https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-iPICK/files/schematics.pdf" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- NoLiveLicense [ar-node] -->
+          <NODE view="ipick01_info" collapse="" show="">
+            <!-- Info Portal [ar-link-2d] -->
+            <NODE tx="70" view="ipick01_info" collapse="" show="">
+              <NODE sx="30" sy="1" sz="30" view="ipick01_info" collapse="" show="">
+                <MODEL file="planexy" texture="images/globe_rounded_colored.png">
+                  <LINK w="0" h="0" d="1">
+                    <METADATA fallback="en">
+                      <refer>
+                        <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/FDForward.php?Language=EN&FDMaterial=8068413]]></en>
+                        <de><![CDATA[https://ip.festo-didactic.com/InfoPortal/FDForward.php?Language=DE&FDMaterial=8068413]]></de>
+                      </refer>
+                    </METADATA>
+                  </LINK>
+                </MODEL>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+    </NODE>
+  </IMGTARGET>
+  <!-- ================================================================== -->
+</AUGMENTATION>

@@ -1,0 +1,1788 @@
+<AUGMENTATION viewdisplay="false" viewlist="drill01_home,drill01_sensors,drill01_actuators,drill01_live,drill01_info" viewswitch="false" version="550">
+  <!-- ================================================================== -->
+  <!-- Show relative to screen [ar-camera] -->
+  <CAMERA x="1" y="0.5" scaleto="max" distance="0.8">
+    <NODE sxyz="0.001">
+    </NODE>
+  </CAMERA>
+  <!-- ================================================================== -->
+  <!-- Target [image] -->
+  <IMGTARGET file="targets/CP-AM-DRILL_01.jpg" width="0.06" extended="true">
+    <NODE sxyz="0.001">
+      <!-- Menu [ar-node] -->
+      <NODE view="" collapse="" show="">
+        <!-- menuPlane [ar-model] -->
+        <NODE sxyz="70" view="" collapse="" show="">
+          <MODEL file="obj/menuplane.obj" texture="images/menutex.png">
+          </MODEL>
+        </NODE>
+        <!-- drill01_sensors [ar-node] -->
+        <NODE tx="-17" ty="5" tz="17" view="" collapse="" show="">
+          <!-- SensorsLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/sensors_squared.png">
+                <LINK refer="@view:drill01_sensors" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- SensorsLink [ar-link-2d] -->
+          <NODE ty="1" view="drill01_sensors" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+              <MODEL file="planexy" texture="images/sensors_squared_hero.png">
+                <LINK refer="@view:drill01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- drill01_actuators [ar-node] -->
+        <NODE tx="17" ty="5" tz="17" view="" collapse="" show="">
+          <!-- ActuatorsLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/actuators_squared.png">
+                <LINK refer="@view:drill01_actuators" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- ActuatorsLink [ar-link-2d] -->
+          <NODE ty="1" view="drill01_actuators" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="drill01_actuators" collapse="" show="">
+              <MODEL file="planexy" texture="images/actuators_squared_hero.png">
+                <LINK refer="@view:drill01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- drill01_live [ar-node] -->
+        <NODE tx="-17" ty="5" tz="-17" view="" collapse="" show="">
+          <!-- LiveLink [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/live_squared.png">
+                <LINK refer="@view:drill01_live" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- LiveLink [ar-link-2d] -->
+          <NODE ty="1" view="drill01_live" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="drill01_live" collapse="" show="">
+              <MODEL file="planexy" texture="images/live_squared_hero.png">
+                <LINK refer="@view:drill01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- drill01_info [ar-node] -->
+        <NODE tx="17" ty="5" tz="-17" view="" collapse="" show="">
+          <!-- drill01_info [ar-link-2d] -->
+          <NODE view="" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="" collapse="" show="">
+              <MODEL file="planexy" texture="images/info_squared.png">
+                <LINK refer="@view:drill01_info" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- drill01_info [ar-link-2d] -->
+          <NODE ty="1" view="drill01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="drill01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/info_squared_hero.png">
+                <LINK refer="@view:drill01_home" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Sensors [ar-node] -->
+      <NODE view="drill01_sensors" collapse="" show="">
+        <!-- BG1 [ar-node] -->
+        <NODE tx="57" ty="3" tz="92" view="drill01_sensors" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_sensors">
+            <SWITCH w="40" h="15" d="15" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_BG1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="40" sy="15" sz="15" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="40" sy="15" sz="15" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="9" view="drill01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG1">
+              <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG1" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-15" tz="33" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">X-axis on the left]]></en>
+                      <de><![CDATA[<align="left">X-Achse links]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tz="-28" view="drill01_sensors" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/551373.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/551373.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Proximity sensor]]></en>
+                        <de><![CDATA[<align="left">Näherungsschalter]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-BG1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG2 [ar-node] -->
+        <NODE tx="165" ty="3" tz="92" view="drill01_sensors" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_sensors">
+            <SWITCH w="40" h="15" d="15" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_BG2" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="40" sy="15" sz="15" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG2">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="40" sy="15" sz="15" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG2">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="8" view="drill01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG2">
+              <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG2">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG2" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-15" tz="33" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">X-axis on the right]]></en>
+                      <de><![CDATA[<align="left">X-Achse rechts]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tz="-28" view="drill01_sensors" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/551373.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/551373.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Proximity sensor]]></en>
+                        <de><![CDATA[<align="left">Näherungsschalter]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-BG2]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG5 [ar-node] -->
+        <NODE tx="60" ty="-65.1" tz="202.1" view="drill01_sensors" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_sensors">
+            <SWITCH w="15" h="30" d="15" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_BG5" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="15" sy="15" sz="30" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG5">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="15" sy="15" sz="30" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG5">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="8" view="drill01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG5">
+              <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG5">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG5" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-35" tz="38" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Z-axis at top]]></en>
+                      <de><![CDATA[<align="left">Z-Achse oben]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-28" view="drill01_sensors" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/551373.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/551373.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Proximity sensor]]></en>
+                        <de><![CDATA[<align="left">Näherungsschalter]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-BG5]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG6 [ar-node] -->
+        <NODE tx="64" ty="-64" tz="169" view="drill01_sensors" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_sensors">
+            <SWITCH w="15" h="30" d="15" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_BG6" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="15" sy="15" sz="30" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG6">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="15" sy="15" sz="30" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG6">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="13" view="drill01_sensors" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG6">
+              <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG6">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG6" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-35" tz="38" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Z-axis at bottom]]></en>
+                      <de><![CDATA[<align="left">Z-Achse unten]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-28" view="drill01_sensors" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/551373.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/551373.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Proximity sensor]]></en>
+                        <de><![CDATA[<align="left">Näherungsschalter]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-BG6]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG3 [ar-node] -->
+        <NODE view="drill01_sensors" collapse="" show="">
+          <!-- SensorFront [ar-node] -->
+          <NODE tx="210" ty="-10" tz="20" view="drill01_sensors" collapse="" show="">
+            <!-- Front [ar-node] -->
+            <NODE ty="6" view="drill01_sensors" collapse="" show="">
+              <!-- Info icon [ar-static-image] -->
+              <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG3">
+                <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG3">
+                  <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- Active [ar-node] -->
+              <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG3" show="">
+                <!-- IO-Name [ar-text] -->
+                <NODE tx="-46.2" tz="42" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#0091DCFF" width="130" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Front cover orientation incorrect]]></en>
+                        <de><![CDATA[<align="left">Frontschale Ausrichtung falsch]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- Datasheet [ar-link-2d] -->
+                <NODE tz="-38.1" view="drill01_sensors" collapse="" show="">
+                  <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                    <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                      <LINK w="0" h="0" d="1">
+                        <METADATA fallback="en">
+                          <refer>
+                            <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/165360.pdf]]></en>
+                            <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/165360.pdf]]></de>
+                          </refer>
+                        </METADATA>
+                      </LINK>
+                    </MODEL>
+                  </NODE>
+                </NODE>
+                <!-- IO-Table [ar-node] -->
+                <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                  <!-- rType [ar-text] -->
+                  <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Type:]]></en>
+                          <de><![CDATA[<align="left">Typ:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vType [ar-text] -->
+                  <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Photoelectric barrier]]></en>
+                          <de><![CDATA[<align="left">Lichtschranke]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- rAddress [ar-text] -->
+                  <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Address:]]></en>
+                          <de><![CDATA[<align="left">Adresse:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vAddress [ar-text] -->
+                  <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">-BG3]]></en>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                </NODE>
+              </NODE>
+            </NODE>
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="drill01_sensors">
+              <SWITCH w="20" h="35" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="drill01_collapse_BG3" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG3">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG3">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- SensorBack [ar-node] -->
+          <NODE tx="210" ty="-170" tz="20" view="drill01_sensors" collapse="@anim:drill01_collapse_BG3" show="">
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="drill01_sensors">
+              <SWITCH w="20" h="35" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="drill01_collapse_BG3" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG3">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG3">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Beam [ar-node] -->
+          <NODE tx="211" ty="-91" tz="6" view="drill01_sensors" collapse="@anim:drill01_collapse_BG3" show="">
+            <!-- Beam [ar-model] -->
+            <NODE sy="150" view="drill01_sensors" collapse="@anim:drill01_xVN_BG3" show="">
+              <MODEL file="cube" texture="fdar_white" tint="#D50000">
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG4 [ar-node] -->
+        <NODE view="drill01_sensors" collapse="" show="">
+          <!-- SensorFront [ar-node] -->
+          <NODE tx="170" ty="-10" tz="20" view="drill01_sensors" collapse="" show="">
+            <!-- Front [ar-node] -->
+            <NODE ty="7" view="drill01_sensors" collapse="" show="">
+              <!-- Info icon [ar-static-image] -->
+              <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG4">
+                <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG4">
+                  <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- Active [ar-node] -->
+              <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG4" show="">
+                <!-- IO-Name [ar-text] -->
+                <NODE tx="-46.2" tz="42" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#0091DCFF" width="150" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Front cover present]]></en>
+                        <de><![CDATA[<align="left">Frontschale vorhanden]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- Datasheet [ar-link-2d] -->
+                <NODE tz="-38.1" view="drill01_sensors" collapse="" show="">
+                  <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                    <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                      <LINK w="0" h="0" d="1">
+                        <METADATA fallback="en">
+                          <refer>
+                            <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/165360.pdf]]></en>
+                            <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/165360.pdf]]></de>
+                          </refer>
+                        </METADATA>
+                      </LINK>
+                    </MODEL>
+                  </NODE>
+                </NODE>
+                <!-- IO-Table [ar-node] -->
+                <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                  <!-- rType [ar-text] -->
+                  <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Type:]]></en>
+                          <de><![CDATA[<align="left">Typ:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vType [ar-text] -->
+                  <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Photoelectric barrier]]></en>
+                          <de><![CDATA[<align="left">Lichtschranke]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- rAddress [ar-text] -->
+                  <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Address:]]></en>
+                          <de><![CDATA[<align="left">Adresse:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vAddress [ar-text] -->
+                  <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">-BG4]]></en>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                </NODE>
+              </NODE>
+            </NODE>
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="drill01_sensors">
+              <SWITCH w="20" h="35" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="drill01_collapse_BG4" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG4">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG4">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- SensorBack [ar-node] -->
+          <NODE tx="170" ty="-170" tz="20" view="drill01_sensors" collapse="@anim:drill01_collapse_BG4" show="">
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="drill01_sensors">
+              <SWITCH w="20" h="35" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="drill01_collapse_BG4" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG4">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="20" sy="10" sz="35" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG4">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Beam [ar-node] -->
+          <NODE tx="171" ty="-91" tz="4.6" view="drill01_sensors" collapse="@anim:drill01_collapse_BG4" show="">
+            <!-- Beam [ar-model] -->
+            <NODE sy="150" view="drill01_sensors" collapse="@anim:drill01_xVN_BG4" show="">
+              <MODEL file="cube" texture="fdar_white" tint="#D50000">
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- BG8 [ar-node] -->
+        <NODE view="drill01_sensors" collapse="" show="">
+          <!-- SensorFront [ar-node] -->
+          <NODE tx="131" ty="-10" tz="23" view="drill01_sensors" collapse="" show="">
+            <!-- Front [ar-node] -->
+            <NODE ty="8" view="drill01_sensors" collapse="" show="">
+              <!-- Info icon [ar-static-image] -->
+              <NODE view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG8">
+                <NODE sx="15" sy="1" sz="15" view="drill01_sensors" collapse="" show="@anim:drill01_collapse_BG8">
+                  <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- Active [ar-node] -->
+              <NODE view="drill01_sensors" collapse="@anim:drill01_collapse_BG8" show="">
+                <!-- IO-Name [ar-text] -->
+                <NODE tx="-46.2" tz="42" rx="90" sxyz="2" view="drill01_sensors" collapse="" show="">
+                  <TEXT rgba="#0091DCFF" width="150" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Back cover already present]]></en>
+                        <de><![CDATA[<align="left">Rückschale bereits vorhanden]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- Datasheet [ar-link-2d] -->
+                <NODE tz="-41" view="drill01_sensors" collapse="" show="">
+                  <NODE sx="30" sy="1" sz="30" view="drill01_sensors" collapse="" show="">
+                    <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                      <LINK w="0" h="0" d="1">
+                        <METADATA fallback="en">
+                          <refer>
+                            <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/165360.pdf]]></en>
+                            <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/165360.pdf]]></de>
+                          </refer>
+                        </METADATA>
+                      </LINK>
+                    </MODEL>
+                  </NODE>
+                </NODE>
+                <!-- IO-Table [ar-node] -->
+                <NODE tx="28" tz="8" view="drill01_sensors" collapse="" show="">
+                  <!-- rType [ar-text] -->
+                  <NODE rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Type:]]></en>
+                          <de><![CDATA[<align="left">Typ:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vType [ar-text] -->
+                  <NODE tx="50" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Photoelectric barrier]]></en>
+                          <de><![CDATA[<align="left">Lichtschranke]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- rAddress [ar-text] -->
+                  <NODE tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">Address:]]></en>
+                          <de><![CDATA[<align="left">Adresse:]]></de>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                  <!-- vAddress [ar-text] -->
+                  <NODE tx="50" tz="-10" rx="90" view="drill01_sensors" collapse="" show="">
+                    <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                      <METADATA fallback="en">
+                        <label>
+                          <en><![CDATA[<align="left">-BG8]]></en>
+                        </label>
+                      </METADATA>
+                    </TEXT>
+                  </NODE>
+                </NODE>
+              </NODE>
+            </NODE>
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="drill01_sensors">
+              <SWITCH w="20" h="28" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="drill01_collapse_BG8" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="20" sy="10" sz="28" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="20" sy="10" sz="28" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- SensorBack [ar-node] -->
+          <NODE tx="131" ty="-170" tz="23" view="drill01_sensors" collapse="@anim:drill01_collapse_BG8" show="">
+            <!-- Box [ar-switch-box] -->
+            <NODE rx="90" view="drill01_sensors">
+              <SWITCH w="20" h="28" d="10" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+                <TRANSMIT attribute="on" variable="drill01_collapse_BG8" transmitter="" threshold=""/>
+              </SWITCH>
+              <!-- Active state - Show when variable is false -->
+              <NODE sx="20" sy="10" sz="28" rx="90" view="drill01_sensors" collapse="@anim:drill01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+              </NODE>
+              <!-- Inactive state - Show when variable is true -->
+              <NODE sx="20" sy="10" sz="28" rx="90" view="drill01_sensors" show="@anim:drill01_collapse_BG8">
+                <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Beam [ar-node] -->
+          <NODE tx="131" ty="-91" tz="12" view="drill01_sensors" collapse="@anim:drill01_collapse_BG8" show="">
+            <!-- Beam [ar-model] -->
+            <NODE sy="150" view="drill01_sensors" collapse="@anim:drill01_xVN_BG8" show="">
+              <MODEL file="cube" texture="fdar_white" tint="#D50000">
+              </MODEL>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Actuators [ar-node] -->
+      <NODE view="drill01_actuators" collapse="" show="">
+        <!-- MB1 [ar-node] -->
+        <NODE tx="243" ty="-8.4" tz="96" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_actuators">
+            <SWITCH w="50" h="40" d="40" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MB1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="50" sy="40" sz="40" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MB1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="50" sy="40" sz="40" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MB1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="21" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB1">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MB1" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-48" tz="50" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Move x-axis left]]></en>
+                      <de><![CDATA[<align="left">X-Achse nach links]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-43" view="drill01_actuators" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_actuators" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/530907.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/530907.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Linear drive]]></en>
+                        <de><![CDATA[<align="left">Linearantrieb]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MB2 [ar-node] -->
+        <NODE tx="14" ty="-8.4" tz="96" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_actuators">
+            <SWITCH w="50" h="40" d="40" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MB2" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="50" sy="40" sz="40" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MB2">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="50" sy="40" sz="40" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MB2">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="21" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB2">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB2">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MB2" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-48" tz="50" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Move x-axis right]]></en>
+                      <de><![CDATA[<align="left">X-Achse nach rechts]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-43" view="drill01_actuators" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_actuators" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/530907.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/530907.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Linear drive]]></en>
+                        <de><![CDATA[<align="left">Linearantrieb]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB2]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MA3 [ar-node] -->
+        <NODE tx="97.1" ty="-61.3" tz="149.2" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE ty="-1.7" tz="1.6" rx="90" view="drill01_actuators">
+            <SWITCH w="50" h="92" d="50" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MA3" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="50" sy="50" sz="92" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MA3">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="50" sy="50" sz="92" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MA3">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="26" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MA3">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MA3">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MA3" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="36.4" tz="30" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Switch on drill 1]]></en>
+                      <de><![CDATA[<align="left">Bohrer 1 an]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="36" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Electric motor]]></en>
+                        <de><![CDATA[<align="left">Elektromotor]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MA3]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MA4 [ar-node] -->
+        <NODE tx="97.1" ty="-115" tz="149.2" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE ty="-1.7" tz="1.6" rx="90" view="drill01_actuators">
+            <SWITCH w="50" h="92" d="50" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MA4" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="50" sy="50" sz="92" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MA4">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="50" sy="50" sz="92" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MA4">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="26" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MA4">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MA4">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MA4" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="36.4" tz="30" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Switch on drill 2]]></en>
+                      <de><![CDATA[<align="left">Bohrer 2 an]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="36" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Electric motor]]></en>
+                        <de><![CDATA[<align="left">Elektromotor]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MA4]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MB5 [ar-node] -->
+        <NODE tx="55" ty="-85" tz="168" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_actuators">
+            <SWITCH w="36" h="48" d="55" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MB5" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="36" sy="55" sz="48" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MB5">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="36" sy="55" sz="48" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MB5">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="29" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB5">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB5">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MB5" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-55" tz="55" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Move z-axis up]]></en>
+                      <de><![CDATA[<align="left">Z-Achse nach oben]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-40" view="drill01_actuators" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_actuators" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK w="0" h="0" d="1">
+                      <METADATA fallback="en">
+                        <refer>
+                          <en><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//en/543905.pdf]]></en>
+                          <de><![CDATA[https://festodidacticsw.azurewebsites.net/ar/datasheets//de/543905.pdf]]></de>
+                        </refer>
+                      </METADATA>
+                    </LINK>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Mini slide]]></en>
+                        <de><![CDATA[<align="left">Mini-Schlitten]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB5]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MB6 [ar-node] -->
+        <NODE tx="55" ty="-85" tz="218" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_actuators">
+            <SWITCH w="36" h="48" d="55" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MB6" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="36" sy="55" sz="48" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MB6">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="36" sy="55" sz="48" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MB6">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="28" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB6">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB6">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MB6" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-55" tz="55" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Move z-axis down]]></en>
+                      <de><![CDATA[<align="left">Z-Achse nach unten]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-41" view="drill01_actuators" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_actuators" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK refer=" https://festodidacticsw.azurewebsites.net/ar/datasheets//de/543905.pdf" w="0" h="0" d="1"/>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Mini slide]]></en>
+                        <de><![CDATA[<align="left">Mini-Schlitten]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB6]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- MB7 [ar-node] -->
+        <NODE tx="52" ty="-48" tz="128" view="drill01_actuators" collapse="" show="">
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_actuators">
+            <SWITCH w="22" h="22" d="25" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_MB7" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="22" sy="25" sz="22" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_MB7">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="22" sy="25" sz="22" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_MB7">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+          <!-- Front [ar-node] -->
+          <NODE ty="13" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB7">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_MB7">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_MB7" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-55" tz="38" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">Open z-axis end position lock]]></en>
+                      <de><![CDATA[<align="left">Z-Achse Verriegelung lösen]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- Datasheet [ar-link-2d] -->
+              <NODE tx="-41" view="drill01_actuators" collapse="" show="">
+                <NODE sx="30" sy="1" sz="30" view="drill01_actuators" collapse="" show="">
+                  <MODEL file="planexy" texture="images/docu_rounded_colored.png">
+                    <LINK refer=" https://festodidacticsw.azurewebsites.net/ar/datasheets//de/543905.pdf" w="0" h="0" d="1"/>
+                  </MODEL>
+                </NODE>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="28" tz="8" view="drill01_actuators" collapse="" show="">
+                <!-- rType [ar-text] -->
+                <NODE rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Type:]]></en>
+                        <de><![CDATA[<align="left">Typ:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vType [ar-text] -->
+                <NODE tx="50" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Mini slide]]></en>
+                        <de><![CDATA[<align="left">Mini-Schlitten]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#333333FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#B6BEC6FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-MB7]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+        <!-- XD1 [ar-node] -->
+        <NODE tx="153" ty="-135" tz="407" view="drill01_actuators" collapse="" show="">
+          <!-- Front [ar-node] -->
+          <NODE ty="26" view="drill01_actuators" collapse="" show="">
+            <!-- Info icon [ar-static-image] -->
+            <NODE view="drill01_actuators" collapse="" show="@anim:drill01_collapse_XD1">
+              <NODE sx="15" sy="1" sz="15" view="drill01_actuators" collapse="" show="@anim:drill01_collapse_XD1">
+                <MODEL file="planexy" texture="images/info_rounded_hero.png">
+                </MODEL>
+              </NODE>
+            </NODE>
+            <!-- Active [ar-node] -->
+            <NODE view="drill01_actuators" collapse="@anim:drill01_collapse_XD1" show="">
+              <!-- IO-Name [ar-text] -->
+              <NODE tx="-39" tz="65" rx="90" sxyz="2" view="drill01_actuators" collapse="" show="">
+                <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                  <METADATA fallback="en">
+                    <label>
+                      <en><![CDATA[<align="left">I/O Module]]></en>
+                      <de><![CDATA[<align="left">E/A Modul]]></de>
+                    </label>
+                  </METADATA>
+                </TEXT>
+              </NODE>
+              <!-- IO-Table [ar-node] -->
+              <NODE tx="72" tz="41" view="drill01_actuators" collapse="" show="">
+                <!-- rAddress [ar-text] -->
+                <NODE tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#0091DCFF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">Address:]]></en>
+                        <de><![CDATA[<align="left">Adresse:]]></de>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+                <!-- vAddress [ar-text] -->
+                <NODE tx="50" tz="-10" rx="90" view="drill01_actuators" collapse="" show="">
+                  <TEXT rgba="#9CA2A9FF" width="100" backrgba="#FFFFFFFF">
+                    <METADATA fallback="en">
+                      <label>
+                        <en><![CDATA[<align="left">-XD1]]></en>
+                      </label>
+                    </METADATA>
+                  </TEXT>
+                </NODE>
+              </NODE>
+            </NODE>
+          </NODE>
+          <!-- Box [ar-switch-box] -->
+          <NODE rx="90" view="drill01_actuators">
+            <SWITCH w="135" h="85" d="51" rgb="FFFFFF" on="true" pressedvalue="" unpressedvalue="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_collapse_XD1" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="135" sy="51" sz="85" rx="90" view="drill01_actuators" collapse="@anim:drill01_collapse_XD1">
+              <MODEL file="cube" texture="images/grid.png" tint="#0091DC"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="135" sy="51" sz="85" rx="90" view="drill01_actuators" show="@anim:drill01_collapse_XD1">
+              <MODEL file="cube" texture="images/grid.png" tint="#B6BEC6"/>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Live [ar-node] -->
+      <NODE tx="89" ty="89" tz="-56" view="drill01_live" collapse="" show="">
+        <!-- NoLiveLicense [ar-node] -->
+        <NODE tx="-245" ty="-99" tz="147" rx="104" view="drill01_live" collapse="" show="">
+          <!-- Line 1 [ar-text] -->
+          <NODE sxyz="1.5" view="drill01_live" collapse="" show="">
+            <TEXT rgba="#000000FF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">The additional option package "AR Extended Functions"]]></en>
+                  <de><![CDATA[<align="center">Zur Visualisierung von Live-Daten ist das Erweiterungspaket]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Line 2 [ar-text] -->
+          <NODE ty="-16" sxyz="1.5" view="drill01_live" collapse="" show="">
+            <TEXT rgba="#000000FF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">is required to show live data.]]></en>
+                  <de><![CDATA[<align="center">"Erweiterte AR Funktionen für CP Systeme" erforderlich.]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Line 3 [ar-text] -->
+          <NODE ty="-32" sxyz="1.5" view="drill01_live" collapse="" show="">
+            <TEXT rgba="#0091DCFF" width="200" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="center">Please contact your local sales distributor.]]></en>
+                  <de><![CDATA[<align="center">Bitte kontaktieren Sie hierzu den Festo Didactic Vertrieb.]]></de>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Movie [ar-node] -->
+          <NODE rx="-14" view="drill01_live" collapse="" show="">
+            <!-- ar-streamer [ar-streamer] -->
+            <NODE tx="154" ty="111" tz="8" sxyz="5" view="drill01_live" collapse="" show="@anim:drill01_livemovie">
+              <STREAMER loop="true" status="play" position="0" showpos="false" w="5" h="3.2">
+                <METADATA fallback="en">
+                  <url>
+                    <en><![CDATA[http://ftp.festo.com/Public/DIDACTIC/FactoryViews/v1.6.0/AR/AR_Extended_Functions.mp4]]></en>
+                  </url>
+                </METADATA>
+              </STREAMER>
+            </NODE>
+          </NODE>
+          <!-- Movie Switch [ar-switch] -->
+          <NODE tx="153" ty="16" tz="-1" rx="-14" view="drill01_live">
+            <SWITCH w="30" h="30" d="0" on="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_livemovie" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="30" sz="30" rx="90" view="drill01_live" collapse="@anim:drill01_livemovie">
+              <MODEL file="planexy" texture="images/video_rounded_colored.png"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="30" sz="30" rx="90" view="drill01_live" show="@anim:drill01_livemovie">
+              <MODEL file="planexy" texture="images/video_rounded_hero.png"/>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+      <!-- Info [ar-node] -->
+      <NODE view="drill01_info" collapse="" show="">
+        <!-- Movie [ar-node] -->
+        <NODE view="drill01_info" collapse="" show="">
+          <!-- ar-streamer [ar-streamer] -->
+          <NODE tx="125" ty="17" tz="188" rx="90" sxyz="5" view="drill01_info" collapse="" show="@anim:drill01_movie">
+            <STREAMER loop="true" status="play" position="0" showpos="false" w="5" h="4">
+              <METADATA fallback="en">
+                <url>
+                  <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-DRILL/files/simulation.h264.mp4]]></en>
+                </url>
+              </METADATA>
+            </STREAMER>
+          </NODE>
+        </NODE>
+        <!-- InfoBar [ar-node] -->
+        <NODE tx="-70" ty="84" tz="-52" rx="45" view="drill01_info" collapse="false" show="">
+          <!-- MenuName [ar-text] -->
+          <NODE tx="-15" tz="48" rx="90" sxyz="3" view="drill01_info" collapse="" show="">
+            <TEXT rgba="#333333FF" width="75" backrgba="#FFFFFFFF">
+              <METADATA fallback="en">
+                <label>
+                  <en><![CDATA[<align="left">CP-AM-DRILL]]></en>
+                </label>
+              </METADATA>
+            </TEXT>
+          </NODE>
+          <!-- Movie Switch [ar-switch] -->
+          <NODE rx="90" view="drill01_info">
+            <SWITCH w="30" h="30" d="0" on="" onvalue="true" offvalue="false">
+              <TRANSMIT attribute="on" variable="drill01_movie" transmitter="" threshold=""/>
+            </SWITCH>
+            <!-- Active state - Show when variable is false -->
+            <NODE sx="30" sz="30" rx="90" view="drill01_info" collapse="@anim:drill01_movie">
+              <MODEL file="planexy" texture="images/video_rounded_colored.png"/>
+            </NODE>
+            <!-- Inactive state - Show when variable is true -->
+            <NODE sx="30" sz="30" rx="90" view="drill01_info" show="@anim:drill01_movie">
+              <MODEL file="planexy" texture="images/video_rounded_hero.png"/>
+            </NODE>
+          </NODE>
+          <!-- Manual [ar-link-2d] -->
+          <NODE tx="35" view="drill01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="drill01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/book_rounded_colored.png">
+                <LINK w="0" h="0" d="1">
+                  <METADATA fallback="en">
+                    <refer>
+                      <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-DRILL/files/manual_en.pdf]]></en>
+                      <de><![CDATA[https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-DRILL/files/manual_de.pdf]]></de>
+                    </refer>
+                  </METADATA>
+                </LINK>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- Circuit Diagram [ar-link-2d] -->
+          <NODE tx="70" view="drill01_info" collapse="" show="">
+            <NODE sx="30" sy="1" sz="30" view="drill01_info" collapse="" show="">
+              <MODEL file="planexy" texture="images/circuit_rounded_colored.png">
+                <LINK refer="https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-DRILL/files/schematics.pdf" w="0" h="0" d="1"/>
+              </MODEL>
+            </NODE>
+          </NODE>
+          <!-- NoLiveLicense [ar-node] -->
+          <NODE view="drill01_info" collapse="" show="">
+            <!-- Info Portal [ar-link-2d] -->
+            <NODE tx="105" view="drill01_info" collapse="" show="">
+              <NODE sx="30" sy="1" sz="30" view="drill01_info" collapse="" show="">
+                <MODEL file="planexy" texture="images/globe_rounded_colored.png">
+                  <LINK w="0" h="0" d="1">
+                    <METADATA fallback="en">
+                      <refer>
+                        <en><![CDATA[https://ip.festo-didactic.com/InfoPortal/FDForward.php?Language=EN&FDMaterial=8032510]]></en>
+                        <de><![CDATA[https://ip.festo-didactic.com/InfoPortal/FDForward.php?Language=DE&FDMaterial=8032510]]></de>
+                      </refer>
+                    </METADATA>
+                  </LINK>
+                </MODEL>
+              </NODE>
+            </NODE>
+          </NODE>
+        </NODE>
+      </NODE>
+    </NODE>
+  </IMGTARGET>
+  <!-- ================================================================== -->
+</AUGMENTATION>

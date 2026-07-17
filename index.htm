@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AR App Live Editor</title>
+<link rel="stylesheet" href="editor.css">
+</head>
+<body>
+
+<!-- Shown when aframe.xsl cannot be fetched: pick or drop an XSL file -->
+<div id="xsl-drop-overlay">
+  <div id="xsl-drop-box">
+    <h2>&#x1f4c2; Load XSL File</h2>
+    <p>Place <code>aframe.xsl</code> in the same folder,<br>or select an XSL file using the button below.</p>
+    <button id="xsl-pick-btn" onclick="document.getElementById('xsl-file-input').click()">Select File</button>
+    <div class="or">or drag &amp; drop here</div>
+  </div>
+</div>
+<input type="file" id="xsl-file-input" accept=".xsl,.xslt,.xml,.txt" style="display:none">
+<input type="file" id="xml-file-input" accept=".xml,.txt" style="display:none">
+
+<!-- Left: XML source tabs and editor -->
+<div id="editor-pane">
+  <div class="pane-bar">
+    <button class="tab-scroll-btn" id="xml-scroll-left">&#x25C0;</button>
+    <div class="tab-bar" id="xml-tab-bar"></div>
+    <button class="tab-scroll-btn" id="xml-scroll-right">&#x25B6;</button>
+    <div id="xml-add-btn" class="dtab dtab-add" title="New tab"><span class="dtab-label">+</span></div>
+    <span class="spacer"></span>
+    <button class="btn" id="btn-open-xml" title="Open XML">&#x1f4c2; Open</button>
+    <button class="btn" id="btn-save-xml" title="Save XML">&#x1f4be; Save</button>
+  </div>
+  <div id="editor-container"><textarea id="fallback-editor" spellcheck="false"></textarea></div>
+  <div id="error-bar"></div>
+</div>
+
+<div id="divider"></div>
+
+<!-- Right: AR preview / inspector / generated HTML -->
+<div id="preview-pane">
+  <div class="pane-bar">
+    <button class="tab-scroll-btn" id="pv-scroll-left">&#x25C0;</button>
+    <div class="tab-bar" id="preview-tab-bar"></div>
+    <button class="tab-scroll-btn" id="pv-scroll-right">&#x25B6;</button>
+    <span class="spacer"></span>
+    <button class="btn" id="btn-save-html" title="Save" style="display:none">&#x1f4be; Save</button>
+  </div>
+  <div id="preview-content">
+    <iframe id="preview-iframe" allow="camera;microphone;autoplay" tabindex="-1"></iframe>
+    <div id="html-code-wrap">
+      <div id="html-code-container"><textarea id="fallback-html-code" readonly spellcheck="false"></textarea></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/xslt-processor@5.0.11/dist/umd/xslt-processor.global.min.js"></script>
+<script src="editor.js"></script>
+</body>
+</html>

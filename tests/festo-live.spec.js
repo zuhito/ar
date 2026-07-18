@@ -69,7 +69,7 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
         html = html
           .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
           .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js')
-          .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" ');
+          .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" shader="msdf" negate="false" ');
         fs.writeFileSync(path.join(OUT_DIR, name + '.html'), html);
       } catch (e) {
         failures.push(`${name}: ${e.message}`);

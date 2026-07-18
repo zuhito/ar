@@ -36,7 +36,7 @@ module.exports = async () => {
     html = html
       .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
       .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js')
-      .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" ');
+      .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" shader="msdf" negate="false" ');
     const target = path.join(outDir, rel.replace(/\.xml$/, '.html'));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, html);

@@ -759,7 +759,7 @@
     resultStr = resultStr
       .replace('https://aframe.io/releases/1.7.1/aframe.min.js', vendorBase + 'aframe.min.js')
       .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', vendorBase + 'aframe-ar.js')
-      .replace(/<a-text /g, '<a-text font="' + vendorBase + 'Roboto-msdf.json" ');
+      .replace(/<a-text /g, '<a-text font="' + vendorBase + 'Roboto-msdf.json" shader="msdf" negate="false" ');
 
     lastHtmlRaw = resultStr;
     window._popupCode = resultStr;

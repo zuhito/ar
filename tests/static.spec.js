@@ -301,4 +301,38 @@ test.describe('xsltproc-generated pages', () => {
     await expect(marker).toHaveAttribute('url', 'marker/CP-AM-DRILL.patt');
     await expect(page.locator('a-entity[gltf-model]')).toHaveAttribute('gltf-model', 'obj/arrow_blue.glb');
   });
+
+  test('marker cursor raycasts stay aligned when AR.js overrides the projection', async ({ page }) => {
+    // Regression for the click-offset bug: AR.js rewrites camera.projectionMatrix
+    // every frame but never refreshes projectionMatrixInverse, so THREE's
+    // unproject read a stale inverse and hover/click landed beside the target.
+    // The fix refreshes the inverse at raycast time.
+    await page.goto('/static-html/marker_click.html');
+    await expect(page.locator('a-scene')).toBeAttached();
+    await expect(page.locator('.clickable')).toBeAttached({ timeout: 20_000 });
+    await expect
+      .poll(() => page.evaluate(() => !!(document.querySelector('a-scene')?.camera), {}), { timeout: 20_000 })
+      .toBe(true);
+
+    const r = await page.evaluate(() => {
+      const THREE = /** @type {any} */ (window).AFRAME.THREE;
+      const cam = /** @type {any} */ (document.querySelector('a-scene')).camera;
+      // Simulate AR.js: overwrite the projection, leaving the inverse stale
+      cam.projectionMatrix.elements[0] *= 1.7;
+      cam.projectionMatrix.elements[5] *= 1.7;
+      const stale = cam.projectionMatrixInverse.elements.slice();
+      const rc = new THREE.Raycaster();
+      rc.setFromCamera(new THREE.Vector2(0.3, -0.2), cam); // goes through the patched path
+      const after = cam.projectionMatrixInverse.elements.slice();
+      const expected = cam.projectionMatrix.clone().invert().elements;
+      return {
+        patched: /** @type {any} */ (window)._fdarRaycastPatched === true,
+        refreshed: after.some((v, i) => Math.abs(v - stale[i]) > 1e-9),
+        matches: after.every((v, i) => Math.abs(v - expected[i]) < 1e-9),
+      };
+    });
+    expect(r.patched, 'raycaster patch installed').toBe(true);
+    expect(r.refreshed, 'inverse refreshed after projection change').toBe(true);
+    expect(r.matches, 'inverse matches the live projection').toBe(true);
+  });
 });

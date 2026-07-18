@@ -184,26 +184,26 @@
 
 
           <xsl:if test="(TARGETBASE or IMGTARGET) and (//LINK or //SWITCH or //STREAMER)">
-            <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('ar-cursor-fix', {
+            <xsl:text disable-output-escaping="yes">&#10;      // AR.js rewrites camera.projectionMatrix from the video calibration every
+      // frame but never refreshes camera.projectionMatrixInverse, so THREE's
+      // unproject (used by every raycast: mouse cursor, keyboard, marker-free)
+      // reads a stale inverse and the hit point drifts off the pointer — you
+      // had to aim slightly beside an icon to click it. Refresh the inverse at
+      // the moment of the raycast so hits land exactly under the cursor. This
+      // is projection-accurate, unlike a fixed pixel offset, and needs no tick
+      // ordering guarantees.
+      AFRAME.registerComponent('ar-cursor-fix', {
         init: function () {
-          var sc = this.el;
-          sc.addEventListener('loaded', function () {
-            setTimeout(function () {
-              var cc = sc.components.cursor;
-              if (!cc) { var el = sc.querySelector('[cursor]'); if (el) cc = el.components.cursor; }
-              if (!cc) return;
-              var P = {ox:2, oy:-5, sx:2.2, sy:2.1};
-              function fix(evt) {
-                if (window._mfOn) return evt;
-                var c = sc.canvas; if (!c) return evt;
-                var r = c.getBoundingClientRect(), cx = r.left+r.width/2, cy = r.top+r.height/2;
-                return new MouseEvent(evt.type, {clientX:cx+(evt.clientX-cx)*P.sx+P.ox, clientY:cy+(evt.clientY-cy)*P.sy+P.oy, bubbles:true, cancelable:true});
-              }
-              if (cc.onMouseMove) { var om=cc.onMouseMove.bind(cc); cc.onMouseMove=function(e){om(fix(e));}; }
-              if (cc.onCursorDown) { var od=cc.onCursorDown.bind(cc); cc.onCursorDown=function(e){od(fix(e));}; }
-              if (cc.onCursorUp) { var ou=cc.onCursorUp.bind(cc); cc.onCursorUp=function(e){ou(fix(e));}; }
-            }, 2500);
-          });
+          if (window._fdarRaycastPatched) return;
+          window._fdarRaycastPatched = true;
+          var THREE = AFRAME.THREE;
+          var orig = THREE.Raycaster.prototype.setFromCamera;
+          THREE.Raycaster.prototype.setFromCamera = function (coords, camera) {
+            if (camera &amp;&amp; camera.isPerspectiveCamera) {
+              camera.projectionMatrixInverse.copy(camera.projectionMatrix).invert();
+            }
+            return orig.call(this, coords, camera);
+          };
         }
       });</xsl:text>
           </xsl:if>

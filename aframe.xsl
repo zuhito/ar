@@ -162,7 +162,6 @@
 
           sc.addEventListener('loaded', function () {
             refresh();
-            if (self.items.length &gt; 0) setActive(0);
           });
 
           // Ensure keyboard-nav is active even if scene attribute injection failed
@@ -484,6 +483,7 @@
         },
         init: function () {
           this.el.addEventListener('mouseenter', () =&gt; {
+            this.hovered = true;
             if (!this.outline) {
               this.outline = document.createElement('a-entity');
               
@@ -530,11 +530,20 @@
             }
           });
           this.el.addEventListener('mouseleave', () =&gt; {
+            this.hovered = false;
             if (this.outline) {
               this.el.removeChild(this.outline);
               this.outline = null;
             }
           });
+        },
+        update: function (oldData) {
+          if (!this.outline) return;
+          if (oldData.width === this.data.width &amp;&amp; oldData.height === this.data.height &amp;&amp; oldData.type === this.data.type) return;
+          // Size changed while shown: rebuild at the new dimensions
+          this.el.removeChild(this.outline);
+          this.outline = null;
+          if (this.hovered) this.el.emit('mouseenter');
         }
       });</xsl:text>
           </xsl:if>
@@ -2068,18 +2077,26 @@
       // Prefer the pre-generated .html; fall back to transforming the .xml
       // in the browser (native XSLTProcessor ignores d-o-e, so script/style
       // bodies are unescaped and self-closing tags expanded afterwards).
+      function resolveHref(h) {
+        try { return new URL(h, document.baseURI).href; } catch (e) { return h; }
+      }
       document.addEventListener('click', function (e) {
         var a = e.target.closest ? e.target.closest('a.entry') : null;
         if (!a) return;
         e.preventDefault();
-        var href = a.getAttribute('href');
+        if (window.parent !== window) {
+          // Editor preview: let the editor open the entry as a new tab
+          window.parent.postMessage({ type: 'fdar-open-entry', url: a.getAttribute('data-xml') }, '*');
+          return;
+        }
+        var href = resolveHref(a.getAttribute('href'));
         fetch(href, { method: 'HEAD' }).then(function (r) {
           if (r.ok) { window.location.href = href; return; }
           transformAndOpen(a.getAttribute('data-xml'));
         }).catch(function () { transformAndOpen(a.getAttribute('data-xml')); });
       });
       function fetchText(url) {
-        return fetch(url).then(function (r) {
+        return fetch(resolveHref(url)).then(function (r) {
           if (!r.ok) throw new Error(url + ': HTTP ' + r.status);
           return r.text();
         });

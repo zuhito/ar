@@ -20,6 +20,9 @@ const CP_STATIONS = ['CP-AM-CAM-V2_01', 'CP-AM-CAM_01', 'CP-AM-DRILL_01', 'CP-AM
 const TARGETS = {};
 TARGETS['mps400_MPS400'] = { url: BASE + 'MPS400/MPS400.xml', kind: 'catalog' };
 TARGETS['mps400_Sorting_01'] = { url: BASE + 'MPS400/Sorting_01.xml', kind: 'scene' };
+TARGETS['mps400_Distribution_Pro_01'] = { url: BASE + 'MPS400/Distribution_Pro_01.xml', kind: 'scene' };
+TARGETS['mps400_Joining_01'] = { url: BASE + 'MPS400/Joining_01.xml', kind: 'scene' };
+TARGETS['mps400_Measuring_Pro_01'] = { url: BASE + 'MPS400/Measuring_Pro_01.xml', kind: 'scene' };
 TARGETS['mps_en_index'] = { url: BASE + 'mps/MPS%20[EN]/index.xml', kind: 'scene' };
 TARGETS['cp-cloud_om_index'] = { url: BASE + 'cp-cloud_om/index.xml', kind: 'catalog' };
 for (const s of CP_STATIONS) {
@@ -65,7 +68,8 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
           { maxBuffer: 64 * 1024 * 1024 }).toString();
         html = html
           .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
-          .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js');
+          .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js')
+          .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" ');
         fs.writeFileSync(path.join(OUT_DIR, name + '.html'), html);
       } catch (e) {
         failures.push(`${name}: ${e.message}`);

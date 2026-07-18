@@ -755,9 +755,11 @@
 
     // Use the local vendor copies of the runtime libraries — much faster and
     // works offline (standalone xsltproc output keeps the CDN URLs)
+    var vendorBase = window.location.href.replace(/[^\/]*$/, '') + 'vendor/';
     resultStr = resultStr
-      .replace('https://aframe.io/releases/1.7.1/aframe.min.js', window.location.href.replace(/[^\/]*$/, '') + 'vendor/aframe.min.js')
-      .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', window.location.href.replace(/[^\/]*$/, '') + 'vendor/aframe-ar.js');
+      .replace('https://aframe.io/releases/1.7.1/aframe.min.js', vendorBase + 'aframe.min.js')
+      .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', vendorBase + 'aframe-ar.js')
+      .replace(/<a-text /g, '<a-text font="' + vendorBase + 'Roboto-msdf.json" ');
 
     lastHtmlRaw = resultStr;
     window._popupCode = resultStr;
@@ -927,11 +929,18 @@
   // retry through a public CORS proxy.
   function fetchXmlWithFallback(url) {
     var mirror = sampleMirrorFor(url);
+    var direct = function () { return fetch(url).then(check); };
     if (mirror) {
       var local = mirror.xml + url.substring(mirror.remote.length);
       return fetch(local).then(function (r) {
         if (!r.ok) throw new Error('HTTP ' + r.status + ' (local mirror)');
         return r.text();
+      }).catch(function () {
+        // Not mirrored (e.g. a catalog entry): fall back to the remote chain
+        return direct().catch(function (directErr) {
+          if (/^HTTP \d+/.test(directErr.message)) throw directErr;
+          return fetch(proxied).then(check).catch(function () { throw directErr; });
+        });
       });
     }
     var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
@@ -1035,6 +1044,18 @@
         odError.textContent = 'Camera unavailable: ' + e.message;
       });
   }
+
+  // Catalog previews post their entry clicks here; open them as tabs,
+  // resolved against the active tab's source URL
+  window.addEventListener('message', function (e) {
+    var msg = e.data;
+    if (!msg || msg.type !== 'fdar-open-entry' || !msg.url) return;
+    var tab = xmlTabs.find(function (t) { return t.id === activeXmlTabId; });
+    var base = (tab && tab.baseUrl) || window.location.href;
+    var abs;
+    try { abs = new URL(msg.url, base).href; } catch (err) { abs = msg.url; }
+    loadXmlFromUrl(abs);
+  });
 
   document.getElementById('btn-open-xml').addEventListener('click', showOpenDialog);
   document.getElementById('od-close').addEventListener('click', closeOpenDialog);

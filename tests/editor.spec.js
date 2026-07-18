@@ -335,6 +335,29 @@ test.describe('Azure sample via the URL dialog (served from the local mirror)', 
   });
 });
 
+test.describe('catalog preview', () => {
+  test('MPS400 catalog entries open as editor tabs when clicked', async ({ page }) => {
+    test.slow();
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    await page.locator('#od-url-input')
+      .fill('https://festodidacticsw.azurewebsites.net/ar/MPS400/MPS400.xml');
+    await page.locator('#od-url-load').click();
+    await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/MPS400/, { timeout: 30_000 });
+
+    // The preview renders the catalog menu
+    const frame = page.frameLocator('#preview-iframe');
+    await expect(frame.locator('a.entry').first()).toBeVisible({ timeout: 30_000 });
+    await expect(frame.locator('a.entry')).toHaveCount(4);
+
+    // Clicking an entry opens it as a new tab (resolved via the local mirror)
+    await frame.locator('a.entry', { hasText: 'Sorting_01' }).click();
+    await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/Sorting_01/, { timeout: 60_000 });
+    await expect.poll(() => getEditorValue(page)).toContain('<TARGETBASE');
+    await expect.poll(() => getGeneratedHtml(page), { timeout: 30_000 }).toContain('<a-marker');
+  });
+});
+
 test.describe('preview stability', () => {
   test('marker-free display size is unchanged after editing the XML', async ({ page }) => {
     test.slow();

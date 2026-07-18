@@ -608,17 +608,76 @@
       '.box{background:#2d2d2d;border:1px solid #5a1d1d;border-radius:8px;padding:20px 28px;max-width:90%;word-break:break-all;white-space:pre-wrap;font-size:13px;line-height:1.6}' +
       '.t{color:#ff6b6b;font-size:15px;font-weight:bold;margin-bottom:10px}</style></head>' +
       '<body><div class="box"><div class="t">Error</div>' + escaped + '</div></body></html>';
+    _discardPending();
     if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
     var blob = new Blob([page], { type: 'text/html;charset=utf-8' });
     currentBlobUrl = URL.createObjectURL(blob);
     previewIframe.src = currentBlobUrl;
   }
 
+  // Double-buffered preview reload: the next page loads in a hidden iframe
+  // and is swapped in once its scene is ready, so edits neither flash the
+  // preview nor show a half-initialized scene.
+  var _pendingIframe = null;
+
+  function _discardPending() {
+    if (!_pendingIframe) return;
+    var stale = _pendingIframe;
+    _pendingIframe = null;
+    if (stale._pollTimer) clearInterval(stale._pollTimer);
+    if (stale._blobUrl) URL.revokeObjectURL(stale._blobUrl);
+    stale.remove();
+  }
+
   function _doReloadIframe(html) {
-    if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+    _discardPending();
     var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    currentBlobUrl = URL.createObjectURL(blob);
-    previewIframe.src = currentBlobUrl;
+    var url = URL.createObjectURL(blob);
+
+    var next = document.createElement('iframe');
+    next.setAttribute('allow', 'camera;microphone;autoplay');
+    next.tabIndex = -1;
+    next.style.visibility = 'hidden';
+    next.style.display = previewIframe.style.display;
+    next._blobUrl = url;
+    previewIframe.parentElement.appendChild(next);
+    _pendingIframe = next;
+
+    var swapped = false;
+    var swap = function () {
+      if (swapped || _pendingIframe !== next) return;
+      swapped = true;
+      if (next._pollTimer) clearInterval(next._pollTimer);
+      _pendingIframe = null;
+      var old = previewIframe;
+      next.id = 'preview-iframe';
+      old.removeAttribute('id');
+      next.style.visibility = '';
+      next.style.pointerEvents = old.style.pointerEvents;
+      old.remove();
+      if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = url;
+      previewIframe = next;
+    };
+
+    var started = Date.now();
+    next.addEventListener('load', function () {
+      next._pollTimer = setInterval(function () {
+        var ready = false;
+        try {
+          var doc = next.contentDocument;
+          var scene = doc && doc.querySelector('a-scene');
+          if (scene) ready = !!scene.hasLoaded;
+          else ready = !!(doc && doc.readyState === 'complete');
+        } catch (e) {
+          ready = true;
+        }
+        if (ready || Date.now() - started > 6000) swap();
+      }, 100);
+    });
+    // Safety net: swap even if the load event never fires
+    setTimeout(swap, 9000);
+    next.src = url;
   }
 
   // During keyboard tab navigation reloads are deferred, so stepping across

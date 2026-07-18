@@ -188,6 +188,43 @@ test.describe('preview state', () => {
   });
 });
 
+test.describe('preview stability', () => {
+  test('marker-free display size is unchanged after editing the XML', async ({ page }) => {
+    test.slow();
+    await openApp(page);
+    await page.locator('#xml-tab-bar .dtab', { hasText: 'text_ar' }).locator('.dtab-label').click();
+    await expect.poll(() => getEditorValue(page)).toContain('<TARGETBASE');
+    const frame = page.frameLocator('#preview-iframe');
+    await expect(frame.locator('#mf-checkbox')).toBeAttached({ timeout: 30_000 });
+    await frame.locator('.mf-slider').click();
+
+    const stageScale = () => page.evaluate(() => {
+      const iframe = /** @type {HTMLIFrameElement} */ (document.getElementById('preview-iframe'));
+      const doc = iframe && iframe.contentDocument;
+      const marker = doc && /** @type {any} */ (doc.querySelector('a-marker'));
+      if (!marker || !marker._mfGroup) return null;
+      return marker._mfGroup.children[0].scale.x;
+    });
+    await expect.poll(stageScale, { timeout: 30_000 }).not.toBeNull();
+    // Let the post-load re-fit settle (text glyphs arrive asynchronously)
+    await page.waitForTimeout(1500);
+    const before = await stageScale();
+
+    // A colour-only edit reloads the preview without changing geometry
+    await setEditorValue(page, (await getEditorValue(page))
+      .replace('<TEXT label="Hello World" />', '<TEXT label="Hello World" rgba="ff0000ff" />'));
+    await expect.poll(() => getGeneratedHtml(page), { timeout: 20_000 }).toContain('rgba: ff0000ff');
+    await expect(frame.locator('#mf-checkbox')).toBeChecked({ timeout: 30_000 });
+    await expect.poll(stageScale, { timeout: 30_000 }).not.toBeNull();
+    await page.waitForTimeout(1500);
+    const after = await stageScale();
+
+    expect(before).not.toBeNull();
+    expect(Math.abs(/** @type {number} */(after) - /** @type {number} */(before)))
+      .toBeLessThan(/** @type {number} */(before) * 0.02);
+  });
+});
+
 test.describe('open dialog', () => {
   test('Open shows a dialog with file drop zone, URL input and QR scan', async ({ page }) => {
     await openApp(page);

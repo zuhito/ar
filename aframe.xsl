@@ -1157,6 +1157,49 @@
             window._mfBackground = { had: scene.object3D.background };
             scene.object3D.background = new THREE.Color('#333333');
           }
+          // Normalise: centre the content and scale it to ~1.2 units radius.
+          // Only effectively visible meshes count — view-hidden content can
+          // span a far larger volume and would shrink the visible part to
+          // sub-pixel size. Re-run whenever late-loading geometry arrives so
+          // the size does not depend on when the toggle was flipped.
+          var fit = function (m) {
+            var pivot = m._mfGroup;
+            if (!pivot) return;
+            var inner = pivot.children[0];
+            inner.scale.set(1, 1, 1);
+            inner.position.set(0, 0, 0);
+            inner.updateMatrixWorld(true);
+            var box = new THREE.Box3();
+            var tmp = new THREE.Box3();
+            inner.traverse(function (o) {
+              if (!o.isMesh) return;
+              var p = o, vis = true;
+              while (p &amp;&amp; p !== pivot.parent) {
+                if (p.visible === false) { vis = false; break; }
+                p = p.parent;
+              }
+              if (!vis) return;
+              tmp.setFromObject(o);
+              if (!tmp.isEmpty()) box.union(tmp);
+            });
+            if (box.isEmpty()) box.setFromObject(inner);
+            if (box.isEmpty()) return;
+            var sphere = box.getBoundingSphere(new THREE.Sphere());
+            if (sphere.radius &gt; 0) {
+              var s = 1.2 / sphere.radius;
+              var center = pivot.worldToLocal(sphere.center.clone());
+              inner.scale.setScalar(s);
+              inner.position.copy(center).multiplyScalar(-s);
+            }
+          };
+          window._mfFitAll = function () {
+            if (window._mfFitTimer) clearTimeout(window._mfFitTimer);
+            window._mfFitTimer = setTimeout(function () {
+              Array.prototype.forEach.call(document.querySelectorAll('a-marker'), function (m) {
+                if (m._mfGroup) fit(m);
+              });
+            }, 300);
+          };
           var mount = function () {
             markers.forEach(function (m, i) {
               if (m._mfGroup) return;
@@ -1164,33 +1207,6 @@
               var inner = new THREE.Group();
               pivot.add(inner);
               m.object3D.children.slice().forEach(function (child) { inner.add(child); });
-              // Normalise: centre the content and scale it to ~1.2 units radius.
-              // Only effectively visible meshes count — view-hidden content can
-              // span a far larger volume and would shrink the visible part to
-              // sub-pixel size.
-              inner.updateMatrixWorld(true);
-              var box = new THREE.Box3();
-              var tmp = new THREE.Box3();
-              inner.traverse(function (o) {
-                if (!o.isMesh) return;
-                var p = o, vis = true;
-                while (p &amp;&amp; p !== inner.parent) {
-                  if (p.visible === false) { vis = false; break; }
-                  p = p.parent;
-                }
-                if (!vis) return;
-                tmp.setFromObject(o);
-                if (!tmp.isEmpty()) box.union(tmp);
-              });
-              if (box.isEmpty()) box.setFromObject(inner);
-              if (!box.isEmpty()) {
-                var sphere = box.getBoundingSphere(new THREE.Sphere());
-                if (sphere.radius &gt; 0) {
-                  var s = 1.2 / sphere.radius;
-                  inner.scale.setScalar(s);
-                  inner.position.copy(sphere.center).multiplyScalar(-s);
-                }
-              }
               // Place the stage at eye height, in front of the camera
               var camY = 0;
               try { camY = scene.camera.getWorldPosition(new THREE.Vector3()).y; } catch (e) {}
@@ -1198,7 +1214,14 @@
               pivot.rotation.x = Math.PI / 2;   // marker content faces +Y; turn it to the camera
               m._mfGroup = pivot;
               stageEl.object3D.add(pivot);
+              fit(m);
             });
+            if (!window._mfRenormBound) {
+              window._mfRenormBound = true;
+              ['model-loaded', 'textfontset', 'materialtextureloaded', 'object3dset'].forEach(function (evt) {
+                scene.addEventListener(evt, window._mfFitAll, true);
+              });
+            }
           };
           if (stageEl.object3D) mount();
           else stageEl.addEventListener('loaded', mount, { once: true });

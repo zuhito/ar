@@ -5,7 +5,7 @@
     </JSON>
   </VALUESERVER>
   <CAMERA x="0.5" y="0.5" scaleto="w" distance="2">
-    <NODE tz="0.2" sxyz="0.02">
+    <NODE tz="0.2" sxyz="1.34">
       <TEXT label="bordered" rgba="ffffffff" backrgba="000000cc" border="2" width="10" />
     </NODE>
   </CAMERA>

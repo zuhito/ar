@@ -583,7 +583,14 @@
             self.bgEl.setAttribute('width', w);
             self.bgEl.setAttribute('height', h);
             self.bgEl.setAttribute('material', 'color: ' + bg.color + '; opacity: ' + bg.opacity + '; transparent: true; shader: flat; side: double; depthWrite: false');
-            self.bgEl.object3D.position.set(center.x, center.y, center.z - 0.05);
+            // Keep a real-world gap behind the glyphs: a fixed local offset can
+            // collapse below depth-buffer precision once the ancestor chain
+            // scales the text down (mm-space scenes), which strips white lines
+            // through the letters. Also force the plane to paint before the
+            // glyphs so equal-depth pixels can never win over the text.
+            var zGap = Math.max(0.05, 0.0005 / (ws.z || 1));
+            self.bgEl.object3D.position.set(center.x, center.y, center.z - zGap);
+            self.bgEl.object3D.traverse(function (o) { o.renderOrder = -1; });
           };
           this.el.addEventListener('textfontset', function () { setTimeout(build, 50); });
           setTimeout(build, 600);
@@ -757,12 +764,24 @@
           this.el.sceneEl.addEventListener('loaded', function () { setTimeout(apply, 100); });
           window.addEventListener('resize', function () { setTimeout(apply, 100); });
         },
+        tick: function () {
+          // AR.js (and the marker-free preview) overwrite the projection matrix
+          // directly, so watch it and re-anchor whenever the frustum changes
+          var cam = this.el.sceneEl.camera;
+          if (!cam) return;
+          var e = cam.projectionMatrix.elements;
+          var sig = e[0] + ',' + e[5];
+          if (sig !== this._projSig) { this._projSig = sig; this.apply(); }
+        },
         apply: function () {
           var cam = this.el.sceneEl.camera;
           if (!cam) return;
           var d = this.data.distance || 1;
-          var halfH = d * Math.tan(cam.fov * Math.PI / 360);
-          var halfW = halfH * cam.aspect;
+          // Derive the frustum from the live projection matrix: cam.fov/aspect
+          // are stale once AR.js installs its own projection
+          var e = cam.projectionMatrix.elements;
+          var halfW = e[0] ? d / e[0] : d * Math.tan(cam.fov * Math.PI / 360) * cam.aspect;
+          var halfH = e[5] ? d / e[5] : d * Math.tan(cam.fov * Math.PI / 360);
           var o = this.el.object3D;
           o.position.set((this.data.x - 0.5) * 2 * halfW, (this.data.y - 0.5) * 2 * halfH, -d);
           var st = this.data.scaleto;
@@ -1926,10 +1945,10 @@
       </xsl:choose>
     </xsl:variable>
 
-    <xsl:variable name="textScale"><xsl:choose>
-      <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
-      <xsl:otherwise>50 50 50</xsl:otherwise>
-    </xsl:choose></xsl:variable>
+    <!-- FDAR authors sizes in the local node units everywhere (marker, image
+         target and screen-relative CAMERA content all sit in the same
+         mm-style space), so one calibration factor applies to all of them -->
+    <xsl:variable name="textScale">0.75 0.75 0.75</xsl:variable>
 
     <xsl:choose>
       <xsl:when test="LINK">

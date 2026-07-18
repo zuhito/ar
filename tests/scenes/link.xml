@@ -1,6 +1,6 @@
 <AUGMENTATION>
   <CAMERA>
-    <NODE tz="100">
+    <NODE tz="100" sxyz="67">
       <TEXT label="Website">
         <LINK refer="https://nodered.jp"/>
       </TEXT>

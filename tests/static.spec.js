@@ -30,7 +30,7 @@ test.describe('xsltproc-generated pages', () => {
     const text = page.locator('a-text');
     await expect(text).toHaveAttribute('value', 'Hello World');
     await expect(text).toHaveAttribute('fdar-color', /rgba: 00ff0088/);
-    await expect(text).toHaveAttribute('scale', '50 50 50');
+    await expect(text).toHaveAttribute('scale', '0.75 0.75 0.75');
     // NODE tz=100 becomes position z=-100 on the wrapping entity
     await expect(page.locator('a-camera > a-entity').first()).toHaveAttribute('position', '0 0 -100');
 

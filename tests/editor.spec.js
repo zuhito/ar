@@ -1,5 +1,32 @@
 // @ts-check
 const { test, expect } = require('@playwright/test');
+const fs = require('node:fs');
+const { PNG } = require('pngjs');
+
+const SHOT_DIR = 'test-screenshots';
+fs.mkdirSync(SHOT_DIR, { recursive: true });
+
+/** Count pixels matching a predicate. */
+function countPixels(png, match) {
+  let n = 0;
+  for (let i = 0; i < png.width * png.height * 4; i += 4) {
+    if (match(png.data[i], png.data[i + 1], png.data[i + 2])) n++;
+  }
+  return n;
+}
+
+/** Fraction of pixels that differ noticeably between two same-size PNGs. */
+function diffRatio(a, b) {
+  if (a.width !== b.width || a.height !== b.height) return 1;
+  let diff = 0;
+  const total = a.width * a.height;
+  for (let i = 0; i < total * 4; i += 4) {
+    if (Math.abs(a.data[i] - b.data[i]) > 24 ||
+        Math.abs(a.data[i + 1] - b.data[i + 1]) > 24 ||
+        Math.abs(a.data[i + 2] - b.data[i + 2]) > 24) diff++;
+  }
+  return diff / total;
+}
 
 /** Editor value, whether Monaco loaded or the textarea fallback is active. */
 function getEditorValue(page) {
@@ -31,7 +58,8 @@ function getGeneratedHtml(page) {
 }
 
 async function openApp(page) {
-  await page.goto('/');
+  // 'load' would wait for the Monaco CDN, which can be very slow
+  await page.goto('/', { waitUntil: 'domcontentloaded' });
   // Tabs render once Monaco (or its textarea fallback) has initialized
   await expect(page.locator('#xml-tab-bar .dtab')).toHaveCount(13);
   await expect.poll(() => getEditorValue(page)).toContain('<AUGMENTATION>');
@@ -185,6 +213,125 @@ test.describe('preview state', () => {
       const stage = doc && /** @type {any} */ (doc.getElementById('mf-stage'));
       return stage && stage.object3D ? stage.object3D.children.length : 0;
     }), { timeout: 30_000 }).toBeGreaterThan(0);
+  });
+});
+
+test.describe('Azure sample via the URL dialog (served from the local mirror)', () => {
+  test('CP-AM-CAM-V2_01 shows textured menu icons and clicking one switches views', async ({ page }) => {
+    test.slow();
+    test.setTimeout(180_000);
+    await openApp(page);
+    await page.locator('#btn-open-xml').click();
+    await page.locator('#od-url-input')
+      .fill('https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM-V2_01.xml');
+    await page.locator('#od-url-load').click();
+    await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/CP-AM-CAM-V2_01/, { timeout: 30_000 });
+
+    const frame = page.frameLocator('#preview-iframe');
+    await expect(frame.locator('#mf-checkbox')).toBeAttached({ timeout: 60_000 });
+    await frame.locator('.mf-slider').click();
+
+    const inIframe = (fn) => page.evaluate((srcFn) => {
+      const iframe = /** @type {HTMLIFrameElement} */ (document.getElementById('preview-iframe'));
+      const win = /** @type {any} */ (iframe.contentWindow);
+      return new Function('window', 'document', `return (${srcFn})()`)(win, win.document);
+    }, fn.toString());
+
+    // The menu icons must be real textures (loaded from this site's mirror
+    // of the Azure assets), not white fallbacks
+    await expect.poll(() => inIframe(() => {
+      let textured = 0;
+      const scene = /** @type {any} */ (document.querySelector('a-scene'));
+      if (!scene || !scene.object3D) return 0;
+      scene.object3D.traverse((o) => {
+        if (!o.isMesh || !o.material || !o.material.map) return;
+        const img = o.material.map.image;
+        if (img && ((img.naturalWidth || 0) > 0 || (img.videoWidth || 0) > 0 || (img.width || 0) > 0)) textured++;
+      });
+      return textured;
+    }), { timeout: 60_000, intervals: [1000] }).toBeGreaterThanOrEqual(4);
+
+    const box = await page.locator('#preview-iframe').boundingBox();
+    if (!box) throw new Error('no preview box');
+    await page.waitForTimeout(2000);
+    const beforeShot = await page.screenshot({ clip: box, path: `${SHOT_DIR}/cam-v2-icons.png` });
+    const beforePng = PNG.sync.read(beforeShot);
+    // Festo blue (#0091DC-ish) must be on screen — the icons are visible
+    // The icon panels must actually be on screen: count bright panel pixels
+    // and dark glyph pixels outside the toggle UI corner
+    let bright = 0, glyph = 0;
+    for (let y = 0; y < beforePng.height; y++) {
+      for (let x = 0; x < beforePng.width; x++) {
+        if (x < 260 && y < 60) continue;
+        const i = (y * beforePng.width + x) * 4;
+        const [r, g, b] = [beforePng.data[i], beforePng.data[i + 1], beforePng.data[i + 2]];
+        if (r > 180 && g > 180 && b > 180) bright++;
+        else if (r < 40 && g < 40 && b < 40) glyph++;
+      }
+    }
+    expect(bright, 'icon panels visible').toBeGreaterThan(5000);
+    expect(glyph, 'icon glyphs visible').toBeGreaterThan(1000);
+
+    // Click the top-left menu icon like a user would: locate the bright
+    // icon panels in the screenshot and click the centre of the first one
+    // (projection math is unreliable because AR.js reshapes the camera)
+    const viewBefore = await inIframe(() => /** @type {any} */ (window).fdarCurrentView);
+    // Sample bright (panel) pixels and let the page's own raycaster tell us
+    // which screen point actually hits a @view: menu link, then click there.
+    let switched = false;
+    for (let attempt = 0; attempt < 4 && !switched; attempt++) {
+      const shot = PNG.sync.read(await page.screenshot({ clip: box }));
+      const candidates = [];
+      for (let y = 0; y < shot.height && candidates.length < 400; y += 12) {
+        for (let x = 0; x < shot.width && candidates.length < 400; x += 12) {
+          const i = (y * shot.width + x) * 4;
+          if (shot.data[i] > 200 && shot.data[i + 1] > 200 && shot.data[i + 2] > 200) {
+            candidates.push({ x, y });
+          }
+        }
+      }
+      expect(candidates.length, 'bright menu pixels present').toBeGreaterThan(0);
+      const spot = await page.evaluate((points) => {
+        const win = /** @type {any} */ (/** @type {HTMLIFrameElement} */ (document.getElementById('preview-iframe')).contentWindow);
+        const doc = win.document;
+        const scene = doc.querySelector('a-scene');
+        if (!scene || !scene.canvas) return null;
+        const rect = scene.canvas.getBoundingClientRect();
+        const clickables = Array.from(doc.querySelectorAll('.clickable')).filter((el) => el.object3D && !win.fdarHiddenChain(el));
+        const objs = clickables.map((el) => el.object3D);
+        const ray = new win.THREE.Raycaster();
+        for (const p of points) {
+          const ndc = new win.THREE.Vector2(((p.x - rect.left) / rect.width) * 2 - 1, -(((p.y - rect.top) / rect.height) * 2 - 1));
+          ray.setFromCamera(ndc, scene.camera);
+          const hits = ray.intersectObjects(objs, true);
+          if (!hits.length) continue;
+          let node = hits[0].object;
+          while (node) {
+            const el = node.el;
+            if (el && el.classList && el.classList.contains('clickable')) {
+              const data = el.getAttribute('navigate-on-click');
+              const url = typeof data === 'string' ? data : (data && data.url) || '';
+              if (url.indexOf('@view:') === 0) return p;
+              break;
+            }
+            node = node.parent;
+          }
+        }
+        return null;
+      }, candidates);
+      if (!spot) { await page.waitForTimeout(1500); continue; }
+      console.log(`[cam-v2] attempt ${attempt}: clicking (${spot.x},${spot.y})`);
+      await page.mouse.click(box.x + spot.x, box.y + spot.y);
+      try {
+        await expect.poll(() => inIframe(() => /** @type {any} */ (window).fdarCurrentView),
+          { timeout: 6_000 }).not.toBe(viewBefore);
+        switched = true;
+      } catch (e) { /* moved between shot and click; retry */ }
+    }
+    expect(switched, 'clicking a menu icon must switch the view').toBe(true);
+    await page.waitForTimeout(2500);
+    const afterShot = await page.screenshot({ clip: box, path: `${SHOT_DIR}/cam-v2-after-click.png` });
+    expect(diffRatio(beforePng, PNG.sync.read(afterShot))).toBeGreaterThan(0.01);
   });
 });
 

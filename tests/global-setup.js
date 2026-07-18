@@ -31,7 +31,11 @@ module.exports = async () => {
 
   for (const file of collectXml(scenesDir)) {
     const rel = path.relative(scenesDir, file);
-    const html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), file], { maxBuffer: 64 * 1024 * 1024 });
+    let html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), file], { maxBuffer: 64 * 1024 * 1024 }).toString();
+    // Local vendor copies keep the tests fast and network-independent
+    html = html
+      .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
+      .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js');
     const target = path.join(outDir, rel.replace(/\.xml$/, '.html'));
     fs.mkdirSync(path.dirname(target), { recursive: true });
     fs.writeFileSync(target, html);

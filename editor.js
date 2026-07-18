@@ -413,10 +413,13 @@
     doTransform(getEditorValue());
   }
 
-  function addXmlTab(name, content) {
+  function addXmlTab(name, content, sourceUrl) {
     _pushTabState();
     var id = 'tab_' + (++uid);
-    xmlTabs.push({ id: id, name: name, content: formatXml(content) });
+    var tab = { id: id, name: name, content: formatXml(content) };
+    // Per FDAR spec, relative references resolve against the scene's URL
+    if (sourceUrl) tab.baseUrl = sourceUrl.replace(/[^\/]*$/, '');
+    xmlTabs.push(tab);
     switchXmlTab(id);
   }
 
@@ -720,14 +723,41 @@
     resultStr = fixXhtmlToHtml(resultStr);
     resultStr = tidyHtml(resultStr);
 
-    // Blob URLs have no base; anchor relative references to this page's folder
-    var baseHref = window.location.href.replace(/[^\/]*$/, '');
+    // Blob URLs have no base; anchor relative references to the scene's own
+    // URL when it was loaded from one (FDAR spec), else to this page's folder
+    var activeTab = xmlTabs.find(function (t) { return t.id === activeXmlTabId; });
+    var baseHref = (activeTab && activeTab.baseUrl) || window.location.href.replace(/[^\/]*$/, '');
+    var mirror = activeTab && activeTab.baseUrl && sampleMirrorFor(activeTab.baseUrl);
+    if (mirror) baseHref = window.location.href.replace(/[^\/]*$/, '') + mirror.assets;
+    var crossOrigin = false;
+    try { crossOrigin = new URL(baseHref, window.location.href).origin !== window.location.origin; } catch (e) {}
+    // Servers like festodidacticsw send no CORS headers, which would make
+    // cross-origin textures unusable in WebGL — route them through the proxy
+    var resolveRef = function (path) {
+      var abs = baseHref + path;
+      return crossOrigin ? 'https://api.allorigins.win/raw?url=' + encodeURIComponent(abs) : abs;
+    };
     if (resultStr.indexOf('<base ') === -1) {
       resultStr = resultStr.replace(/<head>/i, '<head>\n  <base href="' + baseHref + '">');
     }
     resultStr = resultStr.replace(/url="(?!https?:\/\/|data:|blob:|\/|#)([^"]+)"/gi, function (m, path) {
-      return 'url="' + baseHref + path + '"';
+      return 'url="' + resolveRef(path) + '"';
     });
+    if (crossOrigin) {
+      resultStr = resultStr.replace(/url\((?!https?:\/\/|data:|blob:|\/|#)([^)]+)\)/gi, function (m, path) {
+        return 'url(' + resolveRef(path) + ')';
+      });
+      resultStr = resultStr.replace(/(src|gltf-model)="(?!https?:\/\/|data:|blob:|\/|#)([^"]+)"/gi, function (m, attr, path) {
+        if (path.indexOf('vid-') === 0 || path.indexOf('cdn.') === 0) return m;
+        return attr + '="' + resolveRef(path) + '"';
+      });
+    }
+
+    // Use the local vendor copies of the runtime libraries — much faster and
+    // works offline (standalone xsltproc output keeps the CDN URLs)
+    resultStr = resultStr
+      .replace('https://aframe.io/releases/1.7.1/aframe.min.js', window.location.href.replace(/[^\/]*$/, '') + 'vendor/aframe.min.js')
+      .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', window.location.href.replace(/[^\/]*$/, '') + 'vendor/aframe-ar.js');
 
     lastHtmlRaw = resultStr;
     window._popupCode = resultStr;
@@ -877,9 +907,33 @@
     return base.replace(/\.[^.]+$/, '') || 'remote';
   }
 
-  // Direct fetch first; if the server does not allow CORS (e.g.
-  // festodidacticsw.azurewebsites.net), retry through a public CORS proxy.
+  var SAMPLE_MIRRORS = [
+    { remote: 'https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/', xml: 'tests/scenes/festo/cp-cloud_om/', assets: 'mirror/cp-cloud_om/' },
+    { remote: 'https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/', xml: 'tests/scenes/festo/cp-cloud_nm/', assets: 'mirror/cp-cloud_nm/' },
+    { remote: 'https://festodidacticsw.azurewebsites.net/ar/MPS400/', xml: 'tests/scenes/festo/mps400/', assets: 'mirror/mps400/' },
+    { remote: 'https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20[EN]/', xml: 'tests/scenes/festo/mps_en/', assets: 'mirror/mps_en/' },
+    { remote: 'https://fdcamixedreality.blob.core.windows.net/mixedreality/', xml: 'tests/scenes/festo/mixedreality/', assets: 'mirror/mixedreality/' }
+  ];
+
+  function sampleMirrorFor(url) {
+    for (var i = 0; i < SAMPLE_MIRRORS.length; i++) {
+      if (url.indexOf(SAMPLE_MIRRORS[i].remote) === 0) return SAMPLE_MIRRORS[i];
+    }
+    return null;
+  }
+
+  // Known Azure samples are served from this site's local mirror (fast, no
+  // CORS). Other URLs: direct fetch first; if the server does not allow CORS,
+  // retry through a public CORS proxy.
   function fetchXmlWithFallback(url) {
+    var mirror = sampleMirrorFor(url);
+    if (mirror) {
+      var local = mirror.xml + url.substring(mirror.remote.length);
+      return fetch(local).then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status + ' (local mirror)');
+        return r.text();
+      });
+    }
     var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
     var check = function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -906,7 +960,7 @@
         if (doc.getElementsByTagName('parsererror').length > 0) {
           throw new Error('Not a valid XML document');
         }
-        addXmlTab(tabNameFromUrl(url), text);
+        addXmlTab(tabNameFromUrl(url), text, url);
         closeOpenDialog();
       })
       .catch(function (e) {
@@ -938,7 +992,7 @@
     return new Promise(function (resolve, reject) {
       if (window.jsQR) return resolve(window.jsQR);
       var s = document.createElement('script');
-      s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+      s.src = 'vendor/jsQR.min.js';
       s.onload = function () { resolve(window.jsQR); };
       s.onerror = function () { reject(new Error('failed to load jsQR')); };
       document.head.appendChild(s);

@@ -195,6 +195,7 @@
               if (!cc) return;
               var P = {ox:2, oy:-5, sx:2.2, sy:2.1};
               function fix(evt) {
+                if (window._mfOn) return evt;
                 var c = sc.canvas; if (!c) return evt;
                 var r = c.getBoundingClientRect(), cx = r.left+r.width/2, cy = r.top+r.height/2;
                 return new MouseEvent(evt.type, {clientX:cx+(evt.clientX-cx)*P.sx+P.ox, clientY:cy+(evt.clientY-cy)*P.sy+P.oy, bubbles:true, cancelable:true});
@@ -572,8 +573,8 @@
             }
             self.bgEl.setAttribute('width', w);
             self.bgEl.setAttribute('height', h);
-            self.bgEl.setAttribute('material', 'color: ' + bg.color + '; opacity: ' + bg.opacity + '; transparent: true; shader: flat; side: double');
-            self.bgEl.object3D.position.set(center.x, center.y, center.z - 0.01);
+            self.bgEl.setAttribute('material', 'color: ' + bg.color + '; opacity: ' + bg.opacity + '; transparent: true; shader: flat; side: double; depthWrite: false');
+            self.bgEl.object3D.position.set(center.x, center.y, center.z - 0.05);
           };
           this.el.addEventListener('textfontset', function () { setTimeout(build, 50); });
           setTimeout(build, 600);
@@ -943,6 +944,37 @@
       });</xsl:text>
           </xsl:if>
 
+          <xsl:if test="//TEXT">
+            <xsl:text disable-output-escaping="yes">&#10;      // FDAR labels may embed formatting pseudo-tags such as &lt;align="left"&gt;;
+      // apply the alignment to the a-text and strip the tags from the value
+      AFRAME.registerComponent('fdar-label-fmt', {
+        init: function () {
+          var self = this;
+          this.processing = false;
+          var process = function () {
+            if (self.processing) return;
+            var raw = self.el.getAttribute('value') || '';
+            if (raw.indexOf('&lt;') === -1) return;
+            var align = null;
+            var cleaned = raw.replace(/&lt;align="(left|center|right)"&gt;/gi, function (m, a) {
+              align = a.toLowerCase();
+              return '';
+            });
+            cleaned = cleaned.replace(/&lt;[a-z]+="[^"]*"&gt;/gi, '');
+            if (cleaned === raw &amp;&amp; !align) return;
+            self.processing = true;
+            if (align) self.el.setAttribute('align', align);
+            self.el.setAttribute('value', cleaned);
+            self.processing = false;
+          };
+          process();
+          this.observer = new MutationObserver(process);
+          this.observer.observe(this.el, { attributes: true, attributeFilter: ['value'] });
+        },
+        remove: function () { if (this.observer) this.observer.disconnect(); }
+      });</xsl:text>
+          </xsl:if>
+
           <xsl:if test="//SIGNAL">
             <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('ws-signal', {
         schema: {
@@ -1134,6 +1166,7 @@
         }
       });
       window.fdarMarkerFree = function (on) {
+        window._mfOn = on;
         try { localStorage.setItem('fdar_marker_free', on ? '1' : '0'); } catch (e) {}
         var scene = document.querySelector('a-scene');
         if (!scene) return;
@@ -1148,7 +1181,10 @@
           if (!window._mfStage) {
             var stage = document.createElement('a-entity');
             stage.setAttribute('id', 'mf-stage');
-            scene.appendChild(stage);
+            // Child of the camera: the staged content stays centred in view
+            // regardless of how AR.js or look-controls move the camera
+            var camEl = (scene.camera &amp;&amp; scene.camera.el) || scene;
+            camEl.appendChild(stage);
             window._mfStage = stage;
           }
           var stageEl = window._mfStage;
@@ -1156,6 +1192,57 @@
           if (scene.object3D &amp;&amp; !window._mfBackground) {
             window._mfBackground = { had: scene.object3D.background };
             scene.object3D.background = new THREE.Color('#333333');
+          }
+          // AR.js rewrites the camera pose/projection every frame from the
+          // video calibration, which makes rendering and mouse raycasts
+          // disagree. While marker-free is on, suspend the AR.js system and
+          // set one standard projection for a stable, clickable view.
+          var arSys = scene.systems &amp;&amp; scene.systems.arjs;
+          if (arSys &amp;&amp; !window._mfArTick) {
+            window._mfArTick = arSys.tick || true;
+            arSys.tick = function () {};
+          }
+          window._mfSetProjection = function () {
+            var cam = scene.camera;
+            var canvas = scene.canvas;
+            if (!cam || !canvas) return;
+            var rect = canvas.getBoundingClientRect();
+            if (rect.width &gt; 0 &amp;&amp; rect.height &gt; 0) {
+              cam.fov = 60;
+              cam.aspect = rect.width / rect.height;
+              cam.updateProjectionMatrix();
+            }
+          };
+          window._mfSetProjection();
+          setTimeout(window._mfSetProjection, 500);
+          window.addEventListener('resize', window._mfSetProjection);
+          // Clicks: A-Frame's cursor rides on AR.js state, so raycast
+          // ourselves with the same camera the scene renders with
+          if (!window._mfClickHandler) {
+            window._mfClickHandler = function (e) {
+              if (!window._mfOn) return;
+              var canvas = scene.canvas;
+              if (!canvas || e.target !== canvas) return;
+              var rect = canvas.getBoundingClientRect();
+              var ndc = new THREE.Vector2(
+                ((e.clientX - rect.left) / rect.width) * 2 - 1,
+                -(((e.clientY - rect.top) / rect.height) * 2 - 1)
+              );
+              var ray = new THREE.Raycaster();
+              ray.setFromCamera(ndc, scene.camera);
+              var clickables = Array.prototype.slice.call(document.querySelectorAll('.clickable'))
+                .filter(function (el) { return el.object3D &amp;&amp; !window.fdarHiddenChain(el); });
+              var hits = ray.intersectObjects(clickables.map(function (el) { return el.object3D; }), true);
+              if (!hits.length) return;
+              var node = hits[0].object;
+              var target = null;
+              while (node) {
+                if (node.el &amp;&amp; node.el.classList &amp;&amp; node.el.classList.contains('clickable')) { target = node.el; break; }
+                node = node.parent;
+              }
+              if (target) target.emit('click');
+            };
+            document.addEventListener('click', window._mfClickHandler, true);
           }
           // Normalise: centre the content and scale it to ~1.2 units radius.
           // Only effectively visible meshes count — view-hidden content can
@@ -1168,7 +1255,9 @@
             var inner = pivot.children[0];
             inner.scale.set(1, 1, 1);
             inner.position.set(0, 0, 0);
-            inner.updateMatrixWorld(true);
+            // Ancestor matrices (camera pose!) must be current before
+            // measuring, or the recentring lands in a stale frame
+            pivot.updateWorldMatrix(true, true);
             var box = new THREE.Box3();
             var tmp = new THREE.Box3();
             inner.traverse(function (o) {
@@ -1207,10 +1296,7 @@
               var inner = new THREE.Group();
               pivot.add(inner);
               m.object3D.children.slice().forEach(function (child) { inner.add(child); });
-              // Place the stage at eye height, in front of the camera
-              var camY = 0;
-              try { camY = scene.camera.getWorldPosition(new THREE.Vector3()).y; } catch (e) {}
-              pivot.position.set((i - (markers.length - 1) / 2) * 3, camY, -3);
+              pivot.position.set((i - (markers.length - 1) / 2) * 3, 0, -3);
               pivot.rotation.x = Math.PI / 2;   // marker content faces +Y; turn it to the camera
               m._mfGroup = pivot;
               stageEl.object3D.add(pivot);
@@ -1221,11 +1307,28 @@
               ['model-loaded', 'textfontset', 'materialtextureloaded', 'object3dset'].forEach(function (evt) {
                 scene.addEventListener(evt, window._mfFitAll, true);
               });
+              // Switching views changes which content is visible on the stage
+              window.addEventListener('fdar-view-change', window._mfFitAll);
             }
           };
           if (stageEl.object3D) mount();
           else stageEl.addEventListener('loaded', mount, { once: true });
+          // Keep re-fitting while active: late loads, view switches and camera
+          // pose changes all shift the measured bounds
+          if (!window._mfFitInterval) {
+            window._mfFitInterval = setInterval(function () { window._mfFitAll(); }, 1000);
+          }
         } else {
+          if (window._mfFitInterval) { clearInterval(window._mfFitInterval); window._mfFitInterval = null; }
+          var arSys2 = scene.systems &amp;&amp; scene.systems.arjs;
+          if (arSys2 &amp;&amp; window._mfArTick) {
+            if (window._mfArTick !== true) arSys2.tick = window._mfArTick;
+            window._mfArTick = null;
+          }
+          if (window._mfSetProjection) {
+            window.removeEventListener('resize', window._mfSetProjection);
+            window._mfSetProjection = null;
+          }
           if (window._mfBackground) {
             scene.object3D.background = window._mfBackground.had || null;
             window._mfBackground = null;
@@ -1325,7 +1428,7 @@
           <xsl:apply-templates select="CAMERA" />
 
           <xsl:if test="not(CAMERA)">
-            <a-entity camera="camera">
+            <a-entity camera="near: 0.01">
               <xsl:text> </xsl:text>
             </a-entity>
           </xsl:if>
@@ -1337,7 +1440,7 @@
   <xsl:template match="TARGETBASE"><a-entity class="targetbase" dataset="{@file}"><xsl:apply-templates /></a-entity></xsl:template>
   
   <xsl:template match="CAMERA">
-    <a-camera near="0.001">
+    <a-camera near="0.01">
       <xsl:choose>
         <xsl:when test="@x != '' or @y != '' or @distance != '' or @scaleto != ''">
           <a-entity>
@@ -1841,7 +1944,7 @@
             <xsl:attribute name="navigate-on-click">url: <xsl:value-of select="$linkUrl"/></xsl:attribute>
             <xsl:text> </xsl:text>
           </a-entity>
-          <a-text align="center" baseline="center" anchor="center" color="white" outlineColor="black" outlineWidth="0.1" side="double">
+          <a-text align="center" baseline="center" anchor="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="">
             <xsl:call-template name="text-display-attrs">
               <xsl:with-param name="txtVal" select="$txtVal"/>
             </xsl:call-template>
@@ -1850,7 +1953,7 @@
         </a-entity>
       </xsl:when>
       <xsl:otherwise>
-        <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double">
+        <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="">
           <xsl:call-template name="text-display-attrs">
             <xsl:with-param name="txtVal" select="$txtVal"/>
             <xsl:with-param name="scale" select="$textScale"/>

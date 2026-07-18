@@ -60,9 +60,12 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
         }
         const xmlPath = path.join(OUT_DIR, name + '.xml');
         fs.writeFileSync(xmlPath, xml);
-        const html = execFileSync('xsltproc',
+        let html = execFileSync('xsltproc',
           [path.resolve(__dirname, '..', 'aframe.xsl'), xmlPath],
-          { maxBuffer: 64 * 1024 * 1024 });
+          { maxBuffer: 64 * 1024 * 1024 }).toString();
+        html = html
+          .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
+          .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js');
         fs.writeFileSync(path.join(OUT_DIR, name + '.html'), html);
       } catch (e) {
         failures.push(`${name}: ${e.message}`);

@@ -3,6 +3,8 @@
   "private": true,
   "description": "XML-driven A-Frame AR editor with live preview",
   "scripts": {
+    "fetch-assets": "node scripts/fetch-assets.mjs",
+    "pretest": "node scripts/fetch-assets.mjs",
     "test": "playwright test"
   },
   "devDependencies": {

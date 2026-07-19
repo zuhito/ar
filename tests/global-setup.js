@@ -8,6 +8,15 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
+// The Festo sample scenes, vendored libraries and mirrored assets are not
+// committed; fetch them on demand before generating the static pages.
+function fetchAssets(root) {
+  execFileSync('node', [path.join(root, 'scripts', 'fetch-assets.mjs')], {
+    stdio: 'inherit',
+    maxBuffer: 64 * 1024 * 1024,
+  });
+}
+
 function collectXml(dir) {
   const out = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -26,6 +35,8 @@ module.exports = async () => {
   }
 
   const root = path.resolve(__dirname, '..');
+  fetchAssets(root);
+
   const scenesDir = path.join(__dirname, 'scenes');
   const outDir = path.join(root, 'static-html');
 

@@ -1,0 +1,796 @@
+{
+  "required": [
+    {
+      "path": "vendor/aframe.min.js",
+      "url": "https://aframe.io/releases/1.7.1/aframe.min.js"
+    },
+    {
+      "path": "vendor/aframe-ar.js",
+      "url": "https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"
+    },
+    {
+      "path": "vendor/xslt-processor.global.min.js",
+      "url": "https://cdn.jsdelivr.net/npm/xslt-processor@5.0.11/dist/umd/xslt-processor.global.js"
+    },
+    {
+      "path": "vendor/jsQR.min.js",
+      "url": "https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"
+    },
+    {
+      "path": "vendor/Roboto-msdf.json",
+      "url": "https://cdn.aframe.io/fonts/Roboto-msdf.json"
+    },
+    {
+      "path": "vendor/Roboto-msdf.png",
+      "url": "https://cdn.aframe.io/fonts/Roboto-msdf.png"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-CAM_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-CAM_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-CAM-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-CAM-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-DISPENSE_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-DISPENSE_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-DRILL_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-DRILL_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-iDRILL_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-iDRILL_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-iPICK_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-iPICK_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-LABEL_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-LABEL-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-LABEL-V3_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL-V3_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-MAG_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MAG_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-MEASURE_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MEASURE_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-MEASURE-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MEASURE-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-MPRESS_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MPRESS_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-MPRESS-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MPRESS-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-OUT_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-OUT_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-OVEN_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-OVEN_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-PRESS_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-PRESS_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_nm/CP-AM-TURNOVER_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-TURNOVER_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-CAM_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-CAM-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-DRILL_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-DRILL_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-iDRILL_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-iDRILL_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-iPICK_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-iPICK_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-LABEL_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-LABEL-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-LABEL-V3_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL-V3_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-MAG_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MAG_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-MEASURE_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MEASURE_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-MEASURE-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MEASURE-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-MPRESS_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MPRESS_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-MPRESS-V2_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MPRESS-V2_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-OUT_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-OUT_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-OVEN_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-OVEN_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-PRESS_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-PRESS_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/CP-AM-TURNOVER_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-TURNOVER_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/cp-cloud_om/index.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/index.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mixedreality/index.xml",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/index.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mps400/Distribution_Pro_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/Distribution_Pro_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mps400/Joining_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/Joining_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mps400/Measuring_Pro_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/Measuring_Pro_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mps400/MPS400.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/MPS400.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mps400/Sorting_01.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/Sorting_01.xml"
+    },
+    {
+      "path": "tests/scenes/festo/mps_en/index.xml",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/index.xml"
+    }
+  ],
+  "bestEffort": [
+    {
+      "path": "mirror/cp-cloud_nm/images/actuators_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/actuators_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/actuators_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/actuators_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/book_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/book_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/circuit_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/circuit_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/docu_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/docu_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/globe_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/globe_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/grid.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/grid.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/info_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/info_rounded_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/info_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/info_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/info_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/info_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/live_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/live_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/live_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/live_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/menutex.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/menutex.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/sensors_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/sensors_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/sensors_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/sensors_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/video_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/video_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/images/video_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/video_rounded_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/obj/menuplane.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/obj/menuplane.obj"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-CAM_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-CAM_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-CAM-V2_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-CAM-V2_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-DISPENSE_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-DISPENSE_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-DRILL_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-DRILL_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-iDRILL_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-iDRILL_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-iPICK_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-iPICK_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-LABEL_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-LABEL_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-LABEL-V2_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-LABEL-V2_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-LABEL-V3_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-LABEL-V3_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-MAG_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MAG_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-MEASURE_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MEASURE_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-MEASURE-V2_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MEASURE-V2_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-MPRESS_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MPRESS_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-MPRESS-V2_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MPRESS-V2_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-OUT_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-OUT_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-OVEN_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-OVEN_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-PRESS_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-PRESS_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_nm/targets/CP-AM-TURNOVER_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-TURNOVER_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/actuators_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/actuators_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/actuators_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/actuators_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/book_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/book_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/circuit_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/circuit_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/docu_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/docu_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/globe_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/globe_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/grid.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/grid.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/info_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/info_rounded_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/info_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/info_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/info_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/info_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/live_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/live_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/live_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/live_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/menutex.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/menutex.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/sensors_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/sensors_squared_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/sensors_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/sensors_squared.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/video_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/video_rounded_colored.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/images/video_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/video_rounded_hero.png"
+    },
+    {
+      "path": "mirror/cp-cloud_om/obj/menuplane.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/menuplane.obj"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-CAM_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-CAM_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-CAM-V2_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-CAM-V2_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-iDRILL_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-iDRILL_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-iPICK_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-iPICK_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-LABEL_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-LABEL_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-MAG_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MAG_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-MEASURE_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MEASURE_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-MPRESS_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MPRESS_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-OUT_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-OUT_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-OVEN_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-OVEN_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-PRESS_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-PRESS_01.jpg"
+    },
+    {
+      "path": "mirror/cp-cloud_om/targets/CP-AM-TURNOVER_01.jpg",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-TURNOVER_01.jpg"
+    },
+    {
+      "path": "mirror/mixedreality/8122946.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8122946.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8122948.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8122948.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8122950.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8122950.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8122961.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8122961.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8124679.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8124679.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8128550.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8128550.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8137443.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8137443.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8137444.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8137444.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8137445.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8137445.obj"
+    },
+    {
+      "path": "mirror/mixedreality/8137446.obj",
+      "url": "https://fdcamixedreality.blob.core.windows.net/mixedreality/8137446.obj"
+    },
+    {
+      "path": "mirror/mps400/images/actuators_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/actuators_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/actuators_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/actuators_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/ar_blank.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/ar_blank.png"
+    },
+    {
+      "path": "mirror/mps400/images/auto_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/auto_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/book_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/book_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/check_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/check_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/commissioning_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/commissioning_squared_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/commissioning_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/commissioning_squared.png"
+    },
+    {
+      "path": "mirror/mps400/images/docu_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/docu_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/error.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/error.png"
+    },
+    {
+      "path": "mirror/mps400/images/globe_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/globe_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/grid.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/grid.png"
+    },
+    {
+      "path": "mirror/mps400/images/help_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/help_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/info_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/info_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/info_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/info_squared_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/info_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/info_squared.png"
+    },
+    {
+      "path": "mirror/mps400/images/Input_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/Input_squared_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/inputs_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/inputs_squared.png"
+    },
+    {
+      "path": "mirror/mps400/images/left_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/left_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/live_squared_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/live_squared_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/live_squared.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/live_squared.png"
+    },
+    {
+      "path": "mirror/mps400/images/manual_rounded.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/manual_rounded.png"
+    },
+    {
+      "path": "mirror/mps400/images/modules_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/modules_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/modules_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/modules_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/play_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/play_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/play_rounded.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/play_rounded.png"
+    },
+    {
+      "path": "mirror/mps400/images/reset_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/reset_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/reset_rounded.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/reset_rounded.png"
+    },
+    {
+      "path": "mirror/mps400/images/right_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/right_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/sensors_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/sensors_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/sensors_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/sensors_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/stop_rounded_hero.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/stop_rounded_hero.png"
+    },
+    {
+      "path": "mirror/mps400/images/stop_rounded.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/stop_rounded.png"
+    },
+    {
+      "path": "mirror/mps400/images/video_rounded_colored.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/video_rounded_colored.png"
+    },
+    {
+      "path": "mirror/mps400/images/warning.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/images/warning.png"
+    },
+    {
+      "path": "mirror/mps400/models/menucube.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/models/menucube.obj"
+    },
+    {
+      "path": "mirror/mps400/models/menucube.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/models/menucube.png"
+    },
+    {
+      "path": "mirror/mps400/obj/arrow.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/obj/arrow.obj"
+    },
+    {
+      "path": "mirror/mps400/obj/arrow.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/MPS400/obj/arrow.png"
+    },
+    {
+      "path": "mirror/mps_en/3DLogo.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/3DLogo.png"
+    },
+    {
+      "path": "mirror/mps_en/about.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/about.png"
+    },
+    {
+      "path": "mirror/mps_en/back.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/back.png"
+    },
+    {
+      "path": "mirror/mps_en/band.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/band.obj"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.0.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.0.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.1.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.1.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.2.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.2.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.3.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.3.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.4.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.4.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.5.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.5.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerI0.6.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.6.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerProfinet.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerProfinet.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerQ0.0.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.0.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerQ0.1.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.1.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerQ0.2.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.2.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerQ0.3.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.3.png"
+    },
+    {
+      "path": "mirror/mps_en/ControllerQ0.4.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.4.png"
+    },
+    {
+      "path": "mirror/mps_en/Details.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Details.png"
+    },
+    {
+      "path": "mirror/mps_en/IPLogo.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/IPLogo.png"
+    },
+    {
+      "path": "mirror/mps_en/Manual.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Manual.png"
+    },
+    {
+      "path": "mirror/mps_en/menucube.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/menucube.obj"
+    },
+    {
+      "path": "mirror/mps_en/menucube.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/menucube.png"
+    },
+    {
+      "path": "mirror/mps_en/modultextur.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/modultextur.png"
+    },
+    {
+      "path": "mirror/mps_en/movie.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/movie.png"
+    },
+    {
+      "path": "mirror/mps_en/OK.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/OK.png"
+    },
+    {
+      "path": "mirror/mps_en/Panel.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Panel.png"
+    },
+    {
+      "path": "mirror/mps_en/pdf.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/pdf.png"
+    },
+    {
+      "path": "mirror/mps_en/plane.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/plane.obj"
+    },
+    {
+      "path": "mirror/mps_en/Setup.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Setup.png"
+    },
+    {
+      "path": "mirror/mps_en/stapelmagazin.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/stapelmagazin.obj"
+    },
+    {
+      "path": "mirror/mps_en/targetArrow.obj",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/targetArrow.obj"
+    },
+    {
+      "path": "mirror/mps_en/targetArrow.png",
+      "url": "https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/targetArrow.png"
+    }
+  ],
+  "generated": [
+    {
+      "path": "tests/assets/test-image.png",
+      "kind": "red64"
+    }
+  ]
+}

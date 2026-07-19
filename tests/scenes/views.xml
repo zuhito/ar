@@ -2,7 +2,7 @@
   <VALUESERVER predefined="{&quot;flag_on&quot;:true,&quot;flag_off&quot;:false}">
   </VALUESERVER>
   <CAMERA>
-    <NODE tz="100" sxyz="67" view="">
+    <NODE tz="100" view="">
       <NODE view="v_main" collapse="" show="">
         <TEXT label="Main view" width="10" />
       </NODE>

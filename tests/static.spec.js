@@ -30,7 +30,7 @@ test.describe('xsltproc-generated pages', () => {
     const text = page.locator('a-text');
     await expect(text).toHaveAttribute('value', 'Hello World');
     await expect(text).toHaveAttribute('fdar-color', /rgba: 00ff0088/);
-    await expect(text).toHaveAttribute('scale', '0.75 0.75 0.75');
+    await expect(text).toHaveAttribute('scale', '50 50 50');
     // NODE tz=100 becomes position z=-100 on the wrapping entity
     await expect(page.locator('a-camera > a-entity').first()).toHaveAttribute('position', '0 0 -100');
 
@@ -205,6 +205,79 @@ test.describe('xsltproc-generated pages', () => {
     // Non-marker scenes must not show the toggle
     await page.goto('/static-html/text.html');
     await expect(page.locator('#marker-free-toggle')).toHaveCount(0);
+  });
+
+  test('progress bar exists, clears after boot, and is reference-counted', async ({ page }) => {
+    await page.goto('/static-html/marker_free.html');
+    // The bar markup is present and starts active for the scene boot
+    await expect(page.locator('#fdar-progress')).toBeAttached();
+    // Once the scene has loaded the boot hold is released
+    await expect.poll(() => page.evaluate(() => {
+      const s = /** @type {any} */ (document.querySelector('a-scene'));
+      return !!(s && s.hasLoaded);
+    }), { timeout: 30_000 }).toBe(true);
+    await expect(page.locator('#fdar-progress')).not.toHaveClass(/active/, { timeout: 15_000 });
+
+    // Reference-counted: two starts need two stops before the bar hides again
+    const states = await page.evaluate(() => {
+      const bar = /** @type {any} */ (document.getElementById('fdar-progress'));
+      const f = /** @type {any} */ (window).fdarProgress;
+      const seq = [];
+      f(true); seq.push(bar.classList.contains('active'));   // true
+      f(true); seq.push(bar.classList.contains('active'));   // true
+      f(false); seq.push(bar.classList.contains('active'));  // still true (1 outstanding)
+      f(false); seq.push(bar.classList.contains('active'));  // false
+      return seq;
+    });
+    expect(states).toEqual([true, true, true, false]);
+  });
+
+  test('marker-free view moves with mouse drag and arrow keys', async ({ page }) => {
+    test.slow();
+    await page.goto('/static-html/marker_free.html');
+    await expect.poll(() => page.evaluate(() => {
+      const s = /** @type {any} */ (document.querySelector('a-scene'));
+      return !!(s && s.hasLoaded);
+    }), { timeout: 30_000 }).toBe(true);
+    await page.evaluate(() => { document.body.style.background = '#000';
+      document.querySelectorAll('video').forEach((v) => { v.style.display = 'none'; }); });
+
+    await page.locator('.mf-slider').click();
+    await expect.poll(() => page.evaluate(() => {
+      const stage = /** @type {any} */ (document.getElementById('mf-stage'));
+      return stage && stage.object3D ? stage.object3D.children.length : 0;
+    })).toBeGreaterThan(0);
+    await page.waitForTimeout(600);
+    const before = PNG.sync.read(await page.screenshot());
+
+    // Mouse drag pans the content (keeps it on screen, does not orbit away)
+    await page.mouse.move(640, 360);
+    await page.mouse.down();
+    await page.mouse.move(480, 470, { steps: 10 });
+    await page.mouse.up();
+    await page.waitForTimeout(300);
+    const nav1 = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
+    expect(nav1.panX).toBeLessThan(0);
+    expect(nav1.panY).toBeLessThan(0);
+    const afterDrag = PNG.sync.read(await page.screenshot());
+    expect(diffRatio(before, afterDrag), 'drag moves the content').toBeGreaterThan(0.002);
+
+    // Arrow keys pan too (handled on window, no focus needed)
+    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight');
+    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');
+    await page.waitForTimeout(200);
+    const nav2 = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
+    expect(nav2.panX).toBeGreaterThan(nav1.panX);
+    expect(nav2.panY).toBeGreaterThan(nav1.panY);
+
+    // Toggling off resets navigation and ignores further input
+    await page.locator('.mf-slider').click();
+    await page.waitForTimeout(300);
+    const navOff = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
+    expect(navOff).toEqual({ panX: 0, panY: 0, dist: 0 });
+    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight');
+    const navFixed = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
+    expect(navFixed.panX, 'keys do nothing when marker-free is off').toBe(0);
   });
 
   test('FDAR spec features render (HUD, visibility, instruments, bindings)', async ({ page }) => {

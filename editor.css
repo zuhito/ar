@@ -211,6 +211,34 @@ body {
   position: relative;
   overflow: hidden;
 }
+/* Indeterminate progress bar shown while the preview is transforming/booting */
+#preview-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 20;
+  background: rgba(10, 132, 255, 0.18);
+  overflow: hidden;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+#preview-progress.active { opacity: 1; }
+#preview-progress::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 40%;
+  background: #0a84ff;
+  animation: preview-progress-slide 1.1s ease-in-out infinite;
+}
+@keyframes preview-progress-slide {
+  0% { left: -40%; }
+  100% { left: 100%; }
+}
 #preview-content iframe {
   position: absolute;
   top: 0;

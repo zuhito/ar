@@ -15,6 +15,21 @@
          (AR.js may override with its own video-fitting geometry later) */
       html, body { height: 100%; }
       a-scene { display: block; width: 100%; height: 100%; }
+      /* Indeterminate progress bar shown during heavy work (scene boot,
+         marker-free re-fit). Hidden unless #fdar-progress has .active. */
+      #fdar-progress {
+        position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 10000;
+        background: rgba(10,132,255,0.18); overflow: hidden;
+        opacity: 0; transition: opacity 0.2s; pointer-events: none;
+      }
+      #fdar-progress.active { opacity: 1; }
+      #fdar-progress:before {
+        content: ''; position: absolute; top: 0; height: 100%; width: 40%;
+        background: #0a84ff; animation: fdar-progress-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes fdar-progress-slide {
+        0% { left: -40%; } 100% { left: 100%; }
+      }
         </xsl:text></style>
         
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
@@ -93,7 +108,25 @@
         var o = el.object3D;
         while (o) { if (o.visible === false) return true; o = o.parent; }
         return false;
-      };</xsl:text>
+      };
+      // Progress bar for heavy work: reference-counted so overlapping tasks
+      // (scene boot + a marker-free re-fit) keep it visible until all finish.
+      // Starts at 1 for the initial scene boot, matching the .active markup.
+      window._fdarBusy = 1;
+      window.fdarProgress = function (on) {
+        window._fdarBusy = Math.max(0, window._fdarBusy + (on ? 1 : -1));
+        var bar = document.getElementById('fdar-progress');
+        if (bar) bar.classList.toggle('active', window._fdarBusy &gt; 0);
+      };
+      // Clear the initial boot hold once A-Frame reports the scene loaded.
+      document.addEventListener('DOMContentLoaded', function () {
+        var scene = document.querySelector('a-scene');
+        if (!scene) { window.fdarProgress(false); return; }
+        if (scene.hasLoaded) { window.fdarProgress(false); }
+        else { scene.addEventListener('loaded', function () { window.fdarProgress(false); }, { once: true }); }
+        // Safety: never leave the bar stuck if 'loaded' never fires
+        setTimeout(function () { if (window._fdarBusy &gt; 0) window.fdarProgress(false); }, 12000);
+      });</xsl:text>
 
           <xsl:if test="//LINK or //SWITCH or //STREAMER">
             <xsl:text disable-output-escaping="yes">&#10;      // Keyboard navigation for clickable entities (Tab to move, Enter/Space to activate)
@@ -1249,6 +1282,8 @@
           if (!window._mfClickHandler) {
             window._mfClickHandler = function (e) {
               if (!window._mfOn) return;
+              // A drag-to-orbit gesture ends in a click; don't treat it as a tap
+              if (window._mfDragged) { window._mfDragged = false; return; }
               var canvas = scene.canvas;
               if (!canvas || e.target !== canvas) return;
               var rect = canvas.getBoundingClientRect();
@@ -1311,12 +1346,71 @@
           };
           window._mfFitAll = function () {
             if (window._mfFitTimer) clearTimeout(window._mfFitTimer);
+            window.fdarProgress(true);
             window._mfFitTimer = setTimeout(function () {
               Array.prototype.forEach.call(document.querySelectorAll('a-marker'), function (m) {
                 if (m._mfGroup) fit(m);
               });
+              window.fdarProgress(false);
             }, 300);
           };
+          // Manual navigation while marker-free is on: move the content with a
+          // mouse drag or the arrow keys, zoom with the wheel. AR mode (a real
+          // marker) keeps its fixed, camera-locked framing untouched. Dragging
+          // pans rather than orbits so flat menu panels never turn edge-on and
+          // vanish — the content stays on screen as the user moves it.
+          window._mfNav = window._mfNav || { panX: 0, panY: 0, dist: 0 };
+          window._mfApplyNav = function () {
+            var st = window._mfStage;
+            if (!st || !st.object3D) return;
+            var n = window._mfNav;
+            st.object3D.position.set(n.panX, n.panY, n.dist);
+          };
+          if (!window._mfNavBound) {
+            window._mfNavBound = true;
+            var scEl = scene;
+            var canvas = function () { return scEl.canvas; };
+            window._mfDrag = null;
+            var onDown = function (e) {
+              if (!window._mfOn || e.target !== canvas()) return;
+              window._mfDrag = { x: e.clientX, y: e.clientY, moved: 0 };
+            };
+            var onMove = function (e) {
+              if (!window._mfOn || !window._mfDrag) return;
+              var dx = e.clientX - window._mfDrag.x, dy = e.clientY - window._mfDrag.y;
+              window._mfDrag.x = e.clientX; window._mfDrag.y = e.clientY;
+              window._mfDrag.moved += Math.abs(dx) + Math.abs(dy);
+              window._mfNav.panX += dx * 0.004;   // follow the cursor
+              window._mfNav.panY -= dy * 0.004;   // screen-down is world-down
+              window._mfApplyNav();
+            };
+            var onUp = function () {
+              // Remember whether this was a drag so the click handler can ignore it
+              window._mfDragged = !!(window._mfDrag &amp;&amp; window._mfDrag.moved &gt; 6);
+              window._mfDrag = null;
+            };
+            document.addEventListener('mousedown', onDown, true);
+            document.addEventListener('mousemove', onMove, true);
+            document.addEventListener('mouseup', onUp, true);
+            document.addEventListener('wheel', function (e) {
+              if (!window._mfOn) return;
+              window._mfNav.dist += (e.deltaY &gt; 0 ? 1 : -1) * 0.15;  // dolly in/out
+              window._mfApplyNav();
+            }, { passive: true });
+            window.addEventListener('keydown', function (e) {
+              if (!window._mfOn) return;
+              var t = e.target;
+              if (t &amp;&amp; (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+              var step = 0.15;
+              if (e.key === 'ArrowLeft') { window._mfNav.panX -= step; }
+              else if (e.key === 'ArrowRight') { window._mfNav.panX += step; }
+              else if (e.key === 'ArrowUp') { window._mfNav.panY += step; }
+              else if (e.key === 'ArrowDown') { window._mfNav.panY -= step; }
+              else return;
+              e.preventDefault();
+              window._mfApplyNav();
+            }, true);
+          }
           var mount = function () {
             markers.forEach(function (m, i) {
               if (m._mfGroup) return;
@@ -1330,6 +1424,7 @@
               stageEl.object3D.add(pivot);
               fit(m);
             });
+            window._mfApplyNav();
             if (!window._mfRenormBound) {
               window._mfRenormBound = true;
               ['model-loaded', 'textfontset', 'materialtextureloaded', 'object3dset'].forEach(function (evt) {
@@ -1348,6 +1443,11 @@
           }
         } else {
           if (window._mfFitInterval) { clearInterval(window._mfFitInterval); window._mfFitInterval = null; }
+          // Reset navigation so the next marker-free session starts centred
+          window._mfNav = { panX: 0, panY: 0, dist: 0 };
+          if (window._mfStage &amp;&amp; window._mfStage.object3D) {
+            window._mfStage.object3D.position.set(0, 0, 0);
+          }
           var arSys2 = scene.systems &amp;&amp; scene.systems.arjs;
           if (arSys2 &amp;&amp; window._mfArTick) {
             if (window._mfArTick !== true) arSys2.tick = window._mfArTick;
@@ -1375,6 +1475,7 @@
       </head>
 
       <body style="margin: 0; overflow: hidden;">
+        <div id="fdar-progress" class="active"><xsl:text> </xsl:text></div>
         <xsl:if test="//VALUESERVER/WEBSOCKET">
           <div id="ws-status-overlay">
             <div id="ws-status-dot"><xsl:text> </xsl:text></div>
@@ -1945,10 +2046,17 @@
       </xsl:choose>
     </xsl:variable>
 
-    <!-- FDAR authors sizes in the local node units everywhere (marker, image
-         target and screen-relative CAMERA content all sit in the same
-         mm-style space), so one calibration factor applies to all of them -->
-    <xsl:variable name="textScale">0.75 0.75 0.75</xsl:variable>
+    <!-- Text sizing depends on the local unit scale. Marker/image-target
+         content and screen-relative CAMERA content (with x/y/distance/scaleto,
+         e.g. the Measuring Pro home view) are authored in mm-style units and
+         need the small 0.75 factor. A plain CAMERA scene (the user's
+         "Hello World": tz=100, no scaleto) is authored in large units, where
+         a-text's width-derived glyphs would otherwise be sub-pixel — those
+         keep the larger 50 factor so the text is legible. -->
+    <xsl:variable name="textScale"><xsl:choose>
+      <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET or ancestor::CAMERA[@scaleto != '' or @distance != '' or @x != '' or @y != '']">0.75 0.75 0.75</xsl:when>
+      <xsl:otherwise>50 50 50</xsl:otherwise>
+    </xsl:choose></xsl:variable>
 
     <xsl:choose>
       <xsl:when test="LINK">

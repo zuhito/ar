@@ -632,8 +632,14 @@
     stale.remove();
   }
 
+  function setPreviewBusy(on) {
+    var bar = document.getElementById('preview-progress');
+    if (bar) bar.classList.toggle('active', !!on);
+  }
+
   function _doReloadIframe(html) {
     _discardPending();
+    setPreviewBusy(true);
     var blob = new Blob([html], { type: 'text/html;charset=utf-8' });
     var url = URL.createObjectURL(blob);
 
@@ -661,6 +667,7 @@
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
       currentBlobUrl = url;
       previewIframe = next;
+      setPreviewBusy(false);
     };
 
     var started = Date.now();

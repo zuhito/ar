@@ -33,6 +33,54 @@ TARGETS['cp-cloud_nm_CP-AM-DISPENSE_01'] = { url: BASE + 'cp-cloud_nm/CP-AM-DISP
 
 const OUT_DIR = path.resolve(__dirname, '..', 'static-live');
 
+/** Scene name -> the mirror pack dir holding its images/obj/models. */
+function packOf(name) {
+  if (name.startsWith('cp-cloud_nm_')) return 'cp-cloud_nm';
+  if (name.startsWith('cp-cloud_om_')) return 'cp-cloud_om';
+  if (name.startsWith('mps400_')) return 'mps400';
+  if (name.startsWith('mps_en_')) return 'mps_en';
+  return null;
+}
+
+/**
+ * The published scenes reference their textures with relative paths
+ * (images/…, obj/…, models/…) that resolve against the original Festo host.
+ * Point them at the same-origin mirror copies fetched by scripts/fetch-assets
+ * so the browser actually loads the real artwork instead of a placeholder.
+ */
+function rewriteAssetPaths(html, name) {
+  const pack = packOf(name);
+  if (!pack) return html;
+  return html
+    .replace(/url\((images|obj|models)\//g, `url(/mirror/${pack}/$1/`)
+    .replace(/(src|href)="(images|obj|models)\//g, `$1="/mirror/${pack}/$2/`);
+}
+
+/**
+ * Wait until every textured material in the scene has a decoded image, so a
+ * screenshot captures the loaded artwork rather than blank placeholders.
+ */
+async function waitTexturesLoaded(page, timeout = 20_000) {
+  await page.waitForLoadState('networkidle', { timeout }).catch(() => {});
+  await page.waitForFunction(() => {
+    const scene = /** @type {any} */ (document.querySelector('a-scene'));
+    if (!scene || !scene.object3D) return false;
+    let withMap = 0;
+    let ready = 0;
+    scene.object3D.traverse((o) => {
+      const mats = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+      for (const m of mats) {
+        if (m && m.map) {
+          withMap++;
+          const img = m.map.image;
+          if (img && (img.width || img.videoWidth || img.complete)) ready++;
+        }
+      }
+    });
+    return withMap > 0 && ready === withMap;
+  }, { timeout }).catch(() => {});
+}
+
 async function download(url, retries = 3) {
   let lastErr;
   for (let i = 0; i < retries; i++) {
@@ -70,6 +118,7 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
           .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
           .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js')
           .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" shader="msdf" negate="false" ');
+        html = rewriteAssetPaths(html, name);
         fs.writeFileSync(path.join(OUT_DIR, name + '.html'), html);
       } catch (e) {
         failures.push(`${name}: ${e.message}`);
@@ -97,6 +146,7 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
         await page.goto('/static-live/' + name + '.html', { waitUntil: 'domcontentloaded' });
         if (target.kind === 'catalog') {
           await expect(page.locator('a.entry').first()).toBeVisible({ timeout: 20_000 });
+          await page.waitForLoadState('networkidle', { timeout: 20_000 }).catch(() => {});
           await page.screenshot({ path: shot });
           continue;
         }
@@ -119,11 +169,15 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
           const before = PNG.sync.read(await page.screenshot());
           await page.locator('.mf-slider').click();
           await page.waitForTimeout(900);
+          // Let the mirrored textures finish decoding so the shot shows the
+          // real icons, not blank placeholders.
+          await waitTexturesLoaded(page);
           const afterBuf = await page.screenshot({ path: shot });
           const after = PNG.sync.read(afterBuf);
           const changed = diffRatio(before, after);
           if (changed < 0.002) throw new Error(`no visible objects after marker-free toggle (diff ${(changed * 100).toFixed(3)}%)`);
         } else {
+          await waitTexturesLoaded(page);
           await page.screenshot({ path: shot });
         }
       } catch (e) {

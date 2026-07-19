@@ -26,7 +26,7 @@ module.exports = defineConfig({
   ],
   // Serve the repository root as a static site (same layout GitHub Pages serves)
   webServer: {
-    command: 'python3 -m http.server 8321',
+    command: 'node tests/static-server.js',
     port: 8321,
     reuseExistingServer: !process.env.CI,
   },

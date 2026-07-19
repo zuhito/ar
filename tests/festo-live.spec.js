@@ -82,16 +82,22 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
 
   test('every live XML renders its objects in the browser', async ({ page }) => {
     test.slow();
-    test.setTimeout(15 * 60_000);
+    test.setTimeout(20 * 60_000);
     const failures = [];
+    // One screenshot per Azure XML, collected into the CI artifact so every
+    // published scene has visible proof it rendered.
+    const shotDir = path.resolve(__dirname, '..', 'test-screenshots', 'live');
+    fs.mkdirSync(shotDir, { recursive: true });
 
     for (const [name, target] of Object.entries(TARGETS)) {
       const htmlPath = path.join(OUT_DIR, name + '.html');
       if (!fs.existsSync(htmlPath)) { failures.push(`${name}: not generated`); continue; }
+      const shot = path.join(shotDir, name + '.png');
       try {
         await page.goto('/static-live/' + name + '.html', { waitUntil: 'domcontentloaded' });
         if (target.kind === 'catalog') {
           await expect(page.locator('a.entry').first()).toBeVisible({ timeout: 20_000 });
+          await page.screenshot({ path: shot });
           continue;
         }
         await expect(page.locator('a-scene')).toBeAttached({ timeout: 20_000 });
@@ -113,15 +119,23 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
           const before = PNG.sync.read(await page.screenshot());
           await page.locator('.mf-slider').click();
           await page.waitForTimeout(900);
-          const after = PNG.sync.read(await page.screenshot());
+          const afterBuf = await page.screenshot({ path: shot });
+          const after = PNG.sync.read(afterBuf);
           const changed = diffRatio(before, after);
           if (changed < 0.002) throw new Error(`no visible objects after marker-free toggle (diff ${(changed * 100).toFixed(3)}%)`);
+        } else {
+          await page.screenshot({ path: shot });
         }
       } catch (e) {
+        // Capture whatever is on screen even on failure, for diagnosis
+        await page.screenshot({ path: shot }).catch(() => {});
         failures.push(`${name}: ${String(e.message).split('\n')[0]}`);
       }
     }
     expect(failures, failures.join('\n')).toEqual([]);
+    // Every scene left a screenshot behind
+    const shots = fs.readdirSync(shotDir).filter((f) => f.endsWith('.png'));
+    expect(shots.length).toBe(Object.keys(TARGETS).length);
   });
 });
 

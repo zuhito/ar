@@ -96,6 +96,64 @@ async function download(url, retries = 3) {
   throw new Error(`${url}: ${lastErr}`);
 }
 
+/**
+ * Click every menu item on the scene's home view and capture what each one
+ * shows. The operation-panel icons are @view: links, so clicking one fires the
+ * same 'click' event the marker-free cursor emits and switches the scene view.
+ * External-link icons (window.open) are skipped. Returns one result per menu
+ * item: { view, switched, changed }.
+ */
+async function captureMenuViews(page, name, shotDir) {
+  const info = await page.evaluate(() => {
+    // A-Frame's getAttribute returns the parsed component object, so read .url
+    const urlOf = (el) => {
+      const d = el.getAttribute('navigate-on-click');
+      return (typeof d === 'string' ? d : (d && d.url)) || '';
+    };
+    const views = (window.fdarViewList || []).slice();
+    const home = window.fdarCurrentView;
+    const targets = [];
+    document.querySelectorAll('[navigate-on-click]').forEach((el) => {
+      const m = urlOf(el).match(/@view:([A-Za-z0-9_-]+)/);
+      // Only items reachable (not hidden) from the current home view
+      const hidden = window.fdarHiddenChain && window.fdarHiddenChain(el);
+      if (m && !hidden && m[1] !== home) targets.push(m[1]);
+    });
+    return { views, home, targets: [...new Set(targets)] };
+  });
+  if (!info.views || info.views.length < 2 || !info.targets.length) return [];
+
+  const results = [];
+  for (const view of info.targets) {
+    // Return to the home view so its menu is on screen and clickable again
+    await page.evaluate((h) => window.fdarSetView && window.fdarSetView(h), info.home);
+    await page.waitForTimeout(250);
+    const before = PNG.sync.read(await page.screenshot());
+    const clicked = await page.evaluate((v) => {
+      const urlOf = (el) => {
+        const d = el.getAttribute('navigate-on-click');
+        return (typeof d === 'string' ? d : (d && d.url)) || '';
+      };
+      const el = Array.prototype.slice.call(document.querySelectorAll('[navigate-on-click]'))
+        .find((e) => urlOf(e).indexOf('@view:' + v) !== -1);
+      if (!el) return false;
+      el.emit('click');
+      return true;
+    }, view);
+    await waitTexturesLoaded(page, 10_000);
+    // Re-fit the marker-free stage to the newly revealed view so the captured
+    // content is centred instead of clinging to the viewport edges.
+    await page.evaluate(() => { if (window._mfFitAll) window._mfFitAll(); });
+    await page.waitForTimeout(500);
+    const current = await page.evaluate(() => window.fdarCurrentView);
+    const afterBuf = await page.screenshot({ path: path.join(shotDir, `${name}__${view}.png`) });
+    results.push({ view, clicked, switched: current === view, changed: diffRatio(before, PNG.sync.read(afterBuf)) });
+  }
+  // Leave the scene back on its home view
+  await page.evaluate((h) => window.fdarSetView && window.fdarSetView(h), info.home).catch(() => {});
+  return results;
+}
+
 test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
   test.describe.configure({ mode: 'serial' });
 
@@ -187,9 +245,57 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
       }
     }
     expect(failures, failures.join('\n')).toEqual([]);
-    // Every scene left a screenshot behind
+    // Every scene left its base screenshot behind
+    for (const name of Object.keys(TARGETS)) {
+      expect(fs.existsSync(path.join(shotDir, name + '.png')), `missing screenshot for ${name}`).toBe(true);
+    }
+  });
+
+  test('clicking each menu item switches views and is captured', async ({ page }) => {
+    test.slow();
+    test.setTimeout(20 * 60_000);
+    const shotDir = path.resolve(__dirname, '..', 'test-screenshots', 'live', 'menu');
+    fs.mkdirSync(shotDir, { recursive: true });
+    const failures = [];
+    let captured = 0;
+    let scenesWithMenu = 0;
+
+    for (const [name, target] of Object.entries(TARGETS)) {
+      if (target.kind === 'catalog') continue;
+      const htmlPath = path.join(OUT_DIR, name + '.html');
+      if (!fs.existsSync(htmlPath)) continue;
+      try {
+        await page.goto('/static-live/' + name + '.html', { waitUntil: 'domcontentloaded' });
+        await expect(page.locator('a-scene')).toBeAttached({ timeout: 20_000 });
+        const toggle = await page.locator('#marker-free-toggle').count();
+        if (!toggle) continue;
+        // Reveal the objects, then step through the home-view menu
+        await page.evaluate(() => {
+          document.querySelectorAll('video').forEach((v) => { v.style.display = 'none'; });
+          document.body.style.background = '#000';
+        });
+        await page.locator('.mf-slider').click();
+        await page.waitForTimeout(900);
+        await waitTexturesLoaded(page);
+
+        const results = await captureMenuViews(page, name, shotDir);
+        if (!results.length) continue;
+        scenesWithMenu++;
+        for (const r of results) {
+          captured++;
+          if (!r.switched) failures.push(`${name}: menu '${r.view}' click did not switch the view`);
+        }
+      } catch (e) {
+        failures.push(`${name}: ${String(e.message).split('\n')[0]}`);
+      }
+    }
+
+    // At least the CP operation-panel scenes must expose a working menu
+    expect(scenesWithMenu, 'no scene exposed a clickable @view: menu').toBeGreaterThan(0);
+    expect(failures, failures.join('\n')).toEqual([]);
+    // Each captured menu item left a screenshot behind
     const shots = fs.readdirSync(shotDir).filter((f) => f.endsWith('.png'));
-    expect(shots.length).toBe(Object.keys(TARGETS).length);
+    expect(shots.length).toBe(captured);
   });
 });
 

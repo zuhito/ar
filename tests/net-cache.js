@@ -13,7 +13,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 
-const CACHE_DIR = path.resolve(__dirname, '..', 'node_modules', '.cache', 'ar-net');
+const CACHE_DIR = path.resolve(__dirname, 'node_modules', '.cache', 'ar-net');
 const LOCAL_BASE = 'http://localhost:8321/__netcache/';
 
 // 4×4 opaque white PNG — a missing texture must stay visible (a transparent

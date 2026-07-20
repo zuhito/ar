@@ -174,7 +174,7 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
         const xmlPath = path.join(OUT_DIR, name + '.xml');
         fs.writeFileSync(xmlPath, xml);
         let html = execFileSync('xsltproc',
-          [path.resolve(__dirname, '..', 'aframe.xsl'), xmlPath],
+          ['--stringparam', 'assetbase', '', path.resolve(__dirname, '..', 'aframe.xsl'), xmlPath],
           { maxBuffer: 64 * 1024 * 1024 }).toString();
         html = rewriteAssetPaths(html, name);
         fs.writeFileSync(path.join(OUT_DIR, name + '.html'), html);

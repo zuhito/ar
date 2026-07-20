@@ -3,6 +3,31 @@
   <xsl:output method="xml" encoding="UTF-8" indent="yes" omit-xml-declaration="yes" />
   <xsl:strip-space elements="*" />
 
+  <!-- Scenes reference their assets relatively (FDAR spec), so a stylesheet
+       run on its own has nothing to resolve them against. Anchor them to
+       where the scenes are published; override with
+       `xsltproc - -stringparam assetbase <dir-with-trailing-slash>` when the
+       assets live elsewhere, or with '' to keep the paths relative (the
+       editor does that — it emits its own <base href> per tab). -->
+  <xsl:param name="assetbase" select="'https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/'" />
+
+  <!-- Prefix a relative asset reference with $assetbase. Anything already
+       absolute, or a bare keyword like 'cube'/'fdar_white' (no extension),
+       is passed through untouched. -->
+  <xsl:template name="asset-url">
+    <xsl:param name="ref" />
+    <xsl:choose>
+      <xsl:when test="$assetbase = '' or $ref = ''
+                      or not(contains($ref, '.'))
+                      or starts-with($ref, 'http://') or starts-with($ref, 'https://')
+                      or starts-with($ref, 'data:') or starts-with($ref, 'blob:')
+                      or starts-with($ref, '/') or starts-with($ref, '#')">
+        <xsl:value-of select="$ref" />
+      </xsl:when>
+      <xsl:otherwise><xsl:value-of select="concat($assetbase, $ref)" /></xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
   <xsl:template match="/AUGMENTATION">
     <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html&gt;&#10;</xsl:text>
     <html>
@@ -1575,8 +1600,9 @@
                     </xsl:otherwise>
                   </xsl:choose>
                 </xsl:variable>
+                <xsl:variable name="vUrlAbs"><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="$vUrl"/></xsl:call-template></xsl:variable>
                 <xsl:if test="$vUrl != ''">
-                  <video id="vid-{generate-id()}" src="{$vUrl}" preload="auto" crossorigin="anonymous" playsinline="" webkit-playsinline="" muted="true">
+                  <video id="vid-{generate-id()}" src="{$vUrlAbs}" preload="auto" crossorigin="anonymous" playsinline="" webkit-playsinline="" muted="true">
                     <xsl:if test="@loop = 'true' or self::DISPLAY"><xsl:attribute name="loop">true</xsl:attribute></xsl:if>
                     <xsl:text> </xsl:text>
                   </video>
@@ -1897,7 +1923,7 @@
           <xsl:attribute name="rotation">-90 0 0</xsl:attribute>
           <xsl:variable name="matSrc">
             <xsl:choose>
-              <xsl:when test="@texture"><xsl:value-of select="concat('src: url(', @texture, '); transparent: true; side: double; shader: flat')"/></xsl:when>
+              <xsl:when test="@texture"><xsl:text>src: url(</xsl:text><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@texture"/></xsl:call-template><xsl:text>); transparent: true; side: double; shader: flat</xsl:text></xsl:when>
               <xsl:otherwise>color: white; side: double; shader: flat</xsl:otherwise>
             </xsl:choose>
           </xsl:variable>
@@ -1911,7 +1937,7 @@
               <xsl:attribute name="fdar-mask"></xsl:attribute>
             </xsl:when>
             <xsl:when test="@texture and @texture != 'fdar_white'">
-              <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>)</xsl:attribute>
+              <xsl:attribute name="material">src: url(<xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@texture"/></xsl:call-template>)</xsl:attribute>
             </xsl:when>
           </xsl:choose>
         </xsl:when>
@@ -1923,15 +1949,15 @@
           <xsl:attribute name="material">
             <xsl:text>src: url(</xsl:text>
             <xsl:choose>
-              <xsl:when test="@texture"><xsl:value-of select="@texture"/></xsl:when>
-              <xsl:otherwise><xsl:value-of select="@file"/></xsl:otherwise>
+              <xsl:when test="@texture"><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@texture"/></xsl:call-template></xsl:when>
+              <xsl:otherwise><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@file"/></xsl:call-template></xsl:otherwise>
             </xsl:choose>
             <xsl:text>); transparent: true; side: double; shader: flat</xsl:text>
           </xsl:attribute>
         </xsl:when>
 
         <xsl:when test="contains(@file, '.glb') or contains(@file, '.gltf') or @filetype='glb' or @filetype='gltf'">
-          <xsl:attribute name="gltf-model"><xsl:value-of select="@file"/></xsl:attribute>
+          <xsl:attribute name="gltf-model"><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@file"/></xsl:call-template></xsl:attribute>
           <xsl:variable name="clip"><xsl:choose><xsl:when test="@clip"><xsl:value-of select="@clip"/></xsl:when><xsl:otherwise>*</xsl:otherwise></xsl:choose></xsl:variable>
           <xsl:variable name="loop"><xsl:choose><xsl:when test="@playmode = 'loop'">repeat</xsl:when><xsl:when test="@playmode = 'pingpong'">pingpong</xsl:when><xsl:when test="@play = 'true'">repeat</xsl:when><xsl:otherwise>repeat</xsl:otherwise></xsl:choose></xsl:variable>
           <xsl:attribute name="animation-mixer">clip: <xsl:value-of select="$clip"/>; loop: <xsl:value-of select="$loop"/>;</xsl:attribute>
@@ -1939,15 +1965,15 @@
         
         <xsl:otherwise>
           <xsl:attribute name="obj-model">
-            <xsl:text>obj: url(</xsl:text><xsl:value-of select="@file"/><xsl:text>)</xsl:text>
+            <xsl:text>obj: url(</xsl:text><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@file"/></xsl:call-template><xsl:text>)</xsl:text>
           </xsl:attribute>
 
           <xsl:choose>
             <xsl:when test="@texture and @alpha">
-              <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>); opacity: <xsl:value-of select="number(@alpha) div 100"/>; transparent: true</xsl:attribute>
+              <xsl:attribute name="material">src: url(<xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@texture"/></xsl:call-template>); opacity: <xsl:value-of select="number(@alpha) div 100"/>; transparent: true</xsl:attribute>
             </xsl:when>
             <xsl:when test="@texture">
-              <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>)</xsl:attribute>
+              <xsl:attribute name="material">src: url(<xsl:call-template name="asset-url"><xsl:with-param name="ref" select="@texture"/></xsl:call-template>)</xsl:attribute>
             </xsl:when>
             <xsl:when test="@alpha">
               <xsl:attribute name="material">opacity: <xsl:value-of select="number(@alpha) div 100"/>; transparent: true</xsl:attribute>
@@ -2032,10 +2058,11 @@
         <xsl:with-param name="fallbackLang" select="METADATA/@fallback"/>
       </xsl:call-template>
     </xsl:variable>
+    <xsl:variable name="picUrlAbs"><xsl:call-template name="asset-url"><xsl:with-param name="ref" select="$picUrl"/></xsl:call-template></xsl:variable>
     <xsl:variable name="picW"><xsl:choose><xsl:when test="@w"><xsl:value-of select="@w"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="picH"><xsl:choose><xsl:when test="@h"><xsl:value-of select="@h"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
 
-    <a-image src="{$picUrl}" side="double" crossorigin="anonymous">
+    <a-image src="{$picUrlAbs}" side="double" crossorigin="anonymous">
       <xsl:if test="@w"><xsl:attribute name="width"><xsl:value-of select="@w"/></xsl:attribute></xsl:if>
       <xsl:if test="@h"><xsl:attribute name="height"><xsl:value-of select="@h"/></xsl:attribute></xsl:if>
       

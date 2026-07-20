@@ -617,8 +617,8 @@ body {
     { id: 'link', name: 'link', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="100">\n      <TEXT label="Website">\n        <LINK refer="https://nodered.jp"/>\n      </TEXT>\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'viewer', name: 'viewer', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="1">\n      <VIEWER picture="https://picsum.photos/200" refresh="5" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'viewer_ar', name: 'viewer_ar', content: '<AUGMENTATION>\n  <TARGETBASE file="CP-System">\n    <TARGET marker="marker/CP-AM-DRILL">\n      <NODE rx="90" sxyz="4">\n        <VIEWER picture="https://nodered.jp/images/yokoi.jpg" />\n      </NODE>\n    </TARGET>\n  </TARGETBASE>\n</AUGMENTATION>' },
-    { id: 'model', name: 'model', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="30">\n      <ANIMATION attribute="rx">\n        <KEYFRAME time="0" value="0" lerp="linear" />\n        <KEYFRAME time="10" value="360" />\n      </ANIMATION>\n      <MODEL file="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/arrow_blue.glb" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
-    { id: 'model_ar', name: 'model_ar', content: '<AUGMENTATION>\n  <TARGETBASE file="CP-System">\n    <TARGET marker="marker/CP-AM-DRILL">\n      <NODE sxyz="0.1">\n        <MODEL file="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/arrow_blue.glb" />\n      </NODE>\n    </TARGET>\n  </TARGETBASE>\n</AUGMENTATION>' },
+    { id: 'model', name: 'model', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="30">\n      <ANIMATION attribute="rx">\n        <KEYFRAME time="0" value="0" lerp="linear" />\n        <KEYFRAME time="10" value="360" />\n      </ANIMATION>\n      <MODEL file="obj/arrow_blue.glb" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
+    { id: 'model_ar', name: 'model_ar', content: '<AUGMENTATION>\n  <TARGETBASE file="CP-System">\n    <TARGET marker="marker/CP-AM-DRILL">\n      <NODE sxyz="0.1">\n        <MODEL file="obj/arrow_blue.glb" />\n      </NODE>\n    </TARGET>\n  </TARGETBASE>\n</AUGMENTATION>' },
     { id: 'streamer', name: 'streamer', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="1">\n      <STREAMER url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'signal', name: 'signal', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE sxyz="20" tz="100">\n      <SIGNAL rgb="f00" status="on"/>\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'signal_ws', name: 'ws_send', content: '<AUGMENTATION>\n  <VALUESERVER>\n    <WEBSOCKET url="ws://127.0.0.1:1880/ws/data" transmitter="send"/>\n  </VALUESERVER>\n  <CAMERA>\n    <NODE tz="10">\n      <SWITCH>\n        <TRANSMIT attribute="pressed" variable="btnPressed" transmitter="send"/>\n      </SWITCH>\n      <SIGNAL rgb="f00" status="@anim:btnPressed"/>\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
@@ -1288,6 +1288,19 @@ body {
     }
   }
 
+  // aframe.xsl resolves relative asset refs against its `assetbase` param so
+  // that a plain `xsltproc` run produces a working page. A tab loaded from a
+  // URL is resolved here instead — applyResult() emits a <base href> for it
+  // and routes cross-origin refs through the proxy — so blank the param and
+  // let the relative paths through. Built-in tabs have no source URL and keep
+  // the stylesheet default. Substituted textually because the bundled
+  // xslt-processor build exposes no parameter API.
+  function xslForBase(baseUrl) {
+    if (!baseUrl) return xslString;
+    return xslString.replace(
+      /(<xsl:param name="assetbase" select=")[^"]*(")/, "$1''$2");
+  }
+
   function doTransform(xmlStr) {
     if (!xslString || !xmlStr || !xmlStr.trim()) return;
     try {
@@ -1301,7 +1314,8 @@ body {
         showError('xslt-processor library not loaded. Check internet connection.');
         return;
       }
-      var result = engine.process(xmlStr, xslString);
+      var srcTab = xmlTabs.find(function (t) { return t.id === activeXmlTabId; });
+      var result = engine.process(xmlStr, xslForBase(srcTab && srcTab.baseUrl));
       if (result && typeof result.then === 'function') {
         result.then(applyResult).catch(function (e) { showError('XSLT Error: ' + e.message); });
       } else {

@@ -30,7 +30,7 @@ module.exports = async () => {
   for (const [name, xml] of Object.entries(SCENES)) {
     const xmlPath = path.join(outDir, name + '.xml');
     fs.writeFileSync(xmlPath, xml);
-    const html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), xmlPath], { maxBuffer: 64 * 1024 * 1024 }).toString();
+    const html = execFileSync('xsltproc', ['--stringparam', 'assetbase', '', path.join(root, 'aframe.xsl'), xmlPath], { maxBuffer: 64 * 1024 * 1024 }).toString();
     fs.writeFileSync(path.join(outDir, name + '.html'), html);
   }
 };

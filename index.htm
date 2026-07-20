@@ -1348,10 +1348,14 @@ body {
   var MIRROR_BASE = 'assets/';
   var USE_MIRROR = !window.FDAR_CORS_PROXY;
 
-  /** Absolute Festo URL -> same-origin mirror path, or null if not mirrored. */
+  /** Absolute Festo URL -> same-origin mirror URL, or null if not mirrored. */
   function mirrorOf(abs) {
     if (!USE_MIRROR || abs.indexOf(FESTO_AR_BASE) !== 0) return null;
-    return MIRROR_BASE + abs.substring(FESTO_AR_BASE.length);
+    // Absolute, not relative: generated scenes carry a <base href> pointing at
+    // the scene's own origin (festodidacticsw), so a bare "assets/..." would
+    // resolve against Festo instead of this page.
+    var rel = MIRROR_BASE + abs.substring(FESTO_AR_BASE.length);
+    try { return new URL(rel, window.location.href).href; } catch (e) { return rel; }
   }
 
   /** Where a cross-origin asset should actually be fetched from. */

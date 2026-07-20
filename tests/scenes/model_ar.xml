@@ -1,9 +1,0 @@
-<AUGMENTATION>
-  <TARGETBASE file="CP-System">
-    <TARGET marker="marker/CP-AM-DRILL">
-      <NODE sxyz="0.1">
-        <MODEL file="obj/arrow_blue.glb" />
-      </NODE>
-    </TARGET>
-  </TARGETBASE>
-</AUGMENTATION>

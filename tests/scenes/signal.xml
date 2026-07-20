@@ -1,7 +1,0 @@
-<AUGMENTATION>
-  <CAMERA>
-    <NODE sxyz="20" tz="100">
-      <SIGNAL rgb="f00" status="on"/>
-    </NODE>
-  </CAMERA>
-</AUGMENTATION>

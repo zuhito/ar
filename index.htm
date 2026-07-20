@@ -580,7 +580,7 @@ body {
   </div>
 </div>
 
-<script src="vendor/xslt-processor.global.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xslt-processor@5.0.11/dist/umd/xslt-processor.global.js"></script>
 <script>
 /*
  * AR App Live Editor
@@ -617,8 +617,8 @@ body {
     { id: 'link', name: 'link', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="100">\n      <TEXT label="Website">\n        <LINK refer="https://nodered.jp"/>\n      </TEXT>\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'viewer', name: 'viewer', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="1">\n      <VIEWER picture="https://picsum.photos/200" refresh="5" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'viewer_ar', name: 'viewer_ar', content: '<AUGMENTATION>\n  <TARGETBASE file="CP-System">\n    <TARGET marker="marker/CP-AM-DRILL">\n      <NODE rx="90" sxyz="4">\n        <VIEWER picture="https://nodered.jp/images/yokoi.jpg" />\n      </NODE>\n    </TARGET>\n  </TARGETBASE>\n</AUGMENTATION>' },
-    { id: 'model', name: 'model', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="30">\n      <ANIMATION attribute="rx">\n        <KEYFRAME time="0" value="0" lerp="linear" />\n        <KEYFRAME time="10" value="360" />\n      </ANIMATION>\n      <MODEL file="obj/arrow_blue.glb" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
-    { id: 'model_ar', name: 'model_ar', content: '<AUGMENTATION>\n  <TARGETBASE file="CP-System">\n    <TARGET marker="marker/CP-AM-DRILL">\n      <NODE sxyz="0.1">\n        <MODEL file="obj/arrow_blue.glb" />\n      </NODE>\n    </TARGET>\n  </TARGETBASE>\n</AUGMENTATION>' },
+    { id: 'model', name: 'model', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="30">\n      <ANIMATION attribute="rx">\n        <KEYFRAME time="0" value="0" lerp="linear" />\n        <KEYFRAME time="10" value="360" />\n      </ANIMATION>\n      <MODEL file="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/arrow_blue.glb" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
+    { id: 'model_ar', name: 'model_ar', content: '<AUGMENTATION>\n  <TARGETBASE file="CP-System">\n    <TARGET marker="marker/CP-AM-DRILL">\n      <NODE sxyz="0.1">\n        <MODEL file="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/arrow_blue.glb" />\n      </NODE>\n    </TARGET>\n  </TARGETBASE>\n</AUGMENTATION>' },
     { id: 'streamer', name: 'streamer', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE tz="1">\n      <STREAMER url="https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8" />\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'signal', name: 'signal', content: '<AUGMENTATION>\n  <CAMERA>\n    <NODE sxyz="20" tz="100">\n      <SIGNAL rgb="f00" status="on"/>\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
     { id: 'signal_ws', name: 'ws_send', content: '<AUGMENTATION>\n  <VALUESERVER>\n    <WEBSOCKET url="ws://127.0.0.1:1880/ws/data" transmitter="send"/>\n  </VALUESERVER>\n  <CAMERA>\n    <NODE tz="10">\n      <SWITCH>\n        <TRANSMIT attribute="pressed" variable="btnPressed" transmitter="send"/>\n      </SWITCH>\n      <SIGNAL rgb="f00" status="@anim:btnPressed"/>\n    </NODE>\n  </CAMERA>\n</AUGMENTATION>' },
@@ -1247,6 +1247,9 @@ body {
       old.removeAttribute('id');
       next.style.visibility = '';
       next.style.pointerEvents = old.style.pointerEvents;
+      // The view may have changed while the reload was pending (e.g. the
+      // HTML Code tab hid the preview) — mirror the current display state
+      next.style.display = old.style.display;
       old.remove();
       if (currentBlobUrl) URL.revokeObjectURL(currentBlobUrl);
       currentBlobUrl = url;
@@ -1309,6 +1312,10 @@ body {
     }
   }
 
+  // CORS proxy for hosts that send no Access-Control-Allow-Origin header.
+  // Tests point this at a same-origin proxy on the static server.
+  var CORS_PROXY = window.FDAR_CORS_PROXY || 'https://api.allorigins.win/raw?url=';
+
   function applyResult(resultStr) {
     if (typeof resultStr !== 'string') resultStr = String(resultStr);
     resultStr = fixXhtmlToHtml(resultStr);
@@ -1318,15 +1325,18 @@ body {
     // URL when it was loaded from one (FDAR spec), else to this page's folder
     var activeTab = xmlTabs.find(function (t) { return t.id === activeXmlTabId; });
     var baseHref = (activeTab && activeTab.baseUrl) || window.location.href.replace(/[^\/]*$/, '');
-    var mirror = activeTab && activeTab.baseUrl && sampleMirrorFor(activeTab.baseUrl);
-    if (mirror) baseHref = window.location.href.replace(/[^\/]*$/, '') + mirror.assets;
     var crossOrigin = false;
     try { crossOrigin = new URL(baseHref, window.location.href).origin !== window.location.origin; } catch (e) {}
     // Servers like festodidacticsw send no CORS headers, which would make
     // cross-origin textures unusable in WebGL — route them through the proxy
     var resolveRef = function (path) {
-      var abs = baseHref + path;
-      return crossOrigin ? 'https://api.allorigins.win/raw?url=' + encodeURIComponent(abs) : abs;
+      // CDATA sources may carry stray whitespace/newlines around the URL
+      path = String(path).replace(/^\s+|\s+$/g, '');
+      var abs;
+      try { abs = new URL(path, baseHref).href; } catch (err) { abs = baseHref + path; }
+      var xo = false;
+      try { xo = new URL(abs, window.location.href).origin !== window.location.origin; } catch (err) {}
+      return xo ? CORS_PROXY + encodeURIComponent(abs) : abs;
     };
     if (resultStr.indexOf('<base ') === -1) {
       resultStr = resultStr.replace(/<head>/i, '<head>\n  <base href="' + baseHref + '">');
@@ -1335,22 +1345,24 @@ body {
       return 'url="' + resolveRef(path) + '"';
     });
     if (crossOrigin) {
-      resultStr = resultStr.replace(/url\((?!https?:\/\/|data:|blob:|\/|#)([^)]+)\)/gi, function (m, path) {
-        return 'url(' + resolveRef(path) + ')';
+      // Lower-case url(...) with a plain relative path only: don't touch JS
+      // like `new URL(h, base)` or concatenations — those carry quotes,
+      // commas or whitespace and an upper-case name
+      resultStr = resultStr.replace(/(^|[^A-Za-z0-9_$])url\((?!https?:\/\/|data:|blob:|\/|#)([^)'",\s]+)\)/g, function (m, pre, path) {
+        return pre + 'url(' + resolveRef(path) + ')';
       });
       resultStr = resultStr.replace(/(src|gltf-model)="(?!https?:\/\/|data:|blob:|\/|#)([^"]+)"/gi, function (m, attr, path) {
         if (path.indexOf('vid-') === 0 || path.indexOf('cdn.') === 0) return m;
         return attr + '="' + resolveRef(path) + '"';
       });
     }
-
-    // Use the local vendor copies of the runtime libraries — much faster and
-    // works offline (standalone xsltproc output keeps the CDN URLs)
-    var vendorBase = window.location.href.replace(/[^\/]*$/, '') + 'vendor/';
-    resultStr = resultStr
-      .replace('https://aframe.io/releases/1.7.1/aframe.min.js', vendorBase + 'aframe.min.js')
-      .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', vendorBase + 'aframe-ar.js')
-      .replace(/<a-text /g, '<a-text font="' + vendorBase + 'Roboto-msdf.json" shader="msdf" negate="false" ');
+    // Absolute references to the Festo hosts (which send no CORS headers)
+    // also need the proxy to be usable as WebGL textures/models
+    resultStr = resultStr.replace(
+      /(src|gltf-model|url)="(https:\/\/(?:festodidacticsw\.azurewebsites\.net|fdcamixedreality\.blob\.core\.windows\.net)\/[^"]+)"/gi,
+      function (m, attr, abs) {
+        return attr + '="' + CORS_PROXY + encodeURIComponent(abs) + '"';
+      });
 
     lastHtmlRaw = resultStr;
     window._popupCode = resultStr;
@@ -1500,41 +1512,10 @@ body {
     return base.replace(/\.[^.]+$/, '') || 'remote';
   }
 
-  var SAMPLE_MIRRORS = [
-    { remote: 'https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/', xml: 'tests/scenes/festo/cp-cloud_om/', assets: 'mirror/cp-cloud_om/' },
-    { remote: 'https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/', xml: 'tests/scenes/festo/cp-cloud_nm/', assets: 'mirror/cp-cloud_nm/' },
-    { remote: 'https://festodidacticsw.azurewebsites.net/ar/MPS400/', xml: 'tests/scenes/festo/mps400/', assets: 'mirror/mps400/' },
-    { remote: 'https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20[EN]/', xml: 'tests/scenes/festo/mps_en/', assets: 'mirror/mps_en/' },
-    { remote: 'https://fdcamixedreality.blob.core.windows.net/mixedreality/', xml: 'tests/scenes/festo/mixedreality/', assets: 'mirror/mixedreality/' }
-  ];
-
-  function sampleMirrorFor(url) {
-    for (var i = 0; i < SAMPLE_MIRRORS.length; i++) {
-      if (url.indexOf(SAMPLE_MIRRORS[i].remote) === 0) return SAMPLE_MIRRORS[i];
-    }
-    return null;
-  }
-
-  // Known Azure samples are served from this site's local mirror (fast, no
-  // CORS). Other URLs: direct fetch first; if the server does not allow CORS,
+  // On-demand fetch: direct first; if the server does not allow CORS,
   // retry through a public CORS proxy.
   function fetchXmlWithFallback(url) {
-    var mirror = sampleMirrorFor(url);
-    var direct = function () { return fetch(url).then(check); };
-    if (mirror) {
-      var local = mirror.xml + url.substring(mirror.remote.length);
-      return fetch(local).then(function (r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status + ' (local mirror)');
-        return r.text();
-      }).catch(function () {
-        // Not mirrored (e.g. a catalog entry): fall back to the remote chain
-        return direct().catch(function (directErr) {
-          if (/^HTTP \d+/.test(directErr.message)) throw directErr;
-          return fetch(proxied).then(check).catch(function () { throw directErr; });
-        });
-      });
-    }
-    var proxied = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(url);
+    var proxied = CORS_PROXY + encodeURIComponent(url);
     var check = function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.text();
@@ -1592,7 +1573,7 @@ body {
     return new Promise(function (resolve, reject) {
       if (window.jsQR) return resolve(window.jsQR);
       var s = document.createElement('script');
-      s.src = 'vendor/jsQR.min.js';
+      s.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js';
       s.onload = function () { resolve(window.jsQR); };
       s.onerror = function () { reject(new Error('failed to load jsQR')); };
       document.head.appendChild(s);

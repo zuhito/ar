@@ -31,15 +31,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
-      - name: Setup Node
-        uses: actions/setup-node@v5
-        with:
-          node-version: 24
-      # Pull the internet-sourced assets (vendored libs, Festo sample scenes
-      # and mirrored scene assets) fresh at deploy time — they are not
-      # committed, so the published site always ships their current versions.
-      - name: Fetch on-demand assets
-        run: node scripts/fetch-assets.mjs
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - name: Upload artifact

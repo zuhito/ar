@@ -1,0 +1,6 @@
+node_modules/
+test-results/
+test-screenshots/
+playwright-report/
+static-html/
+static-live/

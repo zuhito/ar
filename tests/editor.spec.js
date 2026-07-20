@@ -3,8 +3,18 @@ const { test, expect } = require('@playwright/test');
 const fs = require('node:fs');
 const { PNG } = require('pngjs');
 
+const { installNetCache } = require('./net-cache.js');
+
 const SHOT_DIR = 'test-screenshots';
 fs.mkdirSync(SHOT_DIR, { recursive: true });
+
+// Everything internet-sourced is fetched on demand by the browser; the
+// net-cache route makes those fetches deterministic and fast in CI. The CORS
+// proxy is pointed at the static server so scene assets arrive same-origin.
+test.beforeEach(async ({ context }) => {
+  await context.addInitScript(() => { window.FDAR_CORS_PROXY = 'http://localhost:8321/proxy?url='; });
+  await installNetCache(context);
+});
 
 /** Count pixels matching a predicate. */
 function countPixels(png, match) {
@@ -107,7 +117,8 @@ test.describe('transform pipeline', () => {
     const html = await getGeneratedHtml(page);
     // Relative url= attributes are rewritten to absolute against the page base
     expect(html).toMatch(/url="[^"]*marker\/CP-AM-DRILL\.patt"/);
-    expect(html).toContain('gltf-model="obj/arrow_blue.glb"');
+    // The Azure-hosted model is routed through the CORS proxy on demand
+    expect(html).toMatch(/gltf-model="[^"]*proxy\?url=[^"]*arrow_blue\.glb"/);
   });
 
   test('preview iframe contains the generated scene', async ({ page }) => {
@@ -216,7 +227,7 @@ test.describe('preview state', () => {
   });
 });
 
-test.describe('Azure sample via the URL dialog (served from the local mirror)', () => {
+test.describe('Azure sample via the URL dialog (fetched on demand)', () => {
   test('CP-AM-CAM-V2_01 shows textured menu icons and clicking one switches views', async ({ page }) => {
     test.slow();
     test.setTimeout(180_000);
@@ -237,7 +248,7 @@ test.describe('Azure sample via the URL dialog (served from the local mirror)', 
       return new Function('window', 'document', `return (${srcFn})()`)(win, win.document);
     }, fn.toString());
 
-    // The menu icons must be real textures (loaded from this site's mirror
+    // The menu icons must be real textures (fetched on demand
     // of the Azure assets), not white fallbacks
     await expect.poll(() => inIframe(() => {
       let textured = 0;
@@ -350,7 +361,7 @@ test.describe('catalog preview', () => {
     await expect(frame.locator('a.entry').first()).toBeVisible({ timeout: 30_000 });
     await expect(frame.locator('a.entry')).toHaveCount(4);
 
-    // Clicking an entry opens it as a new tab (resolved via the local mirror)
+    // Clicking an entry opens it as a new tab (fetched on demand)
     await frame.locator('a.entry', { hasText: 'Sorting_01' }).click();
     await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/Sorting_01/, { timeout: 60_000 });
     await expect.poll(() => getEditorValue(page)).toContain('<TARGETBASE');
@@ -448,7 +459,7 @@ test.describe('open dialog', () => {
   test('loading an XML from a URL adds a tab and transforms it', async ({ page }) => {
     await openApp(page);
     await page.locator('#btn-open-xml').click();
-    await page.locator('#od-url-input').fill('http://localhost:8321/tests/scenes/link.xml');
+    await page.locator('#od-url-input').fill('http://localhost:8321/static-html/link.xml');
     await page.locator('#od-url-load').click();
     await expect(page.locator('#open-dialog')).toBeHidden();
     await expect(page.locator('#xml-tab-bar .dtab.active')).toHaveText(/link/);
@@ -472,7 +483,7 @@ test.describe('open dialog', () => {
       window.BarcodeDetector = class {
         static getSupportedFormats() { return Promise.resolve(['qr_code']); }
         detect() {
-          return Promise.resolve([{ rawValue: 'http://localhost:8321/tests/scenes/signal.xml' }]);
+          return Promise.resolve([{ rawValue: 'http://localhost:8321/static-html/signal.xml' }]);
         }
       };
     });

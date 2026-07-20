@@ -75,8 +75,71 @@ const ASSET_PLACEHOLDER = {
   '.pdf': () => Buffer.alloc(0),
 };
 
+const { CACHE_DIR, fetchCached } = require('./net-cache.js');
+
+// Same-origin CORS proxy (/proxy?url=<encoded>) — the tests point the app's
+// CORS_PROXY here so cross-origin scene assets arrive without preflights,
+// interception or the public allorigins service. Content comes from the
+// net-cache disk cache (fetched once, node-side).
+function serveProxy(req, res, rawUrl) {
+  let url;
+  try { url = decodeURIComponent(rawUrl); } catch (e) { url = rawUrl; }
+  fetchCached(url).then(({ buf, contentType }) => {
+    sendRanged(req, res, buf, contentType);
+  }).catch(() => {
+    const ext = path.extname(url.split('?')[0]).toLowerCase();
+    const placeholder = ASSET_PLACEHOLDER[ext];
+    if (placeholder) {
+      const body = placeholder();
+      res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream', 'Content-Length': body.length });
+      res.end(body);
+    } else {
+      res.writeHead(502).end('proxy failure: ' + url);
+    }
+  });
+}
+
+function sendRanged(req, res, buf, contentType) {
+  const headers = {
+    'Content-Type': contentType || 'application/octet-stream',
+    'Access-Control-Allow-Origin': '*',
+    'Accept-Ranges': 'bytes',
+  };
+  const m = (req.headers.range || '').match(/bytes=(\d+)-(\d*)/);
+  if (m) {
+    const start = Number(m[1]);
+    const end = m[2] ? Math.min(Number(m[2]), buf.length - 1) : buf.length - 1;
+    headers['Content-Range'] = `bytes ${start}-${end}/${buf.length}`;
+    buf = buf.subarray(start, end + 1);
+    headers['Content-Length'] = buf.length;
+    res.writeHead(206, headers);
+  } else {
+    headers['Content-Length'] = buf.length;
+    res.writeHead(200, headers);
+  }
+  if (req.method === 'HEAD') res.end(); else res.end(buf);
+}
+
+// Replay a net-cache entry (/__netcache/<sha1>) with CORS and Range support.
+// The Playwright route layer redirects intercepted internet URLs here so
+// large bodies (videos, models) never travel over the CDP pipe.
+function serveNetCache(req, res, key) {
+  if (!/^[0-9a-f]{40}$/.test(key)) { res.writeHead(400).end('bad key'); return; }
+  let buf, meta;
+  try {
+    buf = fs.readFileSync(path.join(CACHE_DIR, key));
+    meta = JSON.parse(fs.readFileSync(path.join(CACHE_DIR, key + '.meta'), 'utf8'));
+  } catch (e) {
+    res.writeHead(404).end('no cache entry');
+    return;
+  }
+  sendRanged(req, res, buf, meta.contentType);
+}
+
 const server = http.createServer((req, res) => {
   let urlPath = decodeURIComponent((req.url || '/').split('?')[0]);
+  if (urlPath.startsWith('/__netcache/')) return serveNetCache(req, res, urlPath.slice('/__netcache/'.length));
+  if (urlPath === '/proxy') return serveProxy(req, res, ((req.url || '').split('?url=')[1] || ''));
   const isDir = urlPath.endsWith('/');
   const rel = path.normalize(urlPath).replace(/^(\.\.[/\\])+/, '');
   let filePath = path.join(ROOT, rel);

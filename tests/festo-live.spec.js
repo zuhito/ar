@@ -9,6 +9,7 @@ const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const { PNG } = require('pngjs');
+const { installNetCache } = require('./net-cache.js');
 
 const BASE = 'https://festodidacticsw.azurewebsites.net/ar/';
 const CP_STATIONS = ['CP-AM-CAM-V2_01', 'CP-AM-CAM_01', 'CP-AM-DRILL_01', 'CP-AM-iDRILL_01',
@@ -33,27 +34,28 @@ TARGETS['cp-cloud_nm_CP-AM-DISPENSE_01'] = { url: BASE + 'cp-cloud_nm/CP-AM-DISP
 
 const OUT_DIR = path.resolve(__dirname, '..', 'static-live');
 
-/** Scene name -> the mirror pack dir holding its images/obj/models. */
-function packOf(name) {
-  if (name.startsWith('cp-cloud_nm_')) return 'cp-cloud_nm';
-  if (name.startsWith('cp-cloud_om_')) return 'cp-cloud_om';
-  if (name.startsWith('mps400_')) return 'mps400';
-  if (name.startsWith('mps_en_')) return 'mps_en';
+/** Scene name -> the remote folder its relative asset paths resolve against. */
+function remoteBaseOf(name) {
+  if (name.startsWith('cp-cloud_nm_')) return BASE + 'cp-cloud_nm/';
+  if (name.startsWith('cp-cloud_om_')) return BASE + 'cp-cloud_om/';
+  if (name.startsWith('mps400_')) return BASE + 'MPS400/';
+  if (name.startsWith('mps_en_')) return BASE + 'mps/MPS%20[EN]/';
   return null;
 }
 
 /**
  * The published scenes reference their textures with relative paths
  * (images/…, obj/…, models/…) that resolve against the original Festo host.
- * Point them at the same-origin mirror copies fetched by scripts/fetch-assets
- * so the browser actually loads the real artwork instead of a placeholder.
+ * Route them through the static server's same-origin /proxy so the browser
+ * fetches the real artwork on demand without CORS or interception overhead.
  */
 function rewriteAssetPaths(html, name) {
-  const pack = packOf(name);
-  if (!pack) return html;
+  const base = remoteBaseOf(name);
+  if (!base) return html;
+  const prox = (rel) => '/proxy?url=' + encodeURIComponent(base + rel);
   return html
-    .replace(/url\((images|obj|models)\//g, `url(/mirror/${pack}/$1/`)
-    .replace(/(src|href)="(images|obj|models)\//g, `$1="/mirror/${pack}/$2/`);
+    .replace(/url\(((?:images|obj|models)\/[^)]+)\)/g, (m, rel) => `url(${prox(rel)})`)
+    .replace(/(src|href)="((?:images|obj|models)\/[^"]+)"/g, (m, attr, rel) => `${attr}="${prox(rel)}"`);
 }
 
 /**
@@ -157,6 +159,8 @@ async function captureMenuViews(page, name, shotDir) {
 test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
   test.describe.configure({ mode: 'serial' });
 
+  test.beforeEach(async ({ context }) => installNetCache(context));
+
   test('all published XMLs download, parse and transform', async () => {
     test.slow();
     fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -172,10 +176,6 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
         let html = execFileSync('xsltproc',
           [path.resolve(__dirname, '..', 'aframe.xsl'), xmlPath],
           { maxBuffer: 64 * 1024 * 1024 }).toString();
-        html = html
-          .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
-          .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js')
-          .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" shader="msdf" negate="false" ');
         html = rewriteAssetPaths(html, name);
         fs.writeFileSync(path.join(OUT_DIR, name + '.html'), html);
       } catch (e) {

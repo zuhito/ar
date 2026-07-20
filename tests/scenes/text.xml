@@ -1,7 +1,0 @@
-<AUGMENTATION>
-  <CAMERA>
-    <NODE tz="100">
-      <TEXT label="Hello World" rgba="00ff0088" width="10" />
-    </NODE>
-  </CAMERA>
-</AUGMENTATION>

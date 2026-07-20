@@ -2,8 +2,6 @@
 // Tests for HTML pre-generated with xsltproc (see global-setup.js), as opposed
 // to editor.spec.js which covers the in-browser on-demand transform.
 const { test, expect } = require('@playwright/test');
-const fs = require('node:fs');
-const path = require('node:path');
 const { PNG } = require('pngjs');
 
 /** Fraction of pixels that differ noticeably between two same-size PNGs. */
@@ -19,7 +17,11 @@ function diffRatio(a, b) {
   return diff / total;
 }
 
+const { installNetCache } = require('./net-cache.js');
+
 test.describe('xsltproc-generated pages', () => {
+  test.beforeEach(async ({ context }) => installNetCache(context));
+
   test('text scene boots A-Frame and shows the text', async ({ page }) => {
     await page.goto('/static-html/text.html');
     await expect(page).toHaveTitle('AR App');
@@ -335,31 +337,6 @@ test.describe('xsltproc-generated pages', () => {
     await expect(page.locator('#view-name')).toHaveText('alt');
   });
 
-  test('every Festo sample scene transforms into a scene or catalog page', () => {
-    // global-setup already fails on xsltproc errors; here we check each
-    // generated page carries the expected top-level structure
-    const outDir = path.resolve(__dirname, '..', 'static-html', 'festo');
-    const walk = (dir) => fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
-      e.isDirectory() ? walk(path.join(dir, e.name)) : [path.join(dir, e.name)]);
-    const pages = walk(outDir).filter((f) => f.endsWith('.html'));
-    expect(pages.length).toBe(43);
-    for (const file of pages) {
-      const html = fs.readFileSync(file, 'utf8');
-      expect(html, file).toContain('<!DOCTYPE html>');
-      const isScene = html.includes('<a-scene');
-      const isCatalog = html.includes('class="entry"');
-      expect(isScene || isCatalog, `${file} is neither a scene nor a catalog`).toBe(true);
-    }
-  });
-
-  test('Festo Sorting_01 renders its marker scene and view system', async ({ page }) => {
-    await page.goto('/static-html/festo/mps400/Sorting_01.html');
-    await expect(page.locator('a-scene')).toBeAttached();
-    await expect(page.locator('a-marker')).toBeAttached();
-    expect(await page.evaluate(() => /** @type {any} */ (window).fdarCurrentView)).toBe('sorting_home');
-    expect(await page.locator('[fdar-visibility]').count()).toBeGreaterThan(400);
-  });
-
   test('AR marker scene has marker and model markup', async ({ page }) => {
     // DOM-structure assertions only: the AR.js webcam pipeline needs real
     // camera input, which the fake media stream stands in for
@@ -369,10 +346,32 @@ test.describe('xsltproc-generated pages', () => {
     await expect(scene).toHaveAttribute('embedded', 'embedded');
     await expect(scene).toHaveAttribute('arjs', /sourceType: webcam/);
 
+    // Test scenes use the printable AR.js built-in marker, not a .patt file
     const marker = page.locator('a-marker');
-    await expect(marker).toHaveAttribute('type', 'pattern');
-    await expect(marker).toHaveAttribute('url', 'marker/CP-AM-DRILL.patt');
-    await expect(page.locator('a-entity[gltf-model]')).toHaveAttribute('gltf-model', 'obj/arrow_blue.glb');
+    await expect(marker).toHaveAttribute('preset', 'hiro');
+    await expect(marker).not.toHaveAttribute('url', /.*/);
+    await expect(page.locator('a-entity[gltf-model]')).toHaveAttribute('gltf-model',
+      'https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/arrow_blue.glb');
+  });
+
+  test('hiro marker: the 2x2 menu fits inside the black square', async ({ page }) => {
+    await page.goto('/static-html/marker_menu.html');
+    await expect(page.locator('a-marker[preset="hiro"]')).toBeAttached();
+    await expect(page.locator('a-marker [navigate-on-click]')).toHaveCount(4);
+    await expect(page.locator('a-scene canvas')).toBeAttached({ timeout: 30_000 });
+
+    // World-space bounds of the marker's children, in marker units (the hiro
+    // black square spans ±0.5 around the marker origin on X and Z).
+    const box = await page.evaluate(() => {
+      const marker = /** @type {any} */ (document.querySelector('a-marker'));
+      const THREE = /** @type {any} */ (window).AFRAME.THREE;
+      const b = new THREE.Box3().setFromObject(marker.object3D);
+      return { minX: b.min.x, maxX: b.max.x, minZ: b.min.z, maxZ: b.max.z, empty: b.isEmpty() };
+    });
+    expect(box.empty).toBe(false);
+    for (const v of [box.minX, box.maxX, box.minZ, box.maxZ]) {
+      expect(Math.abs(v)).toBeLessThanOrEqual(0.5);
+    }
   });
 
   test('marker cursor raycasts stay aligned when AR.js overrides the projection', async ({ page }) => {

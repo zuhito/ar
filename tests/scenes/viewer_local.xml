@@ -1,7 +1,0 @@
-<AUGMENTATION>
-  <CAMERA>
-    <NODE tz="1">
-      <VIEWER picture="/tests/assets/test-image.png" refresh="50" />
-    </NODE>
-  </CAMERA>
-</AUGMENTATION>

@@ -118,14 +118,22 @@
         var bar = document.getElementById('fdar-progress');
         if (bar) bar.classList.toggle('active', window._fdarBusy &gt; 0);
       };
-      // Clear the initial boot hold once A-Frame reports the scene loaded.
+      // Clear the initial boot hold once preparation is done. The bar covers
+      // preparation only (XSLT output booting, entity setup) — never the
+      // ongoing AR camera pipeline: on webcam scenes 'loaded' can be held up
+      // by camera initialization, so those clear as soon as rendering starts.
       document.addEventListener('DOMContentLoaded', function () {
         var scene = document.querySelector('a-scene');
-        if (!scene) { window.fdarProgress(false); return; }
-        if (scene.hasLoaded) { window.fdarProgress(false); }
-        else { scene.addEventListener('loaded', function () { window.fdarProgress(false); }, { once: true }); }
+        var clear = function () { if (window._fdarBoot) { window._fdarBoot = false; window.fdarProgress(false); } };
+        window._fdarBoot = true;
+        if (!scene) { clear(); return; }
+        if (scene.hasLoaded) { clear(); }
+        else if (scene.hasAttribute('arjs')) {
+          requestAnimationFrame(function () { requestAnimationFrame(clear); });
+        }
+        else { scene.addEventListener('loaded', clear, { once: true }); }
         // Safety: never leave the bar stuck if 'loaded' never fires
-        setTimeout(function () { if (window._fdarBusy &gt; 0) window.fdarProgress(false); }, 12000);
+        setTimeout(clear, 12000);
       });</xsl:text>
 
           <xsl:if test="//LINK or //SWITCH or //STREAMER">
@@ -1603,9 +1611,28 @@
       </xsl:choose>
     </xsl:variable>
     <xsl:variable name="scaleFactor" select="1 div number($markerSize)" />
-    <a-marker type="pattern" url="{$pattUrl}.patt" smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+    <a-marker smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
+      <!-- 'hiro' selects the AR.js built-in preset (used by the test scenes,
+           printable everywhere); anything else is a pattern file next to the
+           scene. Preset content is centred on the marker so it stays inside
+           the black square. -->
+      <xsl:choose>
+        <xsl:when test="$pattUrl = 'hiro'">
+          <xsl:attribute name="preset">hiro</xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="type">pattern</xsl:attribute>
+          <xsl:attribute name="url"><xsl:value-of select="$pattUrl"/>.patt</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
       <a-entity rotation="0 0 0" scale="{$scaleFactor} {$scaleFactor} {$scaleFactor}">
-        <a-entity position="0 0.005 {0 - number($markerSize)}">
+        <a-entity>
+          <xsl:attribute name="position">
+            <xsl:choose>
+              <xsl:when test="$pattUrl = 'hiro'">0 0.005 0</xsl:when>
+              <xsl:otherwise>0 0.005 <xsl:value-of select="0 - number($markerSize)"/></xsl:otherwise>
+            </xsl:choose>
+          </xsl:attribute>
           <xsl:apply-templates />
         </a-entity>
       </a-entity>
@@ -1848,6 +1875,20 @@
               <xsl:attribute name="material">src: url(<xsl:value-of select="@texture"/>)</xsl:attribute>
             </xsl:when>
           </xsl:choose>
+        </xsl:when>
+
+        <!-- An image file is a textured plane (menu icons, panels), not a
+             3D model: obj-model would XHR the picture as OBJ and fail -->
+        <xsl:when test="contains(@file, '.png') or contains(@file, '.jpg') or contains(@file, '.jpeg') or contains(@file, '.gif')">
+          <xsl:attribute name="geometry">primitive: plane; width: 1; height: 1</xsl:attribute>
+          <xsl:attribute name="material">
+            <xsl:text>src: url(</xsl:text>
+            <xsl:choose>
+              <xsl:when test="@texture"><xsl:value-of select="@texture"/></xsl:when>
+              <xsl:otherwise><xsl:value-of select="@file"/></xsl:otherwise>
+            </xsl:choose>
+            <xsl:text>); transparent: true; side: double; shader: flat</xsl:text>
+          </xsl:attribute>
         </xsl:when>
 
         <xsl:when test="contains(@file, '.glb') or contains(@file, '.gltf') or @filetype='glb' or @filetype='gltf'">

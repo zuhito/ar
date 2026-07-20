@@ -1,31 +1,14 @@
 // @ts-check
-// Pre-generates static HTML from every XML under tests/scenes/ (recursively)
+// Pre-generates static HTML from the embedded test scenes (tests/fixtures.js)
 // with xsltproc, mirroring the offline workflow:
 //   xsltproc aframe.xsl scene.xml > scene.html
-// Output lands in static-html/ preserving the directory layout, and is
-// exercised by static.spec.js. A scene that fails to transform fails setup.
+// Both the XML and the generated HTML land in static-html/ (the XMLs double as
+// URL-loading fixtures for the editor tests). The pages keep their real CDN
+// URLs — tests fetch them on demand through tests/net-cache.js.
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-
-// The Festo sample scenes, vendored libraries and mirrored assets are not
-// committed; fetch them on demand before generating the static pages.
-function fetchAssets(root) {
-  execFileSync('node', [path.join(root, 'scripts', 'fetch-assets.mjs')], {
-    stdio: 'inherit',
-    maxBuffer: 64 * 1024 * 1024,
-  });
-}
-
-function collectXml(dir) {
-  const out = [];
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const p = path.join(dir, entry.name);
-    if (entry.isDirectory()) out.push(...collectXml(p));
-    else if (entry.name.endsWith('.xml')) out.push(p);
-  }
-  return out;
-}
+const { SCENES } = require('./fixtures.js');
 
 module.exports = async () => {
   try {
@@ -35,21 +18,19 @@ module.exports = async () => {
   }
 
   const root = path.resolve(__dirname, '..');
-  fetchAssets(root);
-
-  const scenesDir = path.join(__dirname, 'scenes');
   const outDir = path.join(root, 'static-html');
+  fs.mkdirSync(outDir, { recursive: true });
 
-  for (const file of collectXml(scenesDir)) {
-    const rel = path.relative(scenesDir, file);
-    let html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), file], { maxBuffer: 64 * 1024 * 1024 }).toString();
-    // Local vendor copies keep the tests fast and network-independent
-    html = html
-      .replace('https://aframe.io/releases/1.7.1/aframe.min.js', '/vendor/aframe.min.js')
-      .replace('https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js', '/vendor/aframe-ar.js')
-      .replace(/<a-text /g, '<a-text font="/vendor/Roboto-msdf.json" shader="msdf" negate="false" ');
-    const target = path.join(outDir, rel.replace(/\.xml$/, '.html'));
-    fs.mkdirSync(path.dirname(target), { recursive: true });
-    fs.writeFileSync(target, html);
+  // Solid-red 64x64 PNG used by the viewer_local scene's pixel-proof test
+  fs.writeFileSync(path.join(outDir, 'test-image.png'), Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAIAAAAlC+aJAAAAb0lEQVR4nO3PAQkAAAyEwO9feoshgnABdLep8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3I8QUNyPEFDcjxBQ3IPanc8OLDQitxAAAAAElFTkSuQmCC',
+    'base64'
+  ));
+
+  for (const [name, xml] of Object.entries(SCENES)) {
+    const xmlPath = path.join(outDir, name + '.xml');
+    fs.writeFileSync(xmlPath, xml);
+    const html = execFileSync('xsltproc', [path.join(root, 'aframe.xsl'), xmlPath], { maxBuffer: 64 * 1024 * 1024 }).toString();
+    fs.writeFileSync(path.join(outDir, name + '.html'), html);
   }
 };

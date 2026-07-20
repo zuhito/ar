@@ -1348,14 +1348,65 @@ body {
   var MIRROR_BASE = 'assets/';
   var USE_MIRROR = !window.FDAR_CORS_PROXY;
 
+  // Index of the mirrored tree (assets/manifest.json, written by the deploy).
+  // A scene may spell an asset any number of ways - "obj/arrow_blue.glb",
+  // "arrow_blue.glb", "./obj/arrow_blue.glb" - and every spelling has to reach
+  // the SAME mirrored file. Resolve by basename within the scene's own
+  // collection rather than mirroring a second copy per spelling: duplicate
+  // files on Pages would be two things to keep in sync and drift apart.
+  var mirrorFiles = null;      // ['MPS400/images/grid.png', ...]
+  var mirrorByName = null;     // 'MPS400' -> { 'grid.png': 'MPS400/images/grid.png' }
+
+  function indexMirror(paths) {
+    mirrorFiles = Object.create(null);
+    mirrorByName = Object.create(null);
+    paths.forEach(function (p) {
+      mirrorFiles[p] = true;
+      var slash = p.indexOf('/');
+      if (slash < 0) return;
+      var collection = p.substring(0, slash);
+      var name = p.substring(p.lastIndexOf('/') + 1);
+      var byName = mirrorByName[collection] || (mirrorByName[collection] = Object.create(null));
+      // Same basename twice in one collection is ambiguous - keep neither, so
+      // a bare name never silently resolves to the wrong file.
+      byName[name] = Object.prototype.hasOwnProperty.call(byName, name) ? null : p;
+    });
+  }
+
+  if (!window.FDAR_CORS_PROXY) {
+    fetch('assets/manifest.json').then(function (r) {
+      return r.ok ? r.json() : [];
+    }).then(indexMirror).catch(function () { indexMirror([]); });
+  }
+
+  /** 'a/b/../c.png' -> 'a/c.png'; also drops './' and any leading slash. */
+  function normalizePath(p) {
+    var out = [];
+    p.split('/').forEach(function (seg) {
+      if (!seg || seg === '.') return;
+      if (seg === '..') out.pop(); else out.push(seg);
+    });
+    return out.join('/');
+  }
+
   /** Absolute Festo URL -> same-origin mirror URL, or null if not mirrored. */
   function mirrorOf(abs) {
     if (!USE_MIRROR || abs.indexOf(FESTO_AR_BASE) !== 0) return null;
+    var rel = normalizePath(decodeURI(abs.substring(FESTO_AR_BASE.length)));
+    // Until the index arrives, assume the path is spelled exactly as mirrored;
+    // a miss still falls through to the direct fetch and the proxy chain.
+    if (mirrorFiles && !mirrorFiles[rel]) {
+      var slash = rel.indexOf('/');
+      var byName = slash < 0 ? null : mirrorByName[rel.substring(0, slash)];
+      var hit = byName && byName[rel.substring(rel.lastIndexOf('/') + 1)];
+      if (!hit) return null;
+      rel = hit;
+    }
     // Absolute, not relative: generated scenes carry a <base href> pointing at
     // the scene's own origin (festodidacticsw), so a bare "assets/..." would
     // resolve against Festo instead of this page.
-    var rel = MIRROR_BASE + abs.substring(FESTO_AR_BASE.length);
-    try { return new URL(rel, window.location.href).href; } catch (e) { return rel; }
+    var url = MIRROR_BASE + rel.split('/').map(encodeURIComponent).join('/');
+    try { return new URL(url, window.location.href).href; } catch (e) { return url; }
   }
 
   /** Where a cross-origin asset should actually be fetched from. */

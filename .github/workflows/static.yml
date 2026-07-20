@@ -295,6 +295,21 @@ jobs:
             echo "::error::$failed asset(s) unavailable upstream and not in known_missing"; exit 1
           fi
 
+      # Index of what actually landed in assets/, so the editor can resolve a
+      # scene's file="..." however it is written - "obj/arrow_blue.glb",
+      # "arrow_blue.glb" or any other spelling - to the one mirrored copy.
+      # Generated from the tree rather than the URL list above so it can never
+      # claim a file that failed to download. Never place a second copy of a
+      # file to make a path resolve; add it to this index instead.
+      - name: Index mirrored assets
+        run: |
+          find assets -type f ! -name manifest.json \
+            | sed 's|^assets/||' \
+            | LC_ALL=C sort \
+            | python3 -c 'import json,sys; json.dump(sys.stdin.read().splitlines(), sys.stdout)' \
+            > assets/manifest.json
+          python3 -c 'import json;print("indexed",len(json.load(open("assets/manifest.json"))),"files")'
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

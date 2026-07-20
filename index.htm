@@ -1381,9 +1381,6 @@ body {
       try { xo = new URL(abs, window.location.href).origin !== window.location.origin; } catch (err) {}
       return xo ? CORS_PROXY + encodeURIComponent(abs) : abs;
     };
-    if (resultStr.indexOf('<base ') === -1) {
-      resultStr = resultStr.replace(/<head>/i, '<head>\n  <base href="' + baseHref + '">' + PROXY_FALLBACK_SCRIPT);
-    }
     resultStr = resultStr.replace(/url="(?!https?:\/\/|data:|blob:|\/|#)([^"]+)"/gi, function (m, path) {
       return 'url="' + resolveRef(path) + '"';
     });
@@ -1406,6 +1403,13 @@ body {
       function (m, attr, abs) {
         return attr + '="' + CORS_PROXY + encodeURIComponent(abs) + '"';
       });
+
+    // Injected last: these rewrites are textual, and the fallback script
+    // contains `url=` and `url(` inside its proxy strings, so injecting it
+    // any earlier lets them rewrite our own script into a syntax error
+    if (resultStr.indexOf('<base ') === -1) {
+      resultStr = resultStr.replace(/<head>/i, '<head>\n  <base href="' + baseHref + '">' + PROXY_FALLBACK_SCRIPT);
+    }
 
     lastHtmlRaw = resultStr;
     window._popupCode = resultStr;

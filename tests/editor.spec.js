@@ -97,6 +97,44 @@ test.describe('startup', () => {
   });
 });
 
+/**
+ * Uncaught exceptions in the generated page leave the scene half-built while
+ * the markup still looks correct, so assert on the console directly. Network
+ * failures are excluded: proxy and CDN reachability is not what this checks.
+ */
+test.describe('console hygiene', () => {
+  const DEFAULT_TABS = [
+    'helloworld', 'helloworldar', 'link', 'viewer', 'viewer_ar', 'model',
+    'model_ar', 'streamer', 'signal', 'signal_ws', 'ws_receive', 'counter',
+    'vumeter',
+  ];
+
+  test('no default tab raises a console error or uncaught exception', async ({ page }) => {
+    test.slow();
+    /** @type {string[]} */
+    const problems = [];
+    let tab = '(startup)';
+    page.on('pageerror', (e) => problems.push(`${tab}: uncaught ${e.message}`));
+    page.on('console', (m) => {
+      if (m.type() !== 'error') return;
+      const text = m.text();
+      if (/net::|Failed to load resource|ERR_|CORS policy|status of 4\d\d|status of 5\d\d/.test(text)) return;
+      problems.push(`${tab}: ${text}`);
+    });
+
+    await openApp(page);
+    for (tab of DEFAULT_TABS) {
+      await page.locator(`#xml-tab-bar .dtab[data-id="${tab}"] .dtab-label`).click();
+      await waitForTransform(page);
+      // The generated page is reloaded into the iframe on a debounce; give it
+      // time to boot and run its scripts before moving on
+      await page.waitForTimeout(3000);
+    }
+
+    expect(problems, problems.join('\n')).toEqual([]);
+  });
+});
+
 test.describe('transform pipeline', () => {
   test('generates A-Frame HTML from the XML scene', async ({ page }) => {
     await openApp(page);

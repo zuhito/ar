@@ -88,8 +88,7 @@
         </xsl:if>
 
         <script>
-          <xsl:text disable-output-escaping="yes">&#10;      console.log('A-Frame Custom Components Initialized');
-      // Strict FDAR bool conversion
+          <xsl:text disable-output-escaping="yes">&#10;      // Strict FDAR bool conversion
       window.fdarTruthy = function (v) {
         var s = String(v).toLowerCase();
         return s === 'true' || s === 'wahr' || s === 'on' || s === 'enable' || s === 'show';
@@ -1257,11 +1256,20 @@
             window._mfStage = stage;
           }
           var stageEl = window._mfStage;
-          // Neutral backdrop while inspecting (restored on toggle off)
+          // Neutral backdrop while inspecting (restored on toggle off): the
+          // scene background AND the AR.js webcam video behind the canvas —
+          // otherwise the camera feed keeps showing through
           if (scene.object3D &amp;&amp; !window._mfBackground) {
             window._mfBackground = { had: scene.object3D.background };
             scene.object3D.background = new THREE.Color('#333333');
           }
+          window._mfHiddenVideos = [];
+          Array.prototype.forEach.call(document.querySelectorAll('video'), function (v) {
+            if (v.style.display !== 'none') {
+              window._mfHiddenVideos.push(v);
+              v.style.display = 'none';
+            }
+          });
           // AR.js rewrites the camera pose/projection every frame from the
           // video calibration, which makes rendering and mouse raycasts
           // disagree. While marker-free is on, suspend the AR.js system and
@@ -1469,6 +1477,8 @@
             scene.object3D.background = window._mfBackground.had || null;
             window._mfBackground = null;
           }
+          (window._mfHiddenVideos || []).forEach(function (v) { v.style.display = ''; });
+          window._mfHiddenVideos = [];
           markers.forEach(function (m) {
             if (!m._mfGroup) return;
             var inner = m._mfGroup.children[0];
@@ -1658,7 +1668,17 @@
     <xsl:variable name="sy"><xsl:choose><xsl:when test="starts-with(@sy, '@anim:')">1</xsl:when><xsl:when test="@sy"><xsl:value-of select="@sy"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="sz"><xsl:choose><xsl:when test="starts-with(@sz, '@anim:')">1</xsl:when><xsl:when test="@sz"><xsl:value-of select="@sz"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
 
-    <a-entity class="fdar-node" position="{$tx} {$ty} {$tz}" rotation="{$rx} {$ry} {$rz}" scale="{number($sxyz) * number($sx)} {number($sxyz) * number($sy)} {number($sxyz) * number($sz)}">
+    <a-entity class="fdar-node">
+      <!-- Omit transform attributes at their defaults: leaner, readable HTML -->
+      <xsl:if test="concat($tx, ' ', $ty, ' ', $tz) != '0 0 0'">
+        <xsl:attribute name="position"><xsl:value-of select="concat($tx, ' ', $ty, ' ', $tz)"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="concat($rx, ' ', $ry, ' ', $rz) != '0 0 0'">
+        <xsl:attribute name="rotation"><xsl:value-of select="concat($rx, ' ', $ry, ' ', $rz)"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="not(number($sxyz) * number($sx) = 1 and number($sxyz) * number($sy) = 1 and number($sxyz) * number($sz) = 1)">
+        <xsl:attribute name="scale"><xsl:value-of select="concat(number($sxyz) * number($sx), ' ', number($sxyz) * number($sy), ' ', number($sxyz) * number($sz))"/></xsl:attribute>
+      </xsl:if>
       <xsl:if test="(@view and @view != '') or (@show and @show != '') or (@collapse and @collapse != '')">
         <xsl:attribute name="fdar-visibility">views: <xsl:value-of select="@view"/>; show: <xsl:value-of select="@show"/>; collapse: <xsl:value-of select="@collapse"/></xsl:attribute>
       </xsl:if>
@@ -1928,7 +1948,7 @@
         </xsl:variable>
         <a-entity class="clickable" navigate-on-click="url: {$linkUrl2}">
           <xsl:attribute name="fdar-fit-parent">w: <xsl:choose><xsl:when test="LINK/@w"><xsl:value-of select="LINK/@w"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; h: <xsl:choose><xsl:when test="LINK/@h"><xsl:value-of select="LINK/@h"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; d: <xsl:choose><xsl:when test="LINK/@d"><xsl:value-of select="LINK/@d"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:attribute>
-          <xsl:attribute name="fdar-area">color: <xsl:choose><xsl:when test="LINK/@rgba"><xsl:value-of select="LINK/@rgba"/></xsl:when><xsl:when test="LINK/@rgb"><xsl:value-of select="LINK/@rgb"/></xsl:when></xsl:choose>; alpha: <xsl:value-of select="LINK/@alpha"/>; pulse: <xsl:value-of select="LINK/@pulse"/></xsl:attribute>
+          <xsl:attribute name="fdar-area"><xsl:if test="LINK/@rgba or LINK/@rgb">color: <xsl:choose><xsl:when test="LINK/@rgba"><xsl:value-of select="LINK/@rgba"/></xsl:when><xsl:otherwise><xsl:value-of select="LINK/@rgb"/></xsl:otherwise></xsl:choose>; </xsl:if><xsl:if test="LINK/@alpha">alpha: <xsl:value-of select="LINK/@alpha"/>; </xsl:if><xsl:if test="LINK/@pulse">pulse: <xsl:value-of select="LINK/@pulse"/>; </xsl:if></xsl:attribute>
           <xsl:text> </xsl:text>
         </a-entity>
       </xsl:if>
@@ -1951,7 +1971,17 @@
     <xsl:variable name="w"><xsl:choose><xsl:when test="@w"><xsl:value-of select="@w"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="h"><xsl:choose><xsl:when test="@h"><xsl:value-of select="@h"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
     <xsl:variable name="d"><xsl:choose><xsl:when test="@d"><xsl:value-of select="@d"/></xsl:when><xsl:otherwise>1</xsl:otherwise></xsl:choose></xsl:variable>
-    <a-entity class="fdar-node" position="{$tx} {$ty} {$tz}" rotation="{$rx} {$ry} {$rz}" scale="{number($sxyz) * number($sx)} {number($sxyz) * number($sy)} {number($sxyz) * number($sz)}">
+    <a-entity class="fdar-node">
+      <!-- Omit transform attributes at their defaults: leaner, readable HTML -->
+      <xsl:if test="concat($tx, ' ', $ty, ' ', $tz) != '0 0 0'">
+        <xsl:attribute name="position"><xsl:value-of select="concat($tx, ' ', $ty, ' ', $tz)"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="concat($rx, ' ', $ry, ' ', $rz) != '0 0 0'">
+        <xsl:attribute name="rotation"><xsl:value-of select="concat($rx, ' ', $ry, ' ', $rz)"/></xsl:attribute>
+      </xsl:if>
+      <xsl:if test="not(number($sxyz) * number($sx) = 1 and number($sxyz) * number($sy) = 1 and number($sxyz) * number($sz) = 1)">
+        <xsl:attribute name="scale"><xsl:value-of select="concat(number($sxyz) * number($sx), ' ', number($sxyz) * number($sy), ' ', number($sxyz) * number($sz))"/></xsl:attribute>
+      </xsl:if>
       <xsl:if test="(@view and @view != '') or (@show and @show != '') or (@collapse and @collapse != '')">
         <xsl:attribute name="fdar-visibility">views: <xsl:value-of select="@view"/>; show: <xsl:value-of select="@show"/>; collapse: <xsl:value-of select="@collapse"/></xsl:attribute>
       </xsl:if>
@@ -2113,7 +2143,7 @@
         <xsl:variable name="ld"><xsl:choose><xsl:when test="LINK/@d"><xsl:value-of select="LINK/@d"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose></xsl:variable>
         <a-entity scale="{$textScale}">
           <a-entity class="clickable" fdar-fit-parent="w: {$lw}; h: {$lh}; d: {$ld}" geometry="primitive: box; width: 2; height: 1; depth: 0.01">
-            <xsl:attribute name="fdar-area">color: <xsl:choose><xsl:when test="LINK/@rgba"><xsl:value-of select="LINK/@rgba"/></xsl:when><xsl:when test="LINK/@rgb"><xsl:value-of select="LINK/@rgb"/></xsl:when></xsl:choose>; alpha: <xsl:value-of select="LINK/@alpha"/>; pulse: <xsl:value-of select="LINK/@pulse"/></xsl:attribute>
+            <xsl:attribute name="fdar-area"><xsl:if test="LINK/@rgba or LINK/@rgb">color: <xsl:choose><xsl:when test="LINK/@rgba"><xsl:value-of select="LINK/@rgba"/></xsl:when><xsl:otherwise><xsl:value-of select="LINK/@rgb"/></xsl:otherwise></xsl:choose>; </xsl:if><xsl:if test="LINK/@alpha">alpha: <xsl:value-of select="LINK/@alpha"/>; </xsl:if><xsl:if test="LINK/@pulse">pulse: <xsl:value-of select="LINK/@pulse"/>; </xsl:if></xsl:attribute>
             <xsl:call-template name="hover-outline-rect">
               <xsl:with-param name="w" select="2 + number($lw)"/>
               <xsl:with-param name="h" select="1 + number($lh)"/>
@@ -2379,7 +2409,7 @@
   <!-- Interaction-area appearance (LINK/SWITCH/TOUCH): rgba wins over rgb,
        alpha/pulse pass through, defaults resolved in the fdar-area component -->
   <xsl:template name="clickable-fill">
-    <xsl:attribute name="fdar-area">color: <xsl:choose><xsl:when test="@rgba"><xsl:value-of select="@rgba"/></xsl:when><xsl:when test="@rgb"><xsl:value-of select="@rgb"/></xsl:when></xsl:choose>; alpha: <xsl:value-of select="@alpha"/>; pulse: <xsl:value-of select="@pulse"/></xsl:attribute>
+    <xsl:attribute name="fdar-area"><xsl:if test="@rgba or @rgb">color: <xsl:choose><xsl:when test="@rgba"><xsl:value-of select="@rgba"/></xsl:when><xsl:otherwise><xsl:value-of select="@rgb"/></xsl:otherwise></xsl:choose>; </xsl:if><xsl:if test="@alpha">alpha: <xsl:value-of select="@alpha"/>; </xsl:if><xsl:if test="@pulse">pulse: <xsl:value-of select="@pulse"/>; </xsl:if></xsl:attribute>
   </xsl:template>
 
   <!-- Attributes common to every a-text: width, colors, optional scale and the

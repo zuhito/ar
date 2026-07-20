@@ -1334,24 +1334,38 @@
             var inner = pivot.children[0];
             inner.scale.set(1, 1, 1);
             inner.position.set(0, 0, 0);
-            // Ancestor matrices (camera pose!) must be current before
-            // measuring, or the recentring lands in a stale frame
-            pivot.updateWorldMatrix(true, true);
-            var box = new THREE.Box3();
-            var tmp = new THREE.Box3();
-            inner.traverse(function (o) {
-              if (!o.isMesh) return;
-              var p = o, vis = true;
-              while (p &amp;&amp; p !== pivot.parent) {
-                if (p.visible === false) { vis = false; break; }
-                p = p.parent;
-              }
-              if (!vis) return;
-              tmp.setFromObject(o);
-              if (!tmp.isEmpty()) box.union(tmp);
-            });
-            if (box.isEmpty()) box.setFromObject(inner);
+            inner.rotation.set(0, 0, 0);
+            var measure = function () {
+              // Ancestor matrices (camera pose!) must be current before
+              // measuring, or the recentring lands in a stale frame
+              pivot.updateWorldMatrix(true, true);
+              var box = new THREE.Box3();
+              var tmp = new THREE.Box3();
+              inner.traverse(function (o) {
+                if (!o.isMesh) return;
+                var p = o, vis = true;
+                while (p &amp;&amp; p !== pivot.parent) {
+                  if (p.visible === false) { vis = false; break; }
+                  p = p.parent;
+                }
+                if (!vis) return;
+                tmp.setFromObject(o);
+                if (!tmp.isEmpty()) box.union(tmp);
+              });
+              if (box.isEmpty()) box.setFromObject(inner);
+              return box;
+            };
+            var box = measure();
             if (box.isEmpty()) return;
+            // Content lying flat on the marker plane (its Y extent much
+            // smaller than its depth) would show almost edge-on in the
+            // straight-ahead inspection camera: tip it upright first.
+            var flat = box.getSize(new THREE.Vector3());
+            if (flat.z > 0 &amp;&amp; flat.y &lt; flat.z * 0.35 &amp;&amp; flat.z &gt; flat.x * 0.35) {
+              inner.rotation.x = -Math.PI / 2;
+              box = measure();
+              if (box.isEmpty()) return;
+            }
             var sphere = box.getBoundingSphere(new THREE.Sphere());
             if (sphere.radius &gt; 0) {
               var s = 1.2 / sphere.radius;

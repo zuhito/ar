@@ -223,9 +223,18 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
             document.querySelectorAll('video').forEach((v) => { v.style.display = 'none'; });
             document.body.style.background = '#000';
           });
+          // The marker-free choice persists per origin and auto-restores, so
+          // force a known OFF state before measuring the toggle's effect
+          if (await page.locator('#mf-checkbox').isChecked()) {
+            await page.locator('.mf-slider').click();
+            await expect(page.locator('#mf-checkbox')).not.toBeChecked();
+          }
           await page.waitForTimeout(400);
           const before = PNG.sync.read(await page.screenshot());
           await page.locator('.mf-slider').click();
+          // The click must actually engage the mode — an animated camera feed
+          // used to fake the pixel diff when it didn't
+          await expect(page.locator('#mf-checkbox')).toBeChecked();
           await page.waitForTimeout(900);
           // Let the mirrored textures finish decoding so the shot shows the
           // real icons, not blank placeholders.
@@ -274,7 +283,10 @@ test.describe('festodidacticsw.azurewebsites.net live XMLs', () => {
           document.querySelectorAll('video').forEach((v) => { v.style.display = 'none'; });
           document.body.style.background = '#000';
         });
-        await page.locator('.mf-slider').click();
+        if (!(await page.locator('#mf-checkbox').isChecked())) {
+          await page.locator('.mf-slider').click();
+        }
+        await expect(page.locator('#mf-checkbox')).toBeChecked();
         await page.waitForTimeout(900);
         await waitTexturesLoaded(page);
 

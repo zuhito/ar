@@ -1586,8 +1586,8 @@ body {
     return base.replace(/\.[^.]+$/, '') || 'remote';
   }
 
-  // On-demand fetch: direct first; if the server does not allow CORS,
-  // walk the public CORS proxy chain.
+  // On-demand fetch: the same-origin mirror first, then direct; if the server
+  // does not allow CORS, walk the public CORS proxy chain.
   function fetchXmlWithFallback(url) {
     var check = function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
@@ -1598,12 +1598,24 @@ body {
       return fetch(CORS_PROXIES[i] + encodeURIComponent(url)).then(check)
         .catch(function () { return viaProxy(i + 1, directErr); });
     };
-    return fetch(url).then(check).catch(function (directErr) {
-      // An HTTP status is a definitive answer; only network/CORS failures
-      // are worth retrying through the proxies
-      if (/^HTTP \d+/.test(directErr.message)) throw directErr;
-      return viaProxy(0, directErr);
-    });
+    // A mirrored scene is same-origin, so it never reaches a public proxy.
+    // A mirror miss is only ever a 404 here, so unlike the direct fetch below
+    // its HTTP status is not definitive - drop through to the chain.
+    var mirror = mirrorOf(url);
+    if (mirror) {
+      return fetch(mirror).then(check)
+        .catch(function () { return fetchDirectWithFallback(url); });
+    }
+    return fetchDirectWithFallback(url);
+
+    function fetchDirectWithFallback(url) {
+      return fetch(url).then(check).catch(function (directErr) {
+        // An HTTP status is a definitive answer; only network/CORS failures
+        // are worth retrying through the proxies
+        if (/^HTTP \d+/.test(directErr.message)) throw directErr;
+        return viaProxy(0, directErr);
+      });
+    }
   }
 
   function loadXmlFromUrl(url) {

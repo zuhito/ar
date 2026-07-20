@@ -1279,6 +1279,11 @@
             window._mfArTick = arSys.tick || true;
             arSys.tick = function () {};
           }
+          // AR.js drives the camera matrix directly (matrixAutoUpdate off),
+          // so after suspending it the render camera can be frozen in a pose
+          // that no longer matches its entity — the whole stage then renders
+          // offset. Re-enable normal matrix updates while inspecting.
+          if (scene.camera) scene.camera.matrixAutoUpdate = true;
           window._mfSetProjection = function () {
             var cam = scene.camera;
             var canvas = scene.canvas;

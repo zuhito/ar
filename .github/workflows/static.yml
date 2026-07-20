@@ -102,6 +102,9 @@ jobs:
             fi
           done <<'URLS'
           https://festodidacticsw.azurewebsites.net/ar/MPS400/MPS400.xml
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/Distribution_Pro_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/Joining_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/Measuring_Pro_01.xml
           https://festodidacticsw.azurewebsites.net/ar/MPS400/Sorting_01.xml
           https://festodidacticsw.azurewebsites.net/ar/MPS400/images/Input_squared_hero.png
           https://festodidacticsw.azurewebsites.net/ar/MPS400/images/actuators_rounded_colored.png

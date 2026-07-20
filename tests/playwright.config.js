@@ -2,13 +2,13 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
-  testDir: 'tests',
+  testDir: '.',
   timeout: 60_000,
   expect: { timeout: 15_000 },
   fullyParallel: true,
   retries: process.env.CI ? 2 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
-  globalSetup: './tests/global-setup.js',
+  globalSetup: './global-setup.js',
   use: {
     baseURL: 'http://localhost:8321',
     trace: 'on-first-retry',
@@ -26,7 +26,7 @@ module.exports = defineConfig({
   ],
   // Serve the repository root as a static site (same layout GitHub Pages serves)
   webServer: {
-    command: 'node tests/static-server.js',
+    command: 'node static-server.js',
     port: 8321,
     reuseExistingServer: !process.env.CI,
   },

@@ -5,7 +5,7 @@ const { PNG } = require('pngjs');
 
 const { installNetCache } = require('./net-cache.js');
 
-const SHOT_DIR = 'test-screenshots';
+const SHOT_DIR = require('node:path').resolve(__dirname, '..', 'test-screenshots');
 fs.mkdirSync(SHOT_DIR, { recursive: true });
 
 // Everything internet-sourced is fetched on demand by the browser; the

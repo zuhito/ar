@@ -59,7 +59,24 @@ jobs:
         env:
           BASE: https://festodidacticsw.azurewebsites.net/ar/
         run: |
-          ok=0; miss=0; total=0
+          # These five are 404 upstream (verified 2026-07-20); the same
+          # filenames exist under cp-cloud_nm/targets/, so only the _om copies
+          # are missing. Any OTHER failure is an error: a silently incomplete
+          # mirror ships a site whose scenes fall through to the public CORS
+          # proxies, which is exactly what mirroring exists to avoid. Delete a
+          # line here once upstream restores the file.
+          known_missing() {
+            case "${1#$BASE}" in
+              cp-cloud_om/targets/CP-AM-DRILL_01.jpg|\
+              cp-cloud_om/targets/CP-AM-LABEL-V2_01.jpg|\
+              cp-cloud_om/targets/CP-AM-LABEL-V3_01.jpg|\
+              cp-cloud_om/targets/CP-AM-MEASURE-V2_01.jpg|\
+              cp-cloud_om/targets/CP-AM-MPRESS-V2_01.jpg) return 0 ;;
+              *) return 1 ;;
+            esac
+          }
+
+          ok=0; expected_miss=0; failed=0; revived=0; total=0
           while read -r url; do
             [ -n "$url" ] || continue
             total=$((total + 1))
@@ -71,11 +88,17 @@ jobs:
             # -g: brackets are path characters here, not a curl glob
             if curl -sfg --retry 3 --retry-delay 2 --max-time 60 -o "$local_path" "$url"; then
               ok=$((ok + 1))
+              if known_missing "$url"; then
+                # Upstream fixed it - keep the file, but say so, because the
+                # allowlist above is now stale and should lose a line.
+                echo "::warning::no longer missing upstream, drop from known_missing: $url"
+                revived=$((revived + 1))
+              fi
+            elif known_missing "$url"; then
+              rm -f "$local_path"; expected_miss=$((expected_miss + 1))
             else
-              # Some IMGTARGET markers are 404 upstream; the editor's proxy
-              # fallback covers a missing mirror entry, so do not fail the deploy
-              echo "::warning::asset unavailable upstream: $url"
-              rm -f "$local_path"; miss=$((miss + 1))
+              echo "::error::asset unavailable upstream: $url"
+              rm -f "$local_path"; failed=$((failed + 1))
             fi
           done <<'URLS'
           https://festodidacticsw.azurewebsites.net/ar/MPS400/MPS400.xml
@@ -261,11 +284,12 @@ jobs:
           https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/targetArrow.obj
           https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/targetArrow.png
           URLS
-          echo "mirrored $ok/$total (missing $miss)"
-          # A wholesale failure (host down, DNS) should not silently ship a
-          # site with no artwork - only tolerate the known sparse 404s.
-          if [ "$ok" -lt $((total * 9 / 10)) ]; then
-            echo "::error::only $ok/$total assets mirrored"; exit 1
+          echo "mirrored $ok/$total (known-missing $expected_miss, unexpected $failed, revived $revived)"
+          # Every unexpected miss is fatal. Failing here also means the cache
+          # post-step never runs, so an incomplete assets/ is not persisted for
+          # later builds to restore.
+          if [ "$failed" -gt 0 ]; then
+            echo "::error::$failed asset(s) unavailable upstream and not in known_missing"; exit 1
           fi
 
       - name: Upload artifact

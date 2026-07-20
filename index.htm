@@ -1336,11 +1336,38 @@ body {
   ];
   var CORS_PROXY = CORS_PROXIES[0];
 
+  // The Pages deploy mirrors the published Festo assets same-origin (the URL
+  // list lives in .github/workflows/static.yml), which avoids the public
+  // proxies entirely. Anything the mirror is missing falls through to the
+  // proxy chain via the model-error handler below, so this stays a
+  // best-effort fast path rather than a hard dependency.
+  var FESTO_AR_BASE = 'https://festodidacticsw.azurewebsites.net/ar/';
+  var MIRROR_BASE = 'assets/';
+  var USE_MIRROR = !window.FDAR_CORS_PROXY;
+
+  /** Absolute Festo URL -> same-origin mirror path, or null if not mirrored. */
+  function mirrorOf(abs) {
+    if (!USE_MIRROR || abs.indexOf(FESTO_AR_BASE) !== 0) return null;
+    return MIRROR_BASE + abs.substring(FESTO_AR_BASE.length);
+  }
+
+  /** Where a cross-origin asset should actually be fetched from. */
+  function viaMirrorOrProxy(abs) {
+    return mirrorOf(abs) || (CORS_PROXY + encodeURIComponent(abs));
+  }
+
   // Injected into generated pages: when a proxied glTF model fails to load
   // (proxy outage), retry it through the next proxy in the chain.
   var PROXY_FALLBACK_SCRIPT = '\n<script>(function () {\n'
     + '  var P = ' + JSON.stringify(CORS_PROXIES) + ';\n'
+    + '  var MB = ' + JSON.stringify(MIRROR_BASE) + ', FB = ' + JSON.stringify(FESTO_AR_BASE) + ';\n'
     + '  function next(u) {\n'
+    // A mirror miss (asset absent from the deploy, or 404 upstream) is the
+    // first link in the chain: fall back to the first public proxy.
+    + '    var rel = u.indexOf(MB) === 0 ? u.substring(MB.length)\n'
+    + '      : (u.indexOf(location.origin) === 0 && u.indexOf(MB, location.origin.length) > 0\n'
+    + '         ? u.substring(u.indexOf(MB) + MB.length) : null);\n'
+    + '    if (rel !== null) return P[0] + encodeURIComponent(FB + rel);\n'
     + '    for (var i = 0; i < P.length; i++) {\n'
     + '      if (u.indexOf(P[i]) === 0) {\n'
     + '        var raw = decodeURIComponent(u.substring(P[i].length));\n'
@@ -1379,7 +1406,7 @@ body {
       try { abs = new URL(path, baseHref).href; } catch (err) { abs = baseHref + path; }
       var xo = false;
       try { xo = new URL(abs, window.location.href).origin !== window.location.origin; } catch (err) {}
-      return xo ? CORS_PROXY + encodeURIComponent(abs) : abs;
+      return xo ? viaMirrorOrProxy(abs) : abs;
     };
     resultStr = resultStr.replace(/url="(?!https?:\/\/|data:|blob:|\/|#)([^"]+)"/gi, function (m, path) {
       return 'url="' + resolveRef(path) + '"';
@@ -1401,7 +1428,7 @@ body {
     resultStr = resultStr.replace(
       /(src|gltf-model|url)="(https:\/\/(?:festodidacticsw\.azurewebsites\.net|fdcamixedreality\.blob\.core\.windows\.net)\/[^"]+)"/gi,
       function (m, attr, abs) {
-        return attr + '="' + CORS_PROXY + encodeURIComponent(abs) + '"';
+        return attr + '="' + viaMirrorOrProxy(abs) + '"';
       });
 
     // Injected last: these rewrites are textual, and the fallback script

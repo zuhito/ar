@@ -33,6 +33,241 @@ jobs:
         uses: actions/checkout@v5
       - name: Setup Pages
         uses: actions/configure-pages@v5
+
+      # festodidacticsw.azurewebsites.net serves the scene assets without an
+      # Access-Control-Allow-Origin header, so the browser cannot use them as
+      # WebGL textures/models when the editor runs on github.io. Mirror them
+      # into the Pages artifact instead of depending on a public CORS proxy.
+      # index.htm rewrites Festo URLs to these assets/ paths and keeps the
+      # public proxies only as a fallback for anything missing here.
+      #
+      # The URL list is inline (not a separate manifest file) because it is
+      # derived from static-live/, which is gitignored and absent from a CI
+      # checkout. Each local path is the URL minus the host prefix, so adding
+      # an asset means adding one line below.
+      - name: Restore mirrored assets
+        id: assets-cache
+        uses: actions/cache@v4
+        with:
+          path: assets
+          # Keyed on this workflow: editing the list re-downloads, an unrelated
+          # push restores the mirror without touching the Festo host.
+          key: festo-assets-${{ hashFiles('.github/workflows/static.yml') }}
+
+      - name: Mirror Festo assets
+        if: steps.assets-cache.outputs.cache-hit != 'true'
+        env:
+          BASE: https://festodidacticsw.azurewebsites.net/ar/
+        run: |
+          ok=0; miss=0; total=0
+          while read -r url; do
+            [ -n "$url" ] || continue
+            total=$((total + 1))
+            # Local path mirrors the remote layout; %20/%5B/%5D become literal
+            # characters so mps/MPS%20%5BEN%5D/ lands as "mps/MPS [EN]/".
+            rel="${url#$BASE}"
+            local_path="assets/$(printf '%b' "${rel//%/\\x}")"
+            mkdir -p "$(dirname "$local_path")"
+            # -g: brackets are path characters here, not a curl glob
+            if curl -sfg --retry 3 --retry-delay 2 --max-time 60 -o "$local_path" "$url"; then
+              ok=$((ok + 1))
+            else
+              # Some IMGTARGET markers are 404 upstream; the editor's proxy
+              # fallback covers a missing mirror entry, so do not fail the deploy
+              echo "::warning::asset unavailable upstream: $url"
+              rm -f "$local_path"; miss=$((miss + 1))
+            fi
+          done <<'URLS'
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/MPS400.xml
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/Sorting_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/Input_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/actuators_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/actuators_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/ar_blank.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/auto_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/book_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/check_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/commissioning_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/commissioning_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/docu_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/error.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/globe_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/grid.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/help_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/info_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/info_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/info_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/inputs_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/left_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/live_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/live_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/manual_rounded.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/modules_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/modules_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/play_rounded.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/play_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/reset_rounded.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/reset_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/right_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/sensors_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/sensors_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/stop_rounded.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/stop_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/video_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/images/warning.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/models/menucube.obj
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/models/menucube.png
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/obj/arrow.obj
+          https://festodidacticsw.azurewebsites.net/ar/MPS400/obj/arrow.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-CAM-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-CAM_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-DISPENSE_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-DRILL_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL-V3_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-LABEL_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MAG_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MEASURE-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MEASURE_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MPRESS-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-MPRESS_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-OUT_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-OVEN_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-PRESS_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-TURNOVER_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-iDRILL_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/CP-AM-iPICK_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/actuators_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/actuators_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/book_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/circuit_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/docu_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/globe_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/grid.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/info_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/info_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/info_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/live_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/live_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/menutex.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/sensors_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/sensors_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/video_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/images/video_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/obj/menuplane.obj
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-CAM-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-CAM_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-DISPENSE_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-DRILL_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-LABEL-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-LABEL-V3_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-LABEL_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MAG_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MEASURE-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MEASURE_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MPRESS-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-MPRESS_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-OUT_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-OVEN_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-PRESS_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-TURNOVER_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-iDRILL_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_nm/targets/CP-AM-iPICK_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-CAM_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-DRILL_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL-V3_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-LABEL_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MAG_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MEASURE-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MEASURE_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MPRESS-V2_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-MPRESS_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-OUT_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-OVEN_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-PRESS_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-TURNOVER_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-iDRILL_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/CP-AM-iPICK_01.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/actuators_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/actuators_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/book_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/circuit_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/docu_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/globe_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/grid.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/info_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/info_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/info_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/live_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/live_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/menutex.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/sensors_squared.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/sensors_squared_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/video_rounded_colored.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/images/video_rounded_hero.png
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/index.xml
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/arrow_blue.glb
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/obj/menuplane.obj
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-CAM-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-CAM_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-DRILL_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-LABEL-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-LABEL-V3_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-LABEL_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MAG_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MEASURE-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MEASURE_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MPRESS-V2_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-MPRESS_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-OUT_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-OVEN_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-PRESS_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-TURNOVER_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-iDRILL_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-iPICK_01.jpg
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/3DLogo.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.0.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.1.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.2.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.3.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.4.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.5.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerI0.6.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerProfinet.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.0.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.1.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.2.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.3.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/ControllerQ0.4.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Details.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/IPLogo.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Manual.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/OK.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Panel.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/Setup.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/about.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/back.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/band.obj
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20[EN]/index.xml
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/menucube.obj
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/menucube.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/modultextur.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/movie.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/pdf.png
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/plane.obj
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/stapelmagazin.obj
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/targetArrow.obj
+          https://festodidacticsw.azurewebsites.net/ar/mps/MPS%20%5BEN%5D/targetArrow.png
+          URLS
+          echo "mirrored $ok/$total (missing $miss)"
+          # A wholesale failure (host down, DNS) should not silently ship a
+          # site with no artwork - only tolerate the known sparse 404s.
+          if [ "$ok" -lt $((total * 9 / 10)) ]; then
+            echo "::error::only $ok/$total assets mirrored"; exit 1
+          fi
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

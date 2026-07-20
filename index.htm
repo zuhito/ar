@@ -1312,9 +1312,38 @@ body {
     }
   }
 
-  // CORS proxy for hosts that send no Access-Control-Allow-Origin header.
-  // Tests point this at a same-origin proxy on the static server.
-  var CORS_PROXY = window.FDAR_CORS_PROXY || 'https://api.allorigins.win/raw?url=';
+  // CORS proxies for hosts that send no Access-Control-Allow-Origin header.
+  // Public proxies come and go, so keep a fallback chain; tests point this
+  // at a same-origin proxy on the static server.
+  var CORS_PROXIES = window.FDAR_CORS_PROXY ? [window.FDAR_CORS_PROXY] : [
+    'https://api.allorigins.win/raw?url=',
+    'https://api.codetabs.com/v1/proxy?quest=',
+    'https://corsproxy.io/?url='
+  ];
+  var CORS_PROXY = CORS_PROXIES[0];
+
+  // Injected into generated pages: when a proxied glTF model fails to load
+  // (proxy outage), retry it through the next proxy in the chain.
+  var PROXY_FALLBACK_SCRIPT = '\n<script>(function () {\n'
+    + '  var P = ' + JSON.stringify(CORS_PROXIES) + ';\n'
+    + '  function next(u) {\n'
+    + '    for (var i = 0; i < P.length; i++) {\n'
+    + '      if (u.indexOf(P[i]) === 0) {\n'
+    + '        var raw = decodeURIComponent(u.substring(P[i].length));\n'
+    + '        return i + 1 < P.length ? P[i + 1] + encodeURIComponent(raw) : null;\n'
+    + '      }\n'
+    + '    }\n'
+    + '    return null;\n'
+    + '  }\n'
+    + '  document.addEventListener("model-error", function (e) {\n'
+    + '    var el = e.target;\n'
+    + '    if (!el || !el.getAttribute) return;\n'
+    + '    var cur = el.getAttribute("gltf-model");\n'
+    + '    if (typeof cur !== "string") return;\n'
+    + '    var n = next(cur.replace(/^url\\((.*)\\)$/, "$1"));\n'
+    + '    if (n) el.setAttribute("gltf-model", n);\n'
+    + '  }, true);\n'
+    + '})();<\/script>';
 
   function applyResult(resultStr) {
     if (typeof resultStr !== 'string') resultStr = String(resultStr);
@@ -1339,7 +1368,7 @@ body {
       return xo ? CORS_PROXY + encodeURIComponent(abs) : abs;
     };
     if (resultStr.indexOf('<base ') === -1) {
-      resultStr = resultStr.replace(/<head>/i, '<head>\n  <base href="' + baseHref + '">');
+      resultStr = resultStr.replace(/<head>/i, '<head>\n  <base href="' + baseHref + '">' + PROXY_FALLBACK_SCRIPT);
     }
     resultStr = resultStr.replace(/url="(?!https?:\/\/|data:|blob:|\/|#)([^"]+)"/gi, function (m, path) {
       return 'url="' + resolveRef(path) + '"';
@@ -1513,18 +1542,22 @@ body {
   }
 
   // On-demand fetch: direct first; if the server does not allow CORS,
-  // retry through a public CORS proxy.
+  // walk the public CORS proxy chain.
   function fetchXmlWithFallback(url) {
-    var proxied = CORS_PROXY + encodeURIComponent(url);
     var check = function (r) {
       if (!r.ok) throw new Error('HTTP ' + r.status);
       return r.text();
     };
+    var viaProxy = function (i, directErr) {
+      if (i >= CORS_PROXIES.length) throw directErr;
+      return fetch(CORS_PROXIES[i] + encodeURIComponent(url)).then(check)
+        .catch(function () { return viaProxy(i + 1, directErr); });
+    };
     return fetch(url).then(check).catch(function (directErr) {
       // An HTTP status is a definitive answer; only network/CORS failures
-      // are worth retrying through the proxy
+      // are worth retrying through the proxies
       if (/^HTTP \d+/.test(directErr.message)) throw directErr;
-      return fetch(proxied).then(check).catch(function () { throw directErr; });
+      return viaProxy(0, directErr);
     });
   }
 

@@ -1,5 +1,5 @@
 <AUGMENTATION>
   <CAMERA>
-    <NODE tz="100" sxyz="30"><VUMETER value="0.7" label="temp" /></NODE>
+    <NODE tz="100"><VUMETER value="0.7" label="temp" /></NODE>
   </CAMERA>
 </AUGMENTATION>

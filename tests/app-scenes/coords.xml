@@ -1,0 +1,9 @@
+<AUGMENTATION>
+  <CAMERA>
+    <NODE tz="100"><TEXT label="CENTER" rgba="ffffffff" width="10" /></NODE>
+    <NODE tx="40" tz="100"><TEXT label="X+ (right)" rgba="ff3030ff" width="8" /></NODE>
+    <NODE tx="-40" tz="100"><TEXT label="X- (left)" rgba="30a0ffff" width="8" /></NODE>
+    <NODE ty="40" tz="100"><TEXT label="Y+ (up)" rgba="30ff30ff" width="8" /></NODE>
+    <NODE ty="-40" tz="100"><TEXT label="Y- (down)" rgba="ffd030ff" width="8" /></NODE>
+  </CAMERA>
+</AUGMENTATION>

@@ -1,0 +1,5 @@
+<AUGMENTATION>
+  <CAMERA>
+    <NODE tz="100" sxyz="40"><VIEWER picture="https://raw.githubusercontent.com/zuhito/ar/main/marker/CP-AM-DRILL_01.jpg" /></NODE>
+  </CAMERA>
+</AUGMENTATION>

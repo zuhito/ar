@@ -33,6 +33,7 @@
     <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <title><xsl:choose><xsl:when test="@name != ''"><xsl:value-of select="@name"/></xsl:when><xsl:otherwise>AR App</xsl:otherwise></xsl:choose></title>
         <script src="https://aframe.io/releases/1.7.1/aframe.min.js"><xsl:text> </xsl:text></script>
         <style><xsl:text disable-output-escaping="yes">
@@ -2252,6 +2253,7 @@
     <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title><xsl:value-of select="@name"/></title>
         <style><xsl:text disable-output-escaping="yes">
@@ -2385,6 +2387,7 @@
     <html>
       <head>
         <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title><xsl:value-of select="@name"/></title>
         <style><xsl:text disable-output-escaping="yes">

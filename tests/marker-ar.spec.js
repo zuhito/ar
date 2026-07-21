@@ -49,8 +49,8 @@ function sceneXml(name) {
   return `<AUGMENTATION>
   <TARGETBASE file="CP-System">
     <TARGET marker="/marker/${name}">
-      <NODE tz="0.5" sxyz="3">
-        <TEXT label="${name}" />
+      <NODE>
+        <VUMETER value="0.7" label="${name}" />
       </NODE>
     </TARGET>
   </TARGETBASE>
@@ -61,8 +61,9 @@ const LIST = markers();
 
 test.describe('marker-based AR rendering', () => {
   // One Chromium at a time: each marker needs its own fake-camera file, and
-  // serial keeps the headless GPU/memory footprint small on CI.
-  test.describe.configure({ mode: 'serial' });
+  // serial keeps the headless GPU/memory footprint small on CI. A fresh browser
+  // per marker plus the marker-free reveal wants more than the default budget.
+  test.describe.configure({ mode: 'serial', timeout: 120_000 });
 
   test.beforeAll(() => {
     fs.mkdirSync(CAM_DIR, { recursive: true });
@@ -124,6 +125,20 @@ test.describe('marker-based AR rendering', () => {
           const m = document.querySelector('a-marker');
           return !!window.__found && !!(m && m.object3D && m.object3D.visible);
         }), { timeout: 15_000, message: `${name} markerFound / visibility never settled` }).toBe(true);
+
+        // Real detection is now proven. A live AR.js webcam draws its video
+        // over the transparent WebGL layer in headless Chromium, so the tracked
+        // 3D augmentation is hidden behind the camera image in a raw shot. Flip
+        // the page's marker-free preview (the same reparent-and-fit path the app
+        // ships) to lift the augmentation onto the canvas for a clear picture of
+        // what the marker renders.
+        await page.evaluate(() => { if (window.fdarMarkerFree) window.fdarMarkerFree(true); });
+        await expect.poll(() => page.evaluate(() => {
+          const t = document.querySelector('a-text, [text]');
+          return !!(t && t.object3D && t.object3D.visible);
+        }), { timeout: 10_000, message: `${name} augmentation never revealed` }).toBe(true);
+        await page.evaluate(() => { if (window._mfFitAll) window._mfFitAll(); });
+        await page.waitForTimeout(600);
 
         await page.screenshot({ path: path.join(SHOT_DIR, name + '.png') });
       } finally {

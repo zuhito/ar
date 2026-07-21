@@ -4,3 +4,4 @@ test-screenshots/
 playwright-report/
 static-html/
 static-live/
+tests/fake-cam/

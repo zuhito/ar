@@ -59,6 +59,46 @@
         </xsl:text></style>
         
         <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
+          <!-- Camera-acquisition robustness: AR.js asks getUserMedia for the
+               webcam with fixed constraints (a specific facingMode/deviceId and
+               resolution). Some cameras — notably Android emulators and phones
+               that don't advertise an 'environment' label or the exact size —
+               reject that with NotFoundError/OverconstrainedError, leaving the
+               AR scene on a blank page with no video. Wrap getUserMedia so any
+               failing video request is retried with progressively looser
+               constraints (prefer the back camera, then any camera). Installed
+               before AR.js so it patches the call AR.js makes. -->
+          <script><xsl:text disable-output-escaping="yes">
+      (function () {
+        var md = navigator.mediaDevices;
+        if (!md || !md.getUserMedia || md.__fdarWrapped) return;
+        var orig = md.getUserMedia.bind(md);
+        md.__fdarWrapped = true;
+        md.getUserMedia = function (constraints) {
+          var c = constraints || {};
+          if (!c.video) return orig(c); // audio-only etc: leave untouched
+          var fallbacks = [
+            { audio: false, video: { facingMode: { ideal: 'environment' } } },
+            { audio: false, video: { facingMode: 'environment' } },
+            { audio: false, video: true }
+          ];
+          var i = -1;
+          function attempt(cons) {
+            return orig(cons).catch(function (err) {
+              // Only recover from "no matching device / constraints" errors
+              var n = err && err.name;
+              if (n !== 'NotFoundError' && n !== 'OverconstrainedError' &&
+                  n !== 'NotReadableError' && n !== 'DevicesNotFoundError') throw err;
+              i++;
+              if (i >= fallbacks.length) throw err;
+              console.warn('FDAR: getUserMedia ' + n + ' — retrying with looser constraints (' + i + ')');
+              return attempt(fallbacks[i]);
+            });
+          }
+          return attempt(c);
+        };
+      })();
+        </xsl:text></script>
           <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
         </xsl:if>
 

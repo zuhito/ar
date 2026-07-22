@@ -2094,7 +2094,7 @@
         <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">
           <xsl:attribute name="scale">0.25 0.25 0.25</xsl:attribute>
         </xsl:when>
-        <xsl:otherwise><xsl:attribute name="scale">1 1 1</xsl:attribute></xsl:otherwise>
+        <xsl:otherwise><xsl:attribute name="scale">5 5 5</xsl:attribute></xsl:otherwise>
       </xsl:choose>
 
       <xsl:variable name="refreshInterval">

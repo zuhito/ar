@@ -1656,7 +1656,7 @@
   <xsl:template match="TARGETBASE"><a-entity class="targetbase" dataset="{@file}"><xsl:apply-templates /></a-entity></xsl:template>
   
   <xsl:template match="CAMERA">
-    <a-camera near="0.01">
+    <a-camera near="0.01" position="0 0 0">
       <!-- Plain (HUD) CAMERA content is authored for the app's camera; give the
            A-Frame camera a matching narrower fov so tx/ty offsets spread like
            the real app instead of clustering (default 80 vfov is too wide). -->

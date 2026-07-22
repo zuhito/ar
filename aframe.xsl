@@ -1312,7 +1312,49 @@
       });</xsl:text>
           </xsl:if>
           <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
-            <xsl:text disable-output-escaping="yes">&#10;      // Marker-free preview: AR.js rewrites marker matrices and visibility
+            <xsl:text disable-output-escaping="yes">&#10;      // Keep the WebGL canvas aligned with AR.js's camera video. AR.js fits the
+      // video to the screen with a letterbox (it scales to cover and centres it
+      // with negative CSS margins), then sizes its projection matrix to that
+      // video. A-Frame's own renderer independently resizes the a-canvas to the
+      // full window, so on phones/tablets whose camera aspect differs from the
+      // screen the canvas and video no longer coincide: the augmentation is
+      // rendered against a differently-sized/positioned surface and drifts off
+      // the marker — most visibly when the marker is small (far away), where it
+      // slides into a corner. Re-run AR.js's own source-resize and copy that
+      // exact geometry onto the canvas after every resize/orientation change and
+      // for a few seconds after load (the video's real size arrives late).
+      (function () {
+        function arSource() {
+          var sc = document.querySelector('a-scene');
+          var sys = sc &amp;&amp; sc.systems &amp;&amp; sc.systems.arjs;
+          return (sys &amp;&amp; (sys.arSource || sys._arSource)) || null;
+        }
+        function realign() {
+          try {
+            var src = arSource();
+            var sc = document.querySelector('a-scene');
+            var canvas = sc &amp;&amp; sc.canvas;
+            if (!src || !canvas || !src.domElement) return;
+            // Video's intrinsic size must be known before AR.js can fit it
+            if (!(src.domElement.videoWidth &gt; 0)) return;
+            if (src.onResizeElement) src.onResizeElement();
+            if (src.copyElementSizeTo) src.copyElementSizeTo(canvas);
+          } catch (e) { /* AR.js internals vary by build; never break the scene */ }
+        }
+        window.__fdarRealign = realign;
+        window.addEventListener('resize', function () { setTimeout(realign, 50); });
+        window.addEventListener('orientationchange', function () { setTimeout(realign, 300); });
+        document.addEventListener('DOMContentLoaded', function () {
+          var sc = document.querySelector('a-scene');
+          if (sc) sc.addEventListener('loaded', function () {
+            // The camera video streams in a few hundred ms after load; nudge the
+            // alignment across that window until the video reports a real size.
+            var n = 0, iv = setInterval(function () { realign(); if (++n &gt; 40) clearInterval(iv); }, 250);
+          });
+        });
+      })();
+
+      // Marker-free preview: AR.js rewrites marker matrices and visibility
       // every frame, so the marker contents are reparented (THREE-level, the
       // DOM stays put) onto a stage entity in front of the camera, normalised
       // to a uniform size. Turning the toggle off moves them back.
@@ -1329,6 +1371,11 @@
       window.fdarMarkerFree = function (on) {
         window._mfOn = on;
         try { localStorage.setItem('fdar_marker_free', on ? '1' : '0'); } catch (e) {}
+        // The blue recognition frame only makes sense while tracking a real
+        // marker; hide it in the marker-free preview.
+        Array.prototype.forEach.call(document.querySelectorAll('.fdar-marker-frame'), function (f) {
+          if (f.object3D) f.object3D.visible = !on;
+        });
         var scene = document.querySelector('a-scene');
         if (!scene) return;
         if (!scene.hasLoaded) {
@@ -1452,7 +1499,11 @@
                 // then appears at true scale around it, as the app shows it.
                 var a = o, viewSpecific = false;
                 while (a &amp;&amp; a !== pivot.parent) {
-                  var ael = a.el, vc = ael &amp;&amp; ael.components &amp;&amp; ael.components['fdar-visibility'];
+                  var ael = a.el;
+                  // The recognition frame (marker-sized) is an AR-mode indicator;
+                  // exclude it so it never dominates the marker-free framing.
+                  if (ael &amp;&amp; ael.classList &amp;&amp; ael.classList.contains('fdar-marker-frame')) { viewSpecific = true; break; }
+                  var vc = ael &amp;&amp; ael.components &amp;&amp; ael.components['fdar-visibility'];
                   if (vc &amp;&amp; vc.viewList) { viewSpecific = true; break; }
                   a = a.parent;
                 }
@@ -1770,6 +1821,23 @@
           <xsl:attribute name="url"><xsl:value-of select="$pattUrl"/>.patt</xsl:attribute>
         </xsl:otherwise>
       </xsl:choose>
+      <!-- Recognition indicator: a blue square outline (the same blue used to
+           highlight clickable links) framing the marker's black square. It is a
+           direct child of a-marker, so it is only drawn while AR.js is actually
+           tracking the marker — an unmistakable "recognised / not recognised"
+           signal. Sized to the 1-unit AR.js marker (native marker space, before
+           the content scale), lying in the marker plane; depthTest off so it
+           always shows on top of the camera image. -->
+      <a-entity class="fdar-marker-frame">
+        <a-box position="0 0.001 -0.5" width="1.0" height="0.004" depth="0.03"
+               material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
+        <a-box position="0 0.001 0.5" width="1.0" height="0.004" depth="0.03"
+               material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
+        <a-box position="-0.5 0.001 0" width="0.03" height="0.004" depth="1.0"
+               material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
+        <a-box position="0.5 0.001 0" width="0.03" height="0.004" depth="1.0"
+               material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
+      </a-entity>
       <a-entity rotation="0 0 0" scale="{$scaleFactor} {$scaleFactor} {$scaleFactor}">
         <a-entity>
           <xsl:attribute name="position">

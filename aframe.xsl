@@ -1537,17 +1537,33 @@
               window.fdarProgress(false);
             }, 300);
           };
-          // Manual navigation while marker-free is on: move the content with a
-          // mouse drag or the arrow keys, zoom with the wheel. AR mode (a real
-          // marker) keeps its fixed, camera-locked framing untouched. Dragging
-          // pans rather than orbits so flat menu panels never turn edge-on and
-          // vanish — the content stays on screen as the user moves it.
-          window._mfNav = window._mfNav || { panX: 0, panY: 0, dist: 0 };
+          // Free-fly navigation while marker-free is on (standard 3D controls):
+          //   Up / Down arrows  -> move forward / backward through the scene
+          //   Left / Right arrows -> look (turn) left / right
+          //   mouse drag         -> look around (yaw + pitch)
+          //   wheel              -> dolly forward / backward
+          // The A-Frame camera itself is fixed (AR.js owns it), so we move a
+          // virtual camera and apply its inverse to the content stage.
+          window._mfNav = window._mfNav || { x: 0, y: 0, z: 0, yaw: 0, pitch: 0 };
           window._mfApplyNav = function () {
             var st = window._mfStage;
             if (!st || !st.object3D) return;
             var n = window._mfNav;
-            st.object3D.position.set(n.panX, n.panY, n.dist);
+            // Virtual camera pose, then invert onto the stage so moving the
+            // camera forward makes the world approach, turning left pans it right
+            var e = new THREE.Euler(n.pitch, n.yaw, 0, 'YXZ');
+            var m = new THREE.Matrix4().makeRotationFromEuler(e);
+            m.setPosition(n.x, n.y, n.z);
+            m.invert();
+            m.decompose(st.object3D.position, st.object3D.quaternion, st.object3D.scale);
+          };
+          // Move the virtual camera along its own facing direction
+          window._mfMove = function (dist) {
+            var n = window._mfNav;
+            var fwd = new THREE.Vector3(0, 0, -1)
+              .applyEuler(new THREE.Euler(0, n.yaw, 0, 'YXZ')); // ground-plane forward
+            n.x += fwd.x * dist; n.z += fwd.z * dist;
+            window._mfApplyNav();
           };
           if (!window._mfNavBound) {
             window._mfNavBound = true;
@@ -1563,8 +1579,12 @@
               var dx = e.clientX - window._mfDrag.x, dy = e.clientY - window._mfDrag.y;
               window._mfDrag.x = e.clientX; window._mfDrag.y = e.clientY;
               window._mfDrag.moved += Math.abs(dx) + Math.abs(dy);
-              window._mfNav.panX += dx * 0.004;   // follow the cursor
-              window._mfNav.panY -= dy * 0.004;   // screen-down is world-down
+              // Drag to look around: right-drag turns the view right, down-drag
+              // looks down (standard). Pitch clamped to avoid flipping over.
+              window._mfNav.yaw -= dx * 0.005;
+              window._mfNav.pitch -= dy * 0.005;
+              var lim = Math.PI / 2 - 0.01;
+              window._mfNav.pitch = Math.max(-lim, Math.min(lim, window._mfNav.pitch));
               window._mfApplyNav();
             };
             var onUp = function () {
@@ -1577,21 +1597,19 @@
             document.addEventListener('mouseup', onUp, true);
             document.addEventListener('wheel', function (e) {
               if (!window._mfOn) return;
-              window._mfNav.dist += (e.deltaY &gt; 0 ? 1 : -1) * 0.15;  // dolly in/out
-              window._mfApplyNav();
+              window._mfMove((e.deltaY &gt; 0 ? -1 : 1) * 0.2);  // wheel dolly
             }, { passive: true });
             window.addEventListener('keydown', function (e) {
               if (!window._mfOn) return;
               var t = e.target;
               if (t &amp;&amp; (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
-              var step = 0.15;
-              if (e.key === 'ArrowLeft') { window._mfNav.panX -= step; }
-              else if (e.key === 'ArrowRight') { window._mfNav.panX += step; }
-              else if (e.key === 'ArrowUp') { window._mfNav.panY += step; }
-              else if (e.key === 'ArrowDown') { window._mfNav.panY -= step; }
+              var moveStep = 0.2, turnStep = 0.06;
+              if (e.key === 'ArrowUp') { window._mfMove(moveStep); }        // forward
+              else if (e.key === 'ArrowDown') { window._mfMove(-moveStep); } // backward
+              else if (e.key === 'ArrowLeft') { window._mfNav.yaw += turnStep; window._mfApplyNav(); }  // look left
+              else if (e.key === 'ArrowRight') { window._mfNav.yaw -= turnStep; window._mfApplyNav(); } // look right
               else return;
               e.preventDefault();
-              window._mfApplyNav();
             }, true);
           }
           var mount = function () {
@@ -1627,9 +1645,10 @@
         } else {
           if (window._mfFitInterval) { clearInterval(window._mfFitInterval); window._mfFitInterval = null; }
           // Reset navigation so the next marker-free session starts centred
-          window._mfNav = { panX: 0, panY: 0, dist: 0 };
+          window._mfNav = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0 };
           if (window._mfStage &amp;&amp; window._mfStage.object3D) {
             window._mfStage.object3D.position.set(0, 0, 0);
+            window._mfStage.object3D.rotation.set(0, 0, 0);
           }
           var arSys2 = scene.systems &amp;&amp; scene.systems.arjs;
           if (arSys2 &amp;&amp; window._mfArTick) {

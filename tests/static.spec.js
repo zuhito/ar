@@ -255,34 +255,35 @@ test.describe('xsltproc-generated pages', () => {
     await page.waitForTimeout(600);
     const before = PNG.sync.read(await page.screenshot());
 
-    // Mouse drag pans the content (keeps it on screen, does not orbit away)
+    // Mouse drag looks around (yaw + pitch): a left/down drag turns the view
+    // left and tilts it down, and the rendered view changes.
     await page.mouse.move(640, 360);
     await page.mouse.down();
     await page.mouse.move(480, 470, { steps: 10 });
     await page.mouse.up();
     await page.waitForTimeout(300);
     const nav1 = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
-    expect(nav1.panX).toBeLessThan(0);
-    expect(nav1.panY).toBeLessThan(0);
+    expect(nav1.yaw).toBeGreaterThan(0);   // dragged left -> yaw increases
+    expect(nav1.pitch).toBeLessThan(0);    // dragged down -> pitch decreases
     const afterDrag = PNG.sync.read(await page.screenshot());
-    expect(diffRatio(before, afterDrag), 'drag moves the content').toBeGreaterThan(0.002);
+    expect(diffRatio(before, afterDrag), 'drag looks around').toBeGreaterThan(0.002);
 
-    // Arrow keys pan too (handled on window, no focus needed)
-    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight');
-    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');
+    // Arrow keys: Left/Right turn the view, Up/Down fly forward/back.
+    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight'); // turn right
+    for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowUp');    // move forward
     await page.waitForTimeout(200);
     const nav2 = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
-    expect(nav2.panX).toBeGreaterThan(nav1.panX);
-    expect(nav2.panY).toBeGreaterThan(nav1.panY);
+    expect(nav2.yaw).toBeLessThan(nav1.yaw);                         // turned right
+    expect(Math.abs(nav2.x) + Math.abs(nav2.z)).toBeGreaterThan(0);  // moved through space
 
     // Toggling off resets navigation and ignores further input
     await page.locator('.mf-slider').click();
     await page.waitForTimeout(300);
     const navOff = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
-    expect(navOff).toEqual({ panX: 0, panY: 0, dist: 0 });
+    expect(navOff).toEqual({ x: 0, y: 0, z: 0, yaw: 0, pitch: 0 });
     for (let i = 0; i < 4; i++) await page.keyboard.press('ArrowRight');
     const navFixed = await page.evaluate(() => /** @type {any} */ (window)._mfNav);
-    expect(navFixed.panX, 'keys do nothing when marker-free is off').toBe(0);
+    expect(navFixed.yaw, 'keys do nothing when marker-free is off').toBe(0);
   });
 
   test('FDAR spec features render (HUD, visibility, instruments, bindings)', async ({ page }) => {

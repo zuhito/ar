@@ -58,6 +58,7 @@
       })();
         </script>
     <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.7/aframe/build/aframe-ar.js"> </script>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"> </script>
     <style>
       #marker-free-toggle {
         position: fixed; top: 12px; left: 16px; z-index: 9999;
@@ -678,6 +679,29 @@
           }
         }
       });
+      // Attach hls.js to any .m3u8 <video> the browser can't play natively.
+      document.addEventListener('DOMContentLoaded', function () {
+        Array.prototype.forEach.call(document.querySelectorAll('video'), function (v) {
+          var src = v.getAttribute('src') || '';
+          if (!/\.m3u8(\?|$)/i.test(src)) return;
+          if (v.canPlayType('application/vnd.apple.mpegurl')) return; // Safari: native HLS
+          if (window.Hls && window.Hls.isSupported()) {
+            v.removeAttribute('src');
+            var hls = new window.Hls({ enableWorker: true });
+            v.__fdarHls = hls;
+            hls.loadSource(src);
+            hls.attachMedia(v);
+            hls.on(window.Hls.Events.MANIFEST_PARSED, function () {
+              if (!v.dataset.fdarNoAutoplay) v.play().catch(function () {});
+            });
+            hls.on(window.Hls.Events.ERROR, function (evt, data) {
+              if (data && data.fatal) console.warn('FDAR: HLS error', data.type, data.details);
+            });
+          } else {
+            console.warn('FDAR: this browser cannot play HLS (.m3u8) and hls.js is unavailable');
+          }
+        });
+      });
       AFRAME.registerComponent('video-controller', {
         schema: {
           status: {type: 'string', default: 'play'},
@@ -1067,10 +1091,10 @@
       </a-assets>
       <a-marker smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5" type="pattern" url="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-DRILL_01.patt">
         <a-entity class="fdar-marker-frame">
-          <a-box position="0 0.001 -0.5" width="1.0" height="0.004" depth="0.03" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
-          <a-box position="0 0.001 0.5" width="1.0" height="0.004" depth="0.03" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
-          <a-box position="-0.5 0.001 0" width="0.03" height="0.004" depth="1.0" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
-          <a-box position="0.5 0.001 0" width="0.03" height="0.004" depth="1.0" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="0 0.001 -0.475" width="0.98" height="0.004" depth="0.03" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="0 0.001 0.475" width="0.98" height="0.004" depth="0.03" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="-0.475 0.001 0" width="0.03" height="0.004" depth="0.98" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="0.475 0.001 0" width="0.03" height="0.004" depth="0.98" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
         </a-entity>
         <a-entity rotation="0 0 0" scale="5 5 5">
           <a-entity position="0 0.005 0">

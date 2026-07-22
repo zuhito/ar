@@ -106,6 +106,13 @@
           <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.7/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
         </xsl:if>
 
+        <xsl:if test="//STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
+          <!-- HLS (.m3u8) playback: only Safari plays HLS from a plain <video
+               src>. Chrome/Firefox/Android need hls.js to feed the stream via
+               Media Source Extensions, otherwise the STREAMER stays black. -->
+          <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"><xsl:text> </xsl:text></script>
+        </xsl:if>
+
         <xsl:if test="//VALUESERVER/WEBSOCKET">
           <style><xsl:text disable-output-escaping="yes">
       #ws-status-overlay {
@@ -1221,7 +1228,30 @@
           </xsl:if>
 
           <xsl:if test="//STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
-            <xsl:text disable-output-escaping="yes">&#10;      AFRAME.registerComponent('video-controller', {
+            <xsl:text disable-output-escaping="yes">&#10;      // Attach hls.js to any .m3u8 &lt;video&gt; the browser can't play natively.
+      document.addEventListener('DOMContentLoaded', function () {
+        Array.prototype.forEach.call(document.querySelectorAll('video'), function (v) {
+          var src = v.getAttribute('src') || '';
+          if (!/\.m3u8(\?|$)/i.test(src)) return;
+          if (v.canPlayType('application/vnd.apple.mpegurl')) return; // Safari: native HLS
+          if (window.Hls &amp;&amp; window.Hls.isSupported()) {
+            v.removeAttribute('src');
+            var hls = new window.Hls({ enableWorker: true });
+            v.__fdarHls = hls;
+            hls.loadSource(src);
+            hls.attachMedia(v);
+            hls.on(window.Hls.Events.MANIFEST_PARSED, function () {
+              if (!v.dataset.fdarNoAutoplay) v.play().catch(function () {});
+            });
+            hls.on(window.Hls.Events.ERROR, function (evt, data) {
+              if (data &amp;&amp; data.fatal) console.warn('FDAR: HLS error', data.type, data.details);
+            });
+          } else {
+            console.warn('FDAR: this browser cannot play HLS (.m3u8) and hls.js is unavailable');
+          }
+        });
+      });
+      AFRAME.registerComponent('video-controller', {
         schema: {
           status: {type: 'string', default: 'play'},
           position: {type: 'number', default: 0},
@@ -1792,13 +1822,13 @@
            the content scale), lying in the marker plane; depthTest off so it
            always shows on top of the camera image. -->
       <a-entity class="fdar-marker-frame">
-        <a-box position="0 0.001 -0.5" width="1.0" height="0.004" depth="0.03"
+        <a-box position="0 0.001 -0.475" width="0.98" height="0.004" depth="0.03"
                material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
-        <a-box position="0 0.001 0.5" width="1.0" height="0.004" depth="0.03"
+        <a-box position="0 0.001 0.475" width="0.98" height="0.004" depth="0.03"
                material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
-        <a-box position="-0.5 0.001 0" width="0.03" height="0.004" depth="1.0"
+        <a-box position="-0.475 0.001 0" width="0.03" height="0.004" depth="0.98"
                material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
-        <a-box position="0.5 0.001 0" width="0.03" height="0.004" depth="1.0"
+        <a-box position="0.475 0.001 0" width="0.03" height="0.004" depth="0.98"
                material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"></a-box>
       </a-entity>
       <a-entity rotation="0 0 0" scale="{$scaleFactor} {$scaleFactor} {$scaleFactor}">

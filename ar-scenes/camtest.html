@@ -7,18 +7,20 @@
 <style>
   body{margin:0;background:#111;color:#0f0;font:14px monospace}
   #log{position:fixed;left:0;top:0;right:0;padding:6px;background:rgba(0,0,0,.7);white-space:pre-wrap;z-index:9}
-  video{width:100%;height:auto;display:block;margin-top:120px;background:#333}
-  button{font-size:16px;padding:8px 12px;margin:4px}
+  video{width:100%;height:auto;display:block;margin-top:160px;margin-bottom:120px;background:#333}
+  button{font-size:18px;padding:14px 10px}
+  #bar{position:fixed;left:0;right:0;bottom:0;display:flex;background:#000;z-index:20}
+  #bar button{flex:1;margin:2px}
 </style>
 </head>
 <body>
 <div id="log">camtest: tap a button</div>
-<div>
-  <button onclick="go('environment')">BACK (environment)</button>
-  <button onclick="go('user')">FRONT (user)</button>
-  <button onclick="listDevs()">list devices</button>
-</div>
 <video id="v" autoplay playsinline muted></video>
+<div id="bar">
+  <button onclick="go('environment')">BACK</button>
+  <button onclick="go('user')">FRONT</button>
+  <button onclick="listDevs()">DEVS</button>
+</div>
 <script>
 var log=document.getElementById('log');
 function L(s){log.textContent+='\n'+s;}

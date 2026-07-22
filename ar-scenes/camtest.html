@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Camera test</title>
+<style>
+  body{margin:0;background:#111;color:#0f0;font:14px monospace}
+  #log{position:fixed;left:0;top:0;right:0;padding:6px;background:rgba(0,0,0,.7);white-space:pre-wrap;z-index:9}
+  video{width:100%;height:auto;display:block;margin-top:120px;background:#333}
+  button{font-size:16px;padding:8px 12px;margin:4px}
+</style>
+</head>
+<body>
+<div id="log">camtest: tap a button</div>
+<div>
+  <button onclick="go('environment')">BACK (environment)</button>
+  <button onclick="go('user')">FRONT (user)</button>
+  <button onclick="listDevs()">list devices</button>
+</div>
+<video id="v" autoplay playsinline muted></video>
+<script>
+var log=document.getElementById('log');
+function L(s){log.textContent+='\n'+s;}
+async function go(mode){
+  log.textContent='requesting '+mode+' ...';
+  try{
+    var st=await navigator.mediaDevices.getUserMedia({video:{facingMode:mode},audio:false});
+    var v=document.getElementById('v');v.srcObject=st;
+    var t=st.getVideoTracks()[0];
+    L('OK track="'+t.label+'"');
+    var s=t.getSettings();
+    L('settings '+JSON.stringify({w:s.width,h:s.height,facing:s.facingMode}));
+    v.onloadedmetadata=function(){L('video '+v.videoWidth+'x'+v.videoHeight+' -> playing');};
+  }catch(e){
+    L('ERROR '+e.name+': '+e.message);
+  }
+}
+async function listDevs(){
+  try{
+    var ds=await navigator.mediaDevices.enumerateDevices();
+    var cams=ds.filter(function(d){return d.kind==='videoinput';});
+    L('videoinput count='+cams.length);
+    cams.forEach(function(c,i){L('  ['+i+'] '+(c.label||'(no label)')+' id='+c.deviceId.slice(0,8));});
+  }catch(e){L('enum ERROR '+e.name+' '+e.message);}
+}
+L('secureContext='+window.isSecureContext+' hasMD='+!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia));
+</script>
+</body>
+</html>

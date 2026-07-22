@@ -86,9 +86,9 @@
           function attempt(cons) {
             return orig(cons).catch(function (err) {
               // Only recover from "no matching device / constraints" errors
-              var n = err && err.name;
-              if (n !== 'NotFoundError' && n !== 'OverconstrainedError' &&
-                  n !== 'NotReadableError' && n !== 'DevicesNotFoundError') throw err;
+              var n = err &amp;&amp; err.name;
+              if (n !== 'NotFoundError' &amp;&amp; n !== 'OverconstrainedError' &amp;&amp;
+                  n !== 'NotReadableError' &amp;&amp; n !== 'DevicesNotFoundError') throw err;
               i++;
               if (i >= fallbacks.length) throw err;
               console.warn('FDAR: getUserMedia ' + n + ' — retrying with looser constraints (' + i + ')');

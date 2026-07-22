@@ -99,7 +99,11 @@
         };
       })();
         </xsl:text></script>
-          <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
+          <!-- Pinned, cacheable CDN build. The former raw.githack.com/master
+               URL is uncached and rate-limited: on some networks (observed on
+               the Android emulator) it fails to load, so AR.js never runs, the
+               a-scene never initialises, and the page stays blank. -->
+          <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.7/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
         </xsl:if>
 
         <xsl:if test="//VALUESERVER/WEBSOCKET">

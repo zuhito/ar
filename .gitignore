@@ -5,3 +5,4 @@ playwright-report/
 static-html/
 static-live/
 tests/fake-cam/
+cp_om_render/

@@ -106,10 +106,12 @@
           <script src="https://cdn.jsdelivr.net/npm/@ar-js-org/ar.js@3.4.7/aframe/build/aframe-ar.js"><xsl:text> </xsl:text></script>
         </xsl:if>
 
-        <xsl:if test="//STREAMER or //DISPLAY[starts-with(@text, '@video:')]">
+        <xsl:if test="//STREAMER[contains(@url, '.m3u8') or contains(., '.m3u8')] or //DISPLAY[starts-with(@text, '@video:') and contains(@text, '.m3u8')]">
           <!-- HLS (.m3u8) playback: only Safari plays HLS from a plain <video
                src>. Chrome/Firefox/Android need hls.js to feed the stream via
-               Media Source Extensions, otherwise the STREAMER stays black. -->
+               Media Source Extensions, otherwise the STREAMER stays black. Only
+               pulled in for scenes that actually reference an .m3u8 stream —
+               plain .mp4 STREAMERs don't need it. -->
           <script src="https://cdn.jsdelivr.net/npm/hls.js@1.5.17/dist/hls.min.js"><xsl:text> </xsl:text></script>
         </xsl:if>
 

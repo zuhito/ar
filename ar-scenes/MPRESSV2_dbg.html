@@ -1435,28 +1435,32 @@
       </a-camera>
     </a-scene>
   
-<div id="dbg" style="position:fixed;top:60px;left:0;right:0;z-index:99999;background:rgba(0,0,0,.8);color:#0f0;font:16px monospace;padding:8px;white-space:pre-line">diag...</div>
+<div id="dbg" style="position:fixed;top:60px;left:0;right:0;z-index:99999;background:rgba(0,0,0,.85);color:#0f0;font:13px monospace;padding:8px;white-space:pre-line"></div>
 <script>
 window.addEventListener('load',function(){
   var el=document.getElementById('dbg');
+  var THREE=AFRAME.THREE;
   setInterval(function(){
-    var lines=[];
-    var v=document.querySelector('video');
-    lines.push('video: '+(v?(v.videoWidth+'x'+v.videoHeight+' rs='+v.readyState):'none'));
-    var m=document.querySelector('a-marker');
-    var arc=null;
-    try{ arc=m.components['arjs-anchor']._arAnchor.controls.context.arController; }catch(e){ lines.push('arController: '+e.message); }
-    if(arc){
-      try{
-        var n=arc.getMarkerNum();
-        var best=0,id=-1;
-        for(var i=0;i<n;i++){var mk=arc.getMarker(i); if(mk&&mk.cf>best){best=mk.cf;id=mk.idPatt;}}
-        lines.push('squares='+n+' bestCf='+best.toFixed(3)+' idPatt='+id);
-        lines.push('thresh='+arc.getThreshold());
-      }catch(e){ lines.push('getMarker err: '+e.message); }
-    } else lines.push('arController: null (AR.js not ready)');
-    lines.push('markerVisible: '+(m&&m.object3D?m.object3D.visible:'?'));
-    el.textContent=lines.join('\n');
+    var L=[];
+    var m=document.querySelector('a-marker'); var sc=document.querySelector('a-scene');
+    var arc=null; try{arc=m.components['arjs-anchor']._arAnchor.controls.context.arController;}catch(e){}
+    if(arc){var n=arc.getMarkerNum();var best=0;for(var i=0;i<n;i++){var k=arc.getMarker(i);if(k&&k.cf>best)best=k.cf;}L.push('squares='+n+' cf='+best.toFixed(3)+' vis='+(m.object3D?m.object3D.visible:'?'));}
+    if(m&&m.object3D){ m.object3D.updateWorldMatrix(true,true);
+      var meshes=0,visMesh=0,withMap=0,mapReady=0,inFrust=0;
+      var cam=sc.camera;
+      m.object3D.traverse(function(o){ if(!o.isMesh)return; meshes++;
+        var p=o,v=true; while(p){if(p.visible===false){v=false;break;}p=p.parent;} if(v)visMesh++;
+        var mats=o.material?(Array.isArray(o.material)?o.material:[o.material]):[];
+        for(var j=0;j<mats.length;j++){ if(mats[j]&&mats[j].map){withMap++; var im=mats[j].map.image; if(im&&(im.width||im.complete))mapReady++;}}
+        // screen projection of mesh center
+        var box=new THREE.Box3().setFromObject(o); var c=box.getCenter(new THREE.Vector3());
+        var pj=c.clone().project(cam); if(Math.abs(pj.x)<1&&Math.abs(pj.y)<1&&pj.z<1)inFrust++;
+      });
+      L.push('mesh tot='+meshes+' visible='+visMesh+' inView='+inFrust);
+      L.push('tex withMap='+withMap+' ready='+mapReady);
+      var r=sc.renderer.info.render; L.push('draws='+r.calls+' tris='+r.triangles);
+    }
+    el.textContent=L.join('\n');
   },500);
 });
 </script>

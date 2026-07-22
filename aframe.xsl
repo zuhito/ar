@@ -1695,7 +1695,7 @@
         <xsl:otherwise>1</xsl:otherwise>
       </xsl:choose>
     </xsl:variable>
-    <xsl:variable name="scaleFactor" select="1 div number($markerSize)" />
+    <xsl:variable name="scaleFactor"><xsl:choose><xsl:when test="self::IMGTARGET"><xsl:value-of select="0.3 div number($markerSize)"/></xsl:when><xsl:otherwise><xsl:value-of select="1 div number($markerSize)"/></xsl:otherwise></xsl:choose></xsl:variable>
     <a-marker smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5">
       <!-- 'hiro' selects the AR.js built-in preset (used by the test scenes,
            printable everywhere); anything else is a pattern file next to the
@@ -1715,7 +1715,7 @@
           <xsl:attribute name="position">
             <xsl:choose>
               <xsl:when test="$pattUrl = 'hiro'">0 0.005 0</xsl:when>
-              <xsl:otherwise>0 0.005 <xsl:value-of select="0 - number($markerSize)"/></xsl:otherwise>
+              <xsl:when test="self::IMGTARGET">0 0.005 0</xsl:when><xsl:otherwise>0 0.005 <xsl:value-of select="0 - number($markerSize)"/></xsl:otherwise>
             </xsl:choose>
           </xsl:attribute>
           <xsl:apply-templates />

@@ -136,9 +136,9 @@
   <body style="margin: 0; overflow: hidden;">
     <div id="fdar-progress" class="active"> </div>
     <a-scene vr-mode-ui="enabled: false" background="color: #333333">
-      <a-camera near="0.01">
+      <a-camera near="0.01" fov="50">
         <a-entity class="fdar-node" position="0 0 -100">
-          <a-entity scale="22 22 22" fdar-vumeter="value: 0.7; label: temp; labelmin: ; labelmax: "> </a-entity>
+          <a-entity scale="14 14 14" fdar-vumeter="value: 0.7; label: temp; labelmin: ; labelmax: "> </a-entity>
         </a-entity>
       </a-camera>
     </a-scene>

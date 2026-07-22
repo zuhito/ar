@@ -167,21 +167,21 @@
   <body style="margin: 0; overflow: hidden;">
     <div id="fdar-progress" class="active"> </div>
     <a-scene vr-mode-ui="enabled: false" background="color: #333333">
-      <a-camera near="0.01">
+      <a-camera near="0.01" fov="50">
         <a-entity class="fdar-node" position="0 0 -100">
-          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="10" fdar-color="rgba: ffffffff; " scale="6 6 6" value="CENTER"> </a-text>
+          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="10" fdar-color="rgba: ffffffff; " scale="4 4 4" value="CENTER"> </a-text>
         </a-entity>
         <a-entity class="fdar-node" position="40 0 -100">
-          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: ff3030ff; " scale="6 6 6" value="X+ (right)"> </a-text>
+          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: ff3030ff; " scale="4 4 4" value="X+ (right)"> </a-text>
         </a-entity>
         <a-entity class="fdar-node" position="-40 0 -100">
-          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: 30a0ffff; " scale="6 6 6" value="X- (left)"> </a-text>
+          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: 30a0ffff; " scale="4 4 4" value="X- (left)"> </a-text>
         </a-entity>
         <a-entity class="fdar-node" position="0 40 -100">
-          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: 30ff30ff; " scale="6 6 6" value="Y+ (up)"> </a-text>
+          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: 30ff30ff; " scale="4 4 4" value="Y+ (up)"> </a-text>
         </a-entity>
         <a-entity class="fdar-node" position="0 -40 -100">
-          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: ffd030ff; " scale="6 6 6" value="Y- (down)"> </a-text>
+          <a-text align="center" color="white" outlineColor="black" outlineWidth="0.1" side="double" fdar-label-fmt="" width="8" fdar-color="rgba: ffd030ff; " scale="4 4 4" value="Y- (down)"> </a-text>
         </a-entity>
       </a-camera>
     </a-scene>

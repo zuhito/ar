@@ -1634,6 +1634,12 @@
   
   <xsl:template match="CAMERA">
     <a-camera near="0.01">
+      <!-- Plain (HUD) CAMERA content is authored for the app's camera; give the
+           A-Frame camera a matching narrower fov so tx/ty offsets spread like
+           the real app instead of clustering (default 80 vfov is too wide). -->
+      <xsl:if test="not(@x != '' or @y != '' or @distance != '' or @scaleto != '')">
+        <xsl:attribute name="fov">50</xsl:attribute>
+      </xsl:if>
       <xsl:choose>
         <xsl:when test="@x != '' or @y != '' or @distance != '' or @scaleto != ''">
           <a-entity>
@@ -1846,7 +1852,7 @@
           <xsl:attribute name="scale">
             <xsl:choose>
               <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
-              <xsl:otherwise>6 6 6</xsl:otherwise>
+              <xsl:otherwise>4 4 4</xsl:otherwise>
             </xsl:choose>
           </xsl:attribute>
           <xsl:text> </xsl:text>
@@ -2129,7 +2135,7 @@
   <xsl:template match="COUNTER">
     <xsl:variable name="instScale"><xsl:choose>
       <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
-      <xsl:otherwise>22 22 22</xsl:otherwise>
+      <xsl:otherwise>14 14 14</xsl:otherwise>
     </xsl:choose></xsl:variable>
     <a-entity scale="{$instScale}">
       <xsl:attribute name="fdar-counter">value: <xsl:value-of select="@value"/>; intdigits: <xsl:choose><xsl:when test="@intdigits != ''"><xsl:value-of select="@intdigits"/></xsl:when><xsl:otherwise>3</xsl:otherwise></xsl:choose>; fractdigits: <xsl:choose><xsl:when test="@fractdigits != ''"><xsl:value-of select="@fractdigits"/></xsl:when><xsl:otherwise>0</xsl:otherwise></xsl:choose>; intrgb: <xsl:value-of select="@intrgb"/>; fractrgb: <xsl:value-of select="@fractrgb"/>; wheelintrgb: <xsl:value-of select="@wheelintrgb"/>; wheelfractrgb: <xsl:value-of select="@wheelfractrgb"/>; casergb: <xsl:value-of select="@casergb"/>; commargb: <xsl:value-of select="@commargb"/></xsl:attribute>
@@ -2141,7 +2147,7 @@
   <xsl:template match="VUMETER">
     <xsl:variable name="instScale"><xsl:choose>
       <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET">0.75 0.75 0.75</xsl:when>
-      <xsl:otherwise>22 22 22</xsl:otherwise>
+      <xsl:otherwise>14 14 14</xsl:otherwise>
     </xsl:choose></xsl:variable>
     <a-entity scale="{$instScale}">
       <xsl:attribute name="fdar-vumeter">value: <xsl:value-of select="@value"/>; label: <xsl:value-of select="@label"/>; labelmin: <xsl:value-of select="@labelmin"/>; labelmax: <xsl:value-of select="@labelmax"/></xsl:attribute>
@@ -2173,7 +2179,7 @@
          keep the larger 50 factor so the text is legible. -->
     <xsl:variable name="textScale"><xsl:choose>
       <xsl:when test="ancestor::TARGET or ancestor::IMGTARGET or ancestor::CAMERA[@scaleto != '' or @distance != '' or @x != '' or @y != '']">0.75 0.75 0.75</xsl:when>
-      <xsl:otherwise>6 6 6</xsl:otherwise>
+      <xsl:otherwise>4 4 4</xsl:otherwise>
     </xsl:choose></xsl:variable>
 
     <xsl:choose>

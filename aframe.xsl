@@ -1019,6 +1019,15 @@
             tick.object3D.position.set(-Math.sin(ang) * tr, pivotY + Math.cos(ang) * tr, 0.015);
             tick.object3D.rotation.z = ang;
           }
+          // Over/under range lamps in the top corners like the app.
+          this.lampLo = mk('a-circle');
+          this.lampLo.setAttribute('radius', '0.06');
+          this.lampLo.setAttribute('position', '-0.82 0.42 0.02');
+          this.lampLo.setAttribute('material', 'color: #0a0; shader: flat; side: double');
+          this.lampHi = mk('a-circle');
+          this.lampHi.setAttribute('radius', '0.06');
+          this.lampHi.setAttribute('position', '0.82 0.42 0.02');
+          this.lampHi.setAttribute('material', 'color: #400; shader: flat; side: double');
           this.lamp = mk('a-circle');
           this.lamp.setAttribute('radius', '0.07');
           this.lamp.setAttribute('position', '0 -0.15 0.02');
@@ -1046,6 +1055,8 @@
           var clamped = Math.max(-0.05, Math.min(1.05, v));
           this.needle.object3D.rotation.z = (0.5 - clamped) * 2 * Math.PI / 3;
           this.lamp.setAttribute('material', 'color: ' + (over ? '#f00' : '#400') + '; shader: flat; side: double');
+          if (this.lampLo) this.lampLo.setAttribute('material', 'color: ' + (v &lt; 0 ? '#0f0' : '#0a0') + '; shader: flat; side: double');
+          if (this.lampHi) this.lampHi.setAttribute('material', 'color: ' + (v &gt; 1 ? '#f00' : '#400') + '; shader: flat; side: double');
         }
       });</xsl:text>
           </xsl:if>

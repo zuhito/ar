@@ -1451,35 +1451,39 @@
       </a-camera>
     </a-scene>
   
-<div id="dbg" style="position:fixed;left:0;bottom:0;z-index:99999;background:rgba(0,0,0,.8);color:#0f0;font:11px monospace;padding:4px;max-width:100%;white-space:pre-wrap"></div>
+<div id="dbg" style="position:fixed;left:0;bottom:0;z-index:99999;background:rgba(0,0,0,.85);color:#0f0;font:10px monospace;padding:4px;max-width:100%;white-space:pre-wrap"></div>
 <script>
 (function(){
   var d=document.getElementById('dbg');
-  function fmt(v){return (Math.round(v*1000)/1000);}
+  function f(v){return Math.round(v*100)/100;}
+  function P(o){var v=new THREE.Vector3();o.getWorldPosition(v);return f(v.x)+','+f(v.y)+','+f(v.z);}
   setInterval(function(){
     try{
+      var sc=document.querySelector('a-scene');
+      var cam=sc&&sc.camera;
       var m=document.querySelector('a-marker');
-      var line='';
-      if(!m){d.textContent='no a-marker';return;}
-      var vis=m.object3D&&m.object3D.visible;
-      var cf=0,seen=0,pat=-1;
-      try{
-        var arc=m.components['arjs-anchor']._arAnchor.controls.context.arController;
-        var n=arc.getMarkerNum();seen=n;
-        for(var i=0;i<n;i++){var mk=arc.getMarker(i);if(mk&&mk.cf>cf){cf=mk.cf;pat=mk.idPatt;}}
-      }catch(e){line+='arc-err:'+e.message+' ';}
-      // menu content (first child entity) world pos/scale
-      var menu=m.querySelector('[fdar-mask]')||m.firstElementChild;
-      var wp=new THREE.Vector3(),ws=new THREE.Vector3();
-      var content=m.object3D.children[0];
-      var childvis='?';
-      if(content){content.getWorldPosition(wp);content.getWorldScale(ws);childvis=content.visible;}
-      // count visible meshes under marker
-      var nmesh=0,vmesh=0;
-      m.object3D.traverse(function(o){if(o.isMesh){nmesh++;var p=o,v=true;while(p){if(!p.visible){v=false;break;}p=p.parent;}if(v&&o.material&&o.material.colorWrite!==false)vmesh++;}});
-      d.textContent='markerVis='+vis+' cf='+fmt(cf)+' seen='+seen+' pat='+pat+'\n'
-        +'contentVis='+childvis+' wp='+fmt(wp.x)+','+fmt(wp.y)+','+fmt(wp.z)+' ws='+fmt(ws.x)+'\n'
-        +'mesh total='+nmesh+' visibleColor='+vmesh+' '+line;
+      if(!m||!cam){d.textContent='wait marker/cam';return;}
+      var cf=0;try{var arc=m.components['arjs-anchor']._arAnchor.controls.context.arController;var n=arc.getMarkerNum();for(var i=0;i<n;i++){var mk=arc.getMarker(i);if(mk&&mk.cf>cf)cf=mk.cf;}}catch(e){}
+      // menuplane mesh
+      var plane=null;
+      m.object3D.traverse(function(o){if(!plane&&o.isMesh&&o.material&&o.material.map&&o.material.map.image&&/menutex/.test(o.material.map.image.src||''))plane=o;});
+      if(!plane)m.object3D.traverse(function(o){if(!plane&&o.isMesh&&o.material&&o.material.colorWrite!==false)plane=o;});
+      var camPos=new THREE.Vector3();cam.getWorldPosition(camPos);
+      var txt='cf='+f(cf)+' mVis='+(m.object3D.visible)+'\n';
+      txt+='camW='+P(cam)+'\n';
+      txt+='markerW='+P(m.object3D)+'\n';
+      if(plane){
+        var pw=new THREE.Vector3();plane.getWorldPosition(pw);
+        // camera-space z (negative = in front)
+        var loc=cam.worldToLocal(pw.clone());
+        // project to NDC
+        var ndc=pw.clone().project(cam);
+        txt+='planeW='+f(pw.x)+','+f(pw.y)+','+f(pw.z)+'\n';
+        txt+='planeCamZ='+f(loc.z)+' ndc='+f(ndc.x)+','+f(ndc.y)+','+f(ndc.z)+'\n';
+        var bb=new THREE.Box3().setFromObject(plane);var sz=bb.getSize(new THREE.Vector3());
+        txt+='planeSize='+f(sz.x)+','+f(sz.y)+','+f(sz.z)+' vis='+plane.visible;
+      } else txt+='no plane mesh';
+      d.textContent=txt;
     }catch(e){d.textContent='ERR '+e.message;}
   },500);
 })();

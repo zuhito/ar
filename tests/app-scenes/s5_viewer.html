@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+    <title>AR App</title>
+    <script src="https://aframe.io/releases/1.7.1/aframe.min.js"> </script>
+    <style>
+      /* Embedded scenes have no intrinsic size; guarantee they fill the page
+         (AR.js may override with its own video-fitting geometry later) */
+      html, body { height: 100%; }
+      a-scene { display: block; width: 100%; height: 100%; }
+      /* Indeterminate progress bar shown during heavy work (scene boot,
+         marker-free re-fit). Hidden unless #fdar-progress has .active. */
+      #fdar-progress {
+        position: fixed; top: 0; left: 0; right: 0; height: 3px; z-index: 10000;
+        background: rgba(10,132,255,0.18); overflow: hidden;
+        opacity: 0; transition: opacity 0.2s; pointer-events: none;
+      }
+      #fdar-progress.active { opacity: 1; }
+      #fdar-progress:before {
+        content: ''; position: absolute; top: 0; height: 100%; width: 40%;
+        background: #0a84ff; animation: fdar-progress-slide 1.1s ease-in-out infinite;
+      }
+      @keyframes fdar-progress-slide {
+        0% { left: -40%; } 100% { left: 100%; }
+      }
+        </style>
+    <script>
+      // Strict FDAR bool conversion
+      window.fdarTruthy = function (v) {
+        var s = String(v).toLowerCase();
+        return s === 'true' || s === 'wahr' || s === 'on' || s === 'enable' || s === 'show';
+      };
+      // hex colour (3/4/6/8 digits, optional #) -> { color, opacity }
+      window.fdarParseHex = function (hex) {
+        if (!hex) return null;
+        if (hex.charAt(0) === '#') hex = hex.substring(1);
+        var r = hex.length >= 6 ? hex.substring(0, 6) : hex.substring(0, 3);
+        var a = 'ff';
+        if (hex.length === 8) a = hex.substring(6, 8);
+        else if (hex.length === 4) a = hex.substring(3, 4) + hex.substring(3, 4);
+        return { color: '#' + r, opacity: parseInt(a, 16) / 255 };
+      };
+      window.fdarHiddenChain = function (el) {
+        var o = el.object3D;
+        while (o) { if (o.visible === false) return true; o = o.parent; }
+        return false;
+      };
+      // Progress bar for heavy work: reference-counted so overlapping tasks
+      // (scene boot + a marker-free re-fit) keep it visible until all finish.
+      // Starts at 1 for the initial scene boot, matching the .active markup.
+      window._fdarBusy = 1;
+      window.fdarProgress = function (on) {
+        window._fdarBusy = Math.max(0, window._fdarBusy + (on ? 1 : -1));
+        var bar = document.getElementById('fdar-progress');
+        if (bar) bar.classList.toggle('active', window._fdarBusy > 0);
+      };
+      // Clear the initial boot hold once preparation is done. The bar covers
+      // preparation only (XSLT output booting, entity setup) — never the
+      // ongoing AR camera pipeline: on webcam scenes 'loaded' can be held up
+      // by camera initialization, so those clear as soon as rendering starts.
+      document.addEventListener('DOMContentLoaded', function () {
+        var scene = document.querySelector('a-scene');
+        var clear = function () { if (window._fdarBoot) { window._fdarBoot = false; window.fdarProgress(false); } };
+        window._fdarBoot = true;
+        if (!scene) { clear(); return; }
+        if (scene.hasLoaded) { clear(); }
+        else if (scene.hasAttribute('arjs')) {
+          requestAnimationFrame(function () { requestAnimationFrame(clear); });
+        }
+        else { scene.addEventListener('loaded', clear, { once: true }); }
+        // Safety: never leave the bar stuck if 'loaded' never fires
+        setTimeout(clear, 12000);
+      });
+      // A texture that failed to load leaves material.map without an image,
+      // which renders black; drop such maps so the base colour shows instead
+      AFRAME.registerComponent('fdar-texture-guard', {
+        init: function () {
+          var sceneEl = this.el;
+          var sweep = function () {
+            sceneEl.object3D.traverse(function (o) {
+              if (!o.isMesh || !o.material || !o.material.map) return;
+              var img = o.material.map.image;
+              var broken = !img ||
+                (typeof HTMLImageElement !== 'undefined' && img instanceof HTMLImageElement && img.complete && img.naturalWidth === 0) ||
+                (typeof HTMLVideoElement !== 'undefined' && img instanceof HTMLVideoElement && img.networkState === 3);
+              if (broken) {
+                o.material.map = null;
+                o.material.needsUpdate = true;
+              }
+            });
+          };
+          sceneEl.addEventListener('loaded', function () {
+            setTimeout(sweep, 2000);
+            setTimeout(sweep, 5000);
+            setTimeout(sweep, 10000);
+          });
+        }
+      });
+    </script>
+  </head>
+  <body style="margin: 0; overflow: hidden;">
+    <div id="fdar-progress" class="active"> </div>
+    <a-scene vr-mode-ui="enabled: false" fdar-texture-guard="" background="color: #333333">
+      <a-camera near="0.01" fov="50">
+        <a-entity class="fdar-node" position="0 0 -100" scale="12 12 12">
+          <a-image src="https://raw.githubusercontent.com/zuhito/ar/main/marker/CP-AM-DRILL_01.jpg" side="double" crossorigin="anonymous" scale="1 1 1" image-refresher="src: https://raw.githubusercontent.com/zuhito/ar/main/marker/CP-AM-DRILL_01.jpg; interval: 10"/>
+        </a-entity>
+      </a-camera>
+    </a-scene>
+  </body>
+</html>

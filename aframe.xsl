@@ -1397,6 +1397,22 @@
               var tmp = new THREE.Box3();
               inner.traverse(function (o) {
                 if (!o.isMesh) return;
+                // Skip AR occluder meshes (fdar-mask sets colorWrite=false):
+                // they are invisible depth-only geometry spanning the whole
+                // module and would otherwise shrink real content to sub-pixel.
+                if (o.material &amp;&amp; o.material.colorWrite === false) return;
+                // Frame on the always-visible content (the menu: nodes with no
+                // view restriction). View-specific detail (sensor/actuator
+                // annotations spread across the real module) is excluded so the
+                // menu keeps a stable size across view switches — the detail
+                // then appears at true scale around it, as the app shows it.
+                var a = o, viewSpecific = false;
+                while (a &amp;&amp; a !== pivot.parent) {
+                  var ael = a.el, vc = ael &amp;&amp; ael.components &amp;&amp; ael.components['fdar-visibility'];
+                  if (vc &amp;&amp; vc.viewList) { viewSpecific = true; break; }
+                  a = a.parent;
+                }
+                if (viewSpecific) return;
                 var p = o, vis = true;
                 while (p &amp;&amp; p !== pivot.parent) {
                   if (p.visible === false) { vis = false; break; }

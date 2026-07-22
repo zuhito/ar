@@ -32,7 +32,9 @@ test.describe('xsltproc-generated pages', () => {
     const text = page.locator('a-text');
     await expect(text).toHaveAttribute('value', 'Hello World');
     await expect(text).toHaveAttribute('fdar-color', /rgba: 00ff0088/);
-    await expect(text).toHaveAttribute('scale', '50 50 50');
+    // Plain CAMERA text is calibrated to x4 to match the Festo app's on-screen
+    // text size (was x50; recalibrated against the real app render).
+    await expect(text).toHaveAttribute('scale', '4 4 4');
     // NODE tz=100 becomes position z=-100 on the wrapping entity
     await expect(page.locator('a-camera > a-entity').first()).toHaveAttribute('position', '0 0 -100');
 

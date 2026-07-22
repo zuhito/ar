@@ -69,11 +69,29 @@
                constraints (prefer the back camera, then any camera). Installed
                before AR.js so it patches the call AR.js makes. -->
           <script><xsl:text disable-output-escaping="yes">
+      // Preview mode (?preview / ?mf in the URL): show the marker-free content
+      // only, without ever opening the camera. Lets a marker scene be inspected
+      // full-screen — the "right-hand preview" — on any device (and keeps the
+      // heavy live-camera pipeline off low-power devices). getUserMedia is
+      // stubbed to reject so AR.js finds no webcam, and marker-free is turned on
+      // automatically once the scene has loaded.
+      window.__fdarPreview = /[?&amp;](preview|mf)\b/.test(location.search);
       (function () {
         var md = navigator.mediaDevices;
         if (!md || !md.getUserMedia || md.__fdarWrapped) return;
         var orig = md.getUserMedia.bind(md);
         md.__fdarWrapped = true;
+        if (window.__fdarPreview) {
+          md.getUserMedia = function () {
+            return Promise.reject(new DOMException('preview mode: camera disabled', 'NotAllowedError'));
+          };
+          document.addEventListener('DOMContentLoaded', function () {
+            var sc = document.querySelector('a-scene');
+            var go = function () { if (window.fdarMarkerFree) window.fdarMarkerFree(true); };
+            if (sc &amp;&amp; sc.hasLoaded) go(); else if (sc) sc.addEventListener('loaded', go, { once: true });
+          });
+          return;
+        }
         md.getUserMedia = function (constraints) {
           var c = constraints || {};
           if (!c.video) return orig(c); // audio-only etc: leave untouched

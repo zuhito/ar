@@ -753,6 +753,11 @@
       window.fdarMarkerFree = function (on) {
         window._mfOn = on;
         try { localStorage.setItem('fdar_marker_free', on ? '1' : '0'); } catch (e) {}
+        // The blue recognition frame only makes sense while tracking a real
+        // marker; hide it in the marker-free preview.
+        Array.prototype.forEach.call(document.querySelectorAll('.fdar-marker-frame'), function (f) {
+          if (f.object3D) f.object3D.visible = !on;
+        });
         var scene = document.querySelector('a-scene');
         if (!scene) return;
         if (!scene.hasLoaded) {
@@ -876,7 +881,11 @@
                 // then appears at true scale around it, as the app shows it.
                 var a = o, viewSpecific = false;
                 while (a && a !== pivot.parent) {
-                  var ael = a.el, vc = ael && ael.components && ael.components['fdar-visibility'];
+                  var ael = a.el;
+                  // The recognition frame (marker-sized) is an AR-mode indicator;
+                  // exclude it so it never dominates the marker-free framing.
+                  if (ael && ael.classList && ael.classList.contains('fdar-marker-frame')) { viewSpecific = true; break; }
+                  var vc = ael && ael.components && ael.components['fdar-visibility'];
                   if (vc && vc.viewList) { viewSpecific = true; break; }
                   a = a.parent;
                 }
@@ -1057,6 +1066,12 @@
         <video id="vid-id2" src="https://ip.festo-didactic.com/InfoPortal/CPFactoryLab/data/CP-AM-DRILL/files/simulation.h264.mp4" preload="auto" crossorigin="anonymous" playsinline="" webkit-playsinline="" muted="true" loop="true"> </video>
       </a-assets>
       <a-marker smooth="true" smoothCount="10" smoothTolerance="0.01" smoothThreshold="5" type="pattern" url="https://festodidacticsw.azurewebsites.net/ar/cp-cloud_om/targets/CP-AM-DRILL_01.patt">
+        <a-entity class="fdar-marker-frame">
+          <a-box position="0 0.001 -0.5" width="1.0" height="0.004" depth="0.03" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="0 0.001 0.5" width="1.0" height="0.004" depth="0.03" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="-0.5 0.001 0" width="0.03" height="0.004" depth="1.0" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+          <a-box position="0.5 0.001 0" width="0.03" height="0.004" depth="1.0" material="shader: flat; color: #0088ff; opacity: 0.9; transparent: true; depthTest: false"/>
+        </a-entity>
         <a-entity rotation="0 0 0" scale="5 5 5">
           <a-entity position="0 0.005 0">
             <a-entity class="fdar-node" scale="0.001 0.001 0.001">
@@ -1849,7 +1864,7 @@
           </a-entity>
         </a-entity>
       </a-marker>
-      <a-camera near="0.01" position="0 0 0">
+      <a-camera near="0.01" position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false">
         <a-entity fdar-camera-fit="x: 1; y: 0.5; distance: 0.8; scaleto: max">
           <a-entity class="fdar-node" scale="0.001 0.001 0.001"/>
         </a-entity>

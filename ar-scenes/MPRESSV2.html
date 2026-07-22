@@ -753,48 +753,6 @@
           });
         }
       });
-      // Keep the WebGL canvas aligned with AR.js's camera video. AR.js fits the
-      // video to the screen with a letterbox (it scales to cover and centres it
-      // with negative CSS margins), then sizes its projection matrix to that
-      // video. A-Frame's own renderer independently resizes the a-canvas to the
-      // full window, so on phones/tablets whose camera aspect differs from the
-      // screen the canvas and video no longer coincide: the augmentation is
-      // rendered against a differently-sized/positioned surface and drifts off
-      // the marker — most visibly when the marker is small (far away), where it
-      // slides into a corner. Re-run AR.js's own source-resize and copy that
-      // exact geometry onto the canvas after every resize/orientation change and
-      // for a few seconds after load (the video's real size arrives late).
-      (function () {
-        function arSource() {
-          var sc = document.querySelector('a-scene');
-          var sys = sc && sc.systems && sc.systems.arjs;
-          return (sys && (sys.arSource || sys._arSource)) || null;
-        }
-        function realign() {
-          try {
-            var src = arSource();
-            var sc = document.querySelector('a-scene');
-            var canvas = sc && sc.canvas;
-            if (!src || !canvas || !src.domElement) return;
-            // Video's intrinsic size must be known before AR.js can fit it
-            if (!(src.domElement.videoWidth > 0)) return;
-            if (src.onResizeElement) src.onResizeElement();
-            if (src.copyElementSizeTo) src.copyElementSizeTo(canvas);
-          } catch (e) { /* AR.js internals vary by build; never break the scene */ }
-        }
-        window.__fdarRealign = realign;
-        window.addEventListener('resize', function () { setTimeout(realign, 50); });
-        window.addEventListener('orientationchange', function () { setTimeout(realign, 300); });
-        document.addEventListener('DOMContentLoaded', function () {
-          var sc = document.querySelector('a-scene');
-          if (sc) sc.addEventListener('loaded', function () {
-            // The camera video streams in a few hundred ms after load; nudge the
-            // alignment across that window until the video reports a real size.
-            var n = 0, iv = setInterval(function () { realign(); if (++n > 40) clearInterval(iv); }, 250);
-          });
-        });
-      })();
-
       // Marker-free preview: AR.js rewrites marker matrices and visibility
       // every frame, so the marker contents are reparented (THREE-level, the
       // DOM stays put) onto a stage entity in front of the camera, normalised
@@ -1532,7 +1490,7 @@
           </a-entity>
         </a-entity>
       </a-marker>
-      <a-camera near="0.01" position="0 0 0">
+      <a-camera near="0.01" position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false">
         <a-entity fdar-camera-fit="x: 1; y: 0.5; distance: 0.8; scaleto: max">
           <a-entity class="fdar-node" scale="0.001 0.001 0.001"/>
         </a-entity>

@@ -1312,49 +1312,7 @@
       });</xsl:text>
           </xsl:if>
           <xsl:if test="TARGETBASE or IMGTARGET or TARGET">
-            <xsl:text disable-output-escaping="yes">&#10;      // Keep the WebGL canvas aligned with AR.js's camera video. AR.js fits the
-      // video to the screen with a letterbox (it scales to cover and centres it
-      // with negative CSS margins), then sizes its projection matrix to that
-      // video. A-Frame's own renderer independently resizes the a-canvas to the
-      // full window, so on phones/tablets whose camera aspect differs from the
-      // screen the canvas and video no longer coincide: the augmentation is
-      // rendered against a differently-sized/positioned surface and drifts off
-      // the marker — most visibly when the marker is small (far away), where it
-      // slides into a corner. Re-run AR.js's own source-resize and copy that
-      // exact geometry onto the canvas after every resize/orientation change and
-      // for a few seconds after load (the video's real size arrives late).
-      (function () {
-        function arSource() {
-          var sc = document.querySelector('a-scene');
-          var sys = sc &amp;&amp; sc.systems &amp;&amp; sc.systems.arjs;
-          return (sys &amp;&amp; (sys.arSource || sys._arSource)) || null;
-        }
-        function realign() {
-          try {
-            var src = arSource();
-            var sc = document.querySelector('a-scene');
-            var canvas = sc &amp;&amp; sc.canvas;
-            if (!src || !canvas || !src.domElement) return;
-            // Video's intrinsic size must be known before AR.js can fit it
-            if (!(src.domElement.videoWidth &gt; 0)) return;
-            if (src.onResizeElement) src.onResizeElement();
-            if (src.copyElementSizeTo) src.copyElementSizeTo(canvas);
-          } catch (e) { /* AR.js internals vary by build; never break the scene */ }
-        }
-        window.__fdarRealign = realign;
-        window.addEventListener('resize', function () { setTimeout(realign, 50); });
-        window.addEventListener('orientationchange', function () { setTimeout(realign, 300); });
-        document.addEventListener('DOMContentLoaded', function () {
-          var sc = document.querySelector('a-scene');
-          if (sc) sc.addEventListener('loaded', function () {
-            // The camera video streams in a few hundred ms after load; nudge the
-            // alignment across that window until the video reports a real size.
-            var n = 0, iv = setInterval(function () { realign(); if (++n &gt; 40) clearInterval(iv); }, 250);
-          });
-        });
-      })();
-
-      // Marker-free preview: AR.js rewrites marker matrices and visibility
+            <xsl:text disable-output-escaping="yes">&#10;      // Marker-free preview: AR.js rewrites marker matrices and visibility
       // every frame, so the marker contents are reparented (THREE-level, the
       // DOM stays put) onto a stage entity in front of the camera, normalised
       // to a uniform size. Turning the toggle off moves them back.
@@ -1755,7 +1713,7 @@
           <xsl:apply-templates select="CAMERA" />
 
           <xsl:if test="not(CAMERA)">
-            <a-entity camera="near: 0.01">
+            <a-entity camera="near: 0.01" look-controls="enabled: false" wasd-controls="enabled: false">
               <xsl:text> </xsl:text>
             </a-entity>
           </xsl:if>
@@ -1767,7 +1725,12 @@
   <xsl:template match="TARGETBASE"><a-entity class="targetbase" dataset="{@file}"><xsl:apply-templates /></a-entity></xsl:template>
   
   <xsl:template match="CAMERA">
-    <a-camera near="0.01" position="0 0 0">
+    <!-- look-controls/wasd-controls OFF: A-Frame's camera otherwise reads the
+         phone's gyroscope/accelerometer (device-orientation) and rotates the
+         view, which fights AR.js's image-based marker pose and makes the
+         augmentation drift off the marker as the phone tilts. Marker position
+         must come only from the camera image. -->
+    <a-camera near="0.01" position="0 0 0" look-controls="enabled: false" wasd-controls="enabled: false">
       <!-- Plain (HUD) CAMERA content is authored for the app's camera; give the
            A-Frame camera a matching narrower fov so tx/ty offsets spread like
            the real app instead of clustering (default 80 vfov is too wide). -->

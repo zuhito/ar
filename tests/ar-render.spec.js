@@ -84,7 +84,11 @@ test.describe('AR scene renders on its marker', () => {
             const pw = new THREE.Vector3(); o.getWorldPosition(pw);
             const camZ = cam.worldToLocal(pw.clone()).z;
             const ndc = pw.clone().project(cam);
-            if (camZ < 0 && Math.abs(ndc.x) <= 1 && Math.abs(ndc.y) <= 1 && Math.abs(ndc.z) <= 1) ok = true;
+            // In front of the camera and within the screen rectangle. ndc.z is
+            // NOT a useful clip test here: AR.js's projection uses a near plane
+            // of ~0.0001, so depth non-linearity pins any real-distance point to
+            // ndc.z ≈ 1 (never actually clipped — camZ<0 already means visible).
+            if (camZ < 0 && Math.abs(ndc.x) <= 1 && Math.abs(ndc.y) <= 1) ok = true;
           });
           console.log('AR-RENDER on-marker placement ok=' + ok);
           return ok;
